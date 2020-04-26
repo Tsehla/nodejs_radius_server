@@ -107,6 +107,7 @@ socket.on('message', (msg, reply_info) => {
 
         var  username = radius_in_message.attributes['User-Name'];
         var password =radius_in_message.attributes['User-Password'];
+        
 
 
         // ... check password against the db
@@ -130,9 +131,10 @@ socket.on('message', (msg, reply_info) => {
         }
         
         //set account limits
-        radius_in_message.attributes['Mikrotik-Total-Limit'] = 1234567890;
-        radius_in_message.attributes['Port-Limit'] = 1;
+        radius_in_message.attributes['Acct-Link-Count'] = '1G';
+        radius_in_message.attributes['Acct-Output-Gigawords'] = '2G';
         
+       
         //Mikrotik-Total-Limit 
 
 
