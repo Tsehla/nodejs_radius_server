@@ -131,6 +131,7 @@ socket.on('message', (msg, reply_info) => {
         
         //set account limits
         radius_in_message.attributes['Mikrotik-Total-Limit'] = 1234567890;
+        radius_in_message.attributes['Port-Limit'] = 1;
         
         //Mikrotik-Total-Limit 
 
@@ -207,9 +208,7 @@ socket.on('message', (msg, reply_info) => {
 
         /* ......  DO WHAT YOU WANT HERE ....... */
 
-        //set account limits
-        radius_in_message.attributes['Mikrotik-Total-Limit'] = 1234567890;
-
+            
        // ----------- return response
        // ... prepare reply data
         var reply = radius_module.encode_response({
