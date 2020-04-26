@@ -86,6 +86,10 @@ socket.on('message', (msg, reply_info) => {
 
         // ... retrive passwords from requests
 
+
+        console.log('Access-Request message : ',radius_in_message);
+
+
         var  username = radius_in_message.attributes['User-Name'];
         var password =radius_in_message.attributes['User-Password'];
 
@@ -163,27 +167,27 @@ socket.on('message', (msg, reply_info) => {
     */
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){ // start accounting data for user
-        console.log('Accounting start for user, requested')
+        console.log('Accounting start for user, requested : ', radius_in_message)
         return;
     }
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){ // stop accounting data  for user
-        console.log('Accounting stop for user, requested')
+        console.log('Accounting stop for user, requested : ', radius_in_message)
         return;
     }
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update' ){ // update accounting data  for user
-        console.log('Accounting data update for user, requested')
+        console.log('Accounting data update for user, requested : ', radius_in_message)
         return;
     }
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Accounting-On' ){ // set accounting on for user
-        console.log('Accounting on for user, requested')
+        console.log('Accounting on for user, requested : ', radius_in_message)
         return;
     }
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Accounting-Off' ){// set accounting off for user
-        console.log('Accounting off for user, requested')
+        console.log('Accounting off for user, requested : ', radius_in_message)
         return;
     }
    
