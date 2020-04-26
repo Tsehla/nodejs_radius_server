@@ -207,6 +207,8 @@ socket.on('message', (msg, reply_info) => {
 
         /* ......  DO WHAT YOU WANT HERE ....... */
 
+        //set account limits
+        radius_in_message.attributes['Mikrotik-Total-Limit'] = 1234567890;
 
        // ----------- return response
        // ... prepare reply data
