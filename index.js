@@ -28,7 +28,9 @@ var radius_secret = process.env.RADIUS_SECRET || 'testing123'; //radius secret
 
 socket.on('listening', () => {
   let addr = socket.address();
-  console.log(`Listening for UDP packets at ${addr.address}:${addr.port}`);
+  console.log(`===========================================\nListening for UDP packets at ${addr.address}:${addr.port}\n===========================================`);
+  console.log(`===========================================\nListening for radius Authentification\n\t request on ${addr.address}:${addr.port}\n===========================================`);
+  console.log(`===========================================\nListening for radius Accounting request\n\t on ${addr.address}:${addr.port}\n===========================================`);
 });
 
 
@@ -65,29 +67,41 @@ socket.on('message', (msg, reply_info) => {
 
   // radius in message types
 
-  // ... access requesting authentification request
+  //  --------------- access requesting authentification request  ---------------
   if (radius_in_message.code == 'Access-Request') { 
 
 
-        /* 
-            //Recieved UDP message // example request made by NradPing utility
+        /* user authentification request from mikrotik  [ console.log(radius_in_message) ]
 
-            { code: 'Access-Request',
-            identifier: 9,
-            length: 56,
-            authenticator: <Buffer 20 20 20 20 20 20 31 35 38 37 39 30 38 37 38 36>,
-            attributes:
-            { 'User-Name': 'dvdwalt@meshdesk', 'User-Password': 'dvdwalt' },
-            raw_attributes:
-            [ [ 1, <Buffer 64 76 64 77 61 6c 74 40 6d 65 73 68 64 65 73 6b> ],
-                [ 2, <Buffer 9d fb ed 4c 9d 1d df fb 1f 97 60 0d 37 0c ef 4e> ] ] }
+            Access-Request message :  {
+            code: 'Access-Request',
+            identifier: 25,
+            length: 209,
+            authenticator: <Buffer 14 0e 0f 76 33 52 25 5a 10 9c f9 2e 0d ed 72 63>,
+            attributes: {
+                'NAS-Port-Type': 'Wireless-802.11',
+                'Calling-Station-Id': 'C8:94:BB:38:A7:01',
+                'Called-Station-Id': 'hotspot1',
+                'NAS-Port-Id': 'bridge',
+                'User-Name': 'usbwalt',
+                'NAS-Port': 2156920838,
+                'Acct-Session-Id': '80900006',
+                'Framed-IP-Address': '192.168.88.254',
+                'Vendor-Specific': {},
+                'User-Password': 'usbwalt',
+                'Service-Type': 'Login-User',
+                'NAS-Identifier': 'MikroTik-OrangeFarm_Extension_9_iCafe',
+                'NAS-IP-Address': '192.168.1.2'
+            },
+            raw_attributes: [xxxxx]
+            }
         
         */
 
         // ... retrive passwords from requests
 
 
-        console.log('Access-Request message : ',radius_in_message);
+        console.log('Authentification Access-Request message : ',radius_in_message);
 
 
         var  username = radius_in_message.attributes['User-Name'];
@@ -142,46 +156,154 @@ socket.on('message', (msg, reply_info) => {
     }
 
 
-  // ... accounting data requesting authentification request
+  // --------------- accounting data requesting authentification request  ---------------
   if (radius_in_message.code == 'Accounting-Request') {
 
 
-    /* 
-        // Recieved UDP message// example request made by NradPing utility
-
-        { code: 'Accounting-Request',
-        identifier: 10,
-        length: 51,
-        authenticator: <Buffer 6e 94 b5 78 70 55 40 ac dd b7 a8 cd e2 d7 2c 4b>,
-        attributes:
-        { 'User-Name': 'dvdwalt@meshdesk',
-            'Acct-Status-Type': 'Start',
-            'Acct-Session-Id': '15060' },
-        raw_attributes:
-        [ [ 1, <Buffer 64 76 64 77 61 6c 74 40 6d 65 73 68 64 65 73 6b> ],     
-            [ 40, <Buffer 00 00 00 01> ],
-            [ 44, <Buffer 31 35 30 36 30> ] ] }
-    
-    
-    
-    */
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){ // start accounting data for user
+       /* accounting start request from mikrotik after user login  [ console.log(radius_in_message) ]
+            {
+                code: 'Accounting-Request',
+                identifier: 22,
+                length: 169,
+                authenticator: <Buffer a1 80 1d 6a 24 81 b9 72 38 83 c2 7b d7 b1 77 1c>,
+                attributes: {
+                    'Acct-Status-Type': 'Start',
+                    'NAS-Port-Type': 'Wireless-802.11',
+                    'Calling-Station-Id': 'C8:94:BB:38:A7:01',
+                    'Called-Station-Id': 'hotspot1',
+                    'NAS-Port-Id': 'bridge',
+                    'User-Name': 'usbwalt',
+                    'NAS-Port': 2156920837,
+                    'Acct-Session-Id': '80900005',
+                    'Framed-IP-Address': '192.168.88.254',
+                    'Vendor-Specific': {},
+                    'Event-Timestamp': 2020-04-26T17:13:47.000Z,
+                    'NAS-Identifier': 'MikroTik-OrangeFarm_Extension_9_iCafe',
+                    'Acct-Delay-Time': 1,
+                    'NAS-IP-Address': '192.168.1.2'
+                },
+                raw_attributes: [xxxxxx]
+            }
+
+       
+       
+       */ 
+        
+        
+        
         console.log('Accounting start for user, requested : ', radius_in_message)
         return;
     }
 
+
+
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){ // stop accounting data  for user
+        /* -- accounting stop request from mikrotik after user logout  [ console.log(radius_in_message) ]
+                     
+        {
+            code: 'Accounting-Request',
+            identifier: 24,
+            length: 217,
+            authenticator: <Buffer 98 dd 88 fb 22 d1 82 38 ce d2 d1 03 72 f4 2b ce>,
+            attributes: {
+                'Acct-Status-Type': 'Stop',
+                'Acct-Terminate-Cause': 'User-Request',
+                'NAS-Port-Type': 'Wireless-802.11',
+                'NAS-Port-Type': 'Wireless-802.11',
+                'Calling-Station-Id': 'C8:94:BB:38:A7:01',
+                'Called-Station-Id': 'hotspot1',
+                'NAS-Port-Id': 'bridge',
+                'User-Name': 'usbwalt',
+                'NAS-Port': 2156920837,
+                'Acct-Session-Id': '80900005',
+                'Framed-IP-Address': '192.168.88.254',
+                'Vendor-Specific': {},
+                'Event-Timestamp': 2020-04-26T17:18:31.000Z,
+                'Acct-Input-Octets': 185300, ===[upload data in bytes (equates to 180 kilobyte)]===
+                'Acct-Output-Octets': 848015, ===[download data in bytes (equates to 848 kilobytes)]===
+                'Acct-Input-Gigawords': 0,
+                'Acct-Output-Gigawords': 0,
+                'Acct-Input-Packets': 7108,
+                'Acct-Output-Packets': 18397,
+                'Acct-Session-Time': 1089, ====[time used in seconds (equates to 18 minutes )]====
+                'NAS-Identifier': 'MikroTik-OrangeFarm_Extension_9_iCafe',
+                'Acct-Delay-Time': 1,
+                'NAS-IP-Address': '192.168.1.2'
+            },
+            raw_attributes: [xxxxxx]
+            }
+        
+        
+        */
+        
+        
         console.log('Accounting stop for user, requested : ', radius_in_message)
         return;
     }
 
-    if(radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update' ){ // update accounting data  for user
+    if(radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update' ){ // periodic update of accounting data  for user active session
+
+        /*  accounting usage update for active user session from mikrotik  [ console.log(radius_in_message) ]
+        {
+            code: 'Accounting-Request',
+            identifier: 42,
+            length: 211,
+            authenticator: <Buffer 3b f3 ac 20 81 92 3f 60 39 04 6f 48 98 8f 8f 8b>,
+            attributes: {
+                'Acct-Status-Type': 'Interim-Update',
+                'NAS-Port-Type': 'Wireless-802.11',
+                'Calling-Station-Id': 'C8:94:BB:38:A7:01',
+                'Called-Station-Id': 'hotspot1',
+                'NAS-Port-Id': 'bridge',
+                'User-Name': 'usbwalt',
+                'NAS-Port': 2156920841,
+                'Acct-Session-Id': '80900009',
+                'Framed-IP-Address': '192.168.88.254',
+                'Vendor-Specific': {},
+                'Event-Timestamp': 2020-04-26T18:12:52.000Z,
+                'Acct-Input-Octets': 14960,
+                'Acct-Output-Octets': 12341,
+                'Acct-Input-Gigawords': 0,
+                'Acct-Output-Gigawords': 0,
+                'Acct-Input-Packets': 86,
+                'Acct-Output-Packets': 87,
+                'Acct-Session-Time': 60,
+                'NAS-Identifier': 'MikroTik-OrangeFarm_Extension_9_iCafe',
+                'Acct-Delay-Time': 1,
+                'NAS-IP-Address': '192.168.1.2'
+            },
+            raw_attributes: [xxxxx]
+        
+        */
+
         console.log('Accounting data update for user, requested : ', radius_in_message)
+
         return;
     }
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Accounting-On' ){ // set accounting on for user
+
+        /* -- accounting on request from mikrotik after user login [ console.log(radius_in_message) ]
+        
+            Accounting on for user, requested :  {
+            code: 'Accounting-Request',
+            identifier: 23,
+            length: 77,
+            authenticator: <Buffer f4 54 ce f7 56 da 9f c2 1b 8e 5b 0b 5e a2 c1 0a>,
+            attributes: {
+                'Acct-Status-Type': 'Accounting-On',
+                'NAS-Identifier': 'MikroTik-OrangeFarm_Extension_9_iCafe',
+                'Acct-Delay-Time': 0,
+                'NAS-IP-Address': '192.168.1.2'
+            },
+            raw_attributes: [xxxx]
+            }
+        
+        */
+
+
         console.log('Accounting on for user, requested : ', radius_in_message)
         return;
     }
@@ -214,6 +336,9 @@ app.get('/', function(req,res){
 
 // -- ports --
 
-app.set('port', process.env.PPORT_TCP || 8080); // set port for TCP with Express
-app.listen(process.env.PPORT_TCP || 8080); //listen for tcp requests
+app.set('port', process.env.PPORT_TCP || 3000); // set port for TCP with Express
+app.listen(process.env.PPORT_TCP || 3000, function(){
+    console.log(`===========================================\nListening for TCP request at port : ${process.env.PPORT_TCP || 8080}\n===========================================`);
+}); //listen for tcp requests
+
 socket.bind(process.env.PPORT_UDP || 8082);//bind port for udp requests
