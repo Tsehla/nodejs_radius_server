@@ -64,6 +64,7 @@ socket.on('message', (msg, reply_info) => {
 
   }
 
+  //console.log(radius_in_message )
 
   // radius in message types
 
@@ -127,6 +128,11 @@ socket.on('message', (msg, reply_info) => {
             reply_code = 'Access-Reject';
 
         }
+        
+        //set account limits
+        radius_in_message.attributes['Mikrotik-Total-Limit'] = 1234567890;
+        
+        //Mikrotik-Total-Limit 
 
 
         // ... prepare reply data
@@ -138,6 +144,9 @@ socket.on('message', (msg, reply_info) => {
             secret: radius_secret
 
         });
+
+        //accounts limit
+
 
 
         // ... send reply data
@@ -157,11 +166,15 @@ socket.on('message', (msg, reply_info) => {
 
 
   // --------------- accounting data requesting authentification request  ---------------
+
   if (radius_in_message.code == 'Accounting-Request') {
 
 
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){ // start accounting data for user
+
+        console.log('Accounting start for user, requested : ', radius_in_message);
+
        /* accounting start request from mikrotik after user login  [ console.log(radius_in_message) ]
             {
                 code: 'Accounting-Request',
@@ -190,16 +203,43 @@ socket.on('message', (msg, reply_info) => {
        
        
        */ 
+
+
+        /* ......  DO WHAT YOU WANT HERE ....... */
+
+
+       // ----------- return response
+       // ... prepare reply data
+        var reply = radius_module.encode_response({
+
+            packet: radius_in_message,
+            code: 'Accounting-Response',
+            secret: radius_secret
+
+        });
+
+
+        // ... send reply data
+        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+            
+            if (err) {
+
+              console.log('Error sending response to ', reply_info);
+            }
+
+        });
         
         
-        
-        console.log('Accounting start for user, requested : ', radius_in_message)
         return;
     }
 
 
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){ // stop accounting data  for user
+
+           
+        console.log('Accounting stop for user, requested : ', radius_in_message);
+
         /* -- accounting stop request from mikrotik after user logout  [ console.log(radius_in_message) ]
                      
         {
@@ -238,12 +278,41 @@ socket.on('message', (msg, reply_info) => {
         
         */
         
-        
-        console.log('Accounting stop for user, requested : ', radius_in_message)
+     
+
+        /* ......  DO WHAT YOU WANT HERE ....... */
+
+
+       // ----------- return response
+       // ... prepare reply data
+       var reply = radius_module.encode_response({
+
+            packet: radius_in_message,
+            code: 'Accounting-Response',
+            secret: radius_secret
+
+        });
+
+
+        // ... send reply data
+        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+            
+            if (err) {
+
+            console.log('Error sending response to ', reply_info);
+            }
+
+        });
+
+
         return;
     }
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update' ){ // periodic update of accounting data  for user active session
+
+        
+
+        console.log('Accounting data update for user, requested : ', radius_in_message);
 
         /*  accounting usage update for active user session from mikrotik  [ console.log(radius_in_message) ]
         {
@@ -278,12 +347,38 @@ socket.on('message', (msg, reply_info) => {
         
         */
 
-        console.log('Accounting data update for user, requested : ', radius_in_message)
+
+        /* ......  DO WHAT YOU WANT HERE ....... */
+
+
+       // ----------- return response
+       // ... prepare reply data
+       var reply = radius_module.encode_response({
+
+            packet: radius_in_message,
+            code: 'Accounting-Response',
+            secret: radius_secret
+
+        });
+
+
+        // ... send reply data
+        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+            
+            if (err) {
+
+                console.log('Error sending response to ', reply_info);
+            }
+
+        });
 
         return;
     }
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Accounting-On' ){ // set accounting on for user
+
+        
+        console.log('Accounting on for user, requested : ', radius_in_message);
 
         /* -- accounting on request from mikrotik after user login [ console.log(radius_in_message) ]
         
@@ -304,16 +399,107 @@ socket.on('message', (msg, reply_info) => {
         */
 
 
-        console.log('Accounting on for user, requested : ', radius_in_message)
+
+        /* ......  DO WHAT YOU WANT HERE ....... */
+
+
+       // ----------- return response
+       // ... prepare reply data
+       var reply = radius_module.encode_response({
+
+            packet: radius_in_message,
+            code: 'Accounting-Response',
+            secret: radius_secret
+
+        });
+
+
+        // ... send reply data
+        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+            
+            if (err) {
+
+                console.log('Error sending response to ', reply_info);
+            }
+
+        });
+
+
         return;
     }
 
+
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Accounting-Off' ){// set accounting off for user
         console.log('Accounting off for user, requested : ', radius_in_message)
+
+        /*
+         { code: 'Accounting-Request',
+            identifier: 45,
+            length: 42,
+            authenticator: <Buffer 20 80 39 b0 07 46 64 5a 04 05 48 97 74 57 b0 73>,
+            attributes:
+            { 'User-Name': 'usbwalt',
+                'Acct-Status-Type': 'Accounting-Off',
+                'Acct-Session-Id': '15060' },
+            raw_attributes:
+            [ [ 1, <Buffer 75 73 62 77 61 6c 74> ],
+                [ 40, <Buffer 00 00 00 08> ],
+                [ 44, <Buffer 31 35 30 36 30> ] ] 
+            }
+                    
+        */
+
+        
+        /* ......  DO WHAT YOU WANT HERE ....... */
+
+
+       // ----------- return response
+       // ... prepare reply data
+       var reply = radius_module.encode_response({
+
+            packet: radius_in_message,
+            code: 'Accounting-Response',
+            secret: radius_secret
+
+        });
+
+
+        // ... send reply data
+        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+            
+            if (err) {
+
+            console.log('Error sending response to ', reply_info);
+            }
+
+        });
+
         return;
     }
+
    
    
+}
+
+
+if(radius_in_message.code == 'Status-Server'){// return user account data
+    console.log('Accounting + authentification data of user requested : ', radius_in_message)
+    /*
+
+    { 
+        code: 'Status-Server',
+        identifier: 42,
+        length: 29,
+        authenticator: <Buffer a4 bf 93 d5 32 10 c0 50 64 4a 6d 82 3f 62 2d 90>,
+        attributes: { 'User-Name': 'usbwalt' },
+        raw_attributes: [ [ 1, <Buffer 75 73 62 77 61 6c 74> ] ] 
+    }
+
+
+
+    */
+          
+    return;
 }
 
 
