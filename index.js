@@ -227,6 +227,8 @@ socket.on('message', (msg, reply_info) => {
             var reply = radius_module.encode({  
                 code: reply_code,
                 secret: radius_secret,
+                identifier : radius_in_message.identifier,
+                authenticator : radius_in_message.authenticator,
                 attributes : attribute_container
 
             })
@@ -616,7 +618,7 @@ app.get('/', function(req,res){
 
 app.set('port', process.env.PPORT_TCP || 3000); // set port for TCP with Express
 app.listen(process.env.PPORT_TCP || 3000, function(){
-    console.log(`===========================================\nListening for TCP request at port : ${process.env.PPORT_TCP || 8080}\n===========================================`);
+    console.log(`===========================================\nListening for TCP request at port : ${process.env.PPORT_TCP || 3000}\n===========================================`);
 }); //listen for tcp requests
 
 socket.bind(process.env.PPORT_UDP || 8082);//bind port for udp requests
