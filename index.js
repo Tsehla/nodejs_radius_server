@@ -132,8 +132,8 @@ socket.on('message', (msg, reply_info) => {
         }
         
         //set account limits
-        radius_in_message.attributes['Acct-Link-Count'] = '167544565543';
-        radius_in_message.attributes['Acct-Output-Packets'] = '2G';
+        // radius_in_message.attributes['Acct-Link-Count'] = '167544565543';
+        // radius_in_message.attributes['Acct-Output-Packets'] = '2G';
         
        
         //Mikrotik-Total-Limit 
@@ -192,10 +192,10 @@ socket.on('message', (msg, reply_info) => {
             }
             attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]);
 
-            console.log(vendor_provided_attributes_object_array)
-            console.log(Object.keys(vendor_provided_attributes_object_array), Object.keys(vendor_provided_attributes_object_array).length > 0)
-            console.log(Object.keys(vendor_provided_attributes_object_array))
-            console.log(vendor_specific_attributes_to_array)
+            // console.log(vendor_provided_attributes_object_array)
+            // console.log(Object.keys(vendor_provided_attributes_object_array), Object.keys(vendor_provided_attributes_object_array).length > 0)
+            // console.log(Object.keys(vendor_provided_attributes_object_array))
+            // console.log(vendor_specific_attributes_to_array)
         }
 
 
@@ -218,6 +218,9 @@ socket.on('message', (msg, reply_info) => {
         if(radius_in_message.attributes['CHAP-Password']){
             attribute_container.push(['CHAP-Password', radius_in_message.attributes['CHAP-Password']]);
         }
+
+        console.log('code', reply_code);
+        console.log('secret', radius_secret);
         console.log(attribute_container);
 
         try{
