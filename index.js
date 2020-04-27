@@ -138,102 +138,97 @@ socket.on('message', (msg, reply_info) => {
        
         //Mikrotik-Total-Limit 
 
-
-        // ... prepare reply data
-        
-        // var reply = radius_module.encode_response({
-
-        //     packet: radius_in_message,
-        //     code: reply_code,
-        //     secret: radius_secret
-
-        // });
-
+    
+        // ---------------------- radius authentification attributes
         
         //check attributes, en add to be encoded if they have values // you may need to add more for other routers //tested on mikrotik
         var attribute_container = [];
        
-        if(radius_in_message.attributes['NAS-Port-Type']){
+        if(radius_in_message.attributes['NAS-Port-Type']){ //if provided // add to  reply data attributes
             attribute_container.push(['NAS-Port-Type', radius_in_message.attributes['NAS-Port-Type']]);
         }
-        if(radius_in_message.attributes['Calling-Station-Id']){
+        if(radius_in_message.attributes['Calling-Station-Id']){ //if provided // add to  reply data attributes
             attribute_container.push(['Calling-Station-Id',radius_in_message.attributes['Calling-Station-Id']]);
         }
-        if(radius_in_message.attributes['Called-Station-Id']){
+        if(radius_in_message.attributes['Called-Station-Id']){ //if provided // add to  reply data attributes
             attribute_container.push(['Called-Station-Id', radius_in_message.attributes['Called-Station-Id']]);
         }
-        if(radius_in_message.attributes['NAS-Port-Id']){
+        if(radius_in_message.attributes['NAS-Port-Id']){ //if provided // add to  reply data attributes
             attribute_container.push(['NAS-Port-Id', radius_in_message.attributes['NAS-Port-Id']]);
         }
-        if(radius_in_message.attributes['User-Name']){
+        if(radius_in_message.attributes['User-Name']){ //if provided // add to  reply data attributes
             attribute_container.push(['User-Name', radius_in_message.attributes['User-Name']]);
         }
-        if(radius_in_message.attributes['NAS-Port']){
+        if(radius_in_message.attributes['NAS-Port']){ //if provided // add to  reply data attributes
             attribute_container.push(['NAS-Port', radius_in_message.attributes['NAS-Port']]);
         }
-        if(radius_in_message.attributes['Acct-Session-Id']){
+        if(radius_in_message.attributes['Acct-Session-Id']){ //if provided // add to  reply data attributes
             attribute_container.push(['Acct-Session-Id', radius_in_message.attributes['Acct-Session-Id']]);
         }
-        if(radius_in_message.attributes['Framed-IP-Address']){
+        if(radius_in_message.attributes['Framed-IP-Address']){ //if provided // add to  reply data attributes
             attribute_container.push( ['Framed-IP-Address', radius_in_message.attributes['Framed-IP-Address']]);
-
-
         }
-        if(radius_in_message.attributes['Vendor-Specific']){
+        if(radius_in_message.attributes['Vendor-Specific']){ //if provided 
 
             var vendor_specific_attributes_to_array = [];
             var vendor_provided_attributes_object_array = radius_in_message.attributes['Vendor-Specific'];
 
-            if(Object.keys(vendor_provided_attributes_object_array).length > 0){
+            if(Object.keys(vendor_provided_attributes_object_array).length > 0){ //if vendor attributes has object data
 
-                Object.keys(vendor_provided_attributes_object_array).forEach(function(object_property){
+                Object.keys(vendor_provided_attributes_object_array).forEach(function(object_property){ //turn object pair to array // required by encode to properly encode data using vendor dictionary // [ https://github.com/retailnext/node-radius ]
                     vendor_specific_attributes_to_array.push([object_property, vendor_provided_attributes_object_array[object_property]]);
                 })
             }
-            attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]);
-
-            // console.log(vendor_provided_attributes_object_array)
-            // console.log(Object.keys(vendor_provided_attributes_object_array), Object.keys(vendor_provided_attributes_object_array).length > 0)
-            // console.log(Object.keys(vendor_provided_attributes_object_array))
-            // console.log(vendor_specific_attributes_to_array)
+            attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]);// add to  reply data attributes
         }
 
-
-
-
-        if(radius_in_message.attributes['User-Password']){
+        if(radius_in_message.attributes['User-Password']){ //if vendor attributes has object data
             attribute_container.push(['User-Password', radius_in_message.attributes['User-Password']]);
         }
-        if( radius_in_message.attributes['Service-Type']){
+        if( radius_in_message.attributes['Service-Type']){ //if vendor attributes has object data
             attribute_container.push(['Service-Type', radius_in_message.attributes['Service-Type']]); 
         } 
-        if(radius_in_message.attributes['NAS-Identifier']){
+        if(radius_in_message.attributes['NAS-Identifier']){ //if vendor attributes has object data
             attribute_container.push(['NAS-Identifier', radius_in_message.attributes['NAS-Identifier']]);
         }
-        if(radius_in_message.attributes['NAS-IP-Address']){
+        if(radius_in_message.attributes['NAS-IP-Address']){ //if vendor attributes has object data
             attribute_container.push(['NAS-IP-Address', radius_in_message.attributes['NAS-IP-Address']]);
         }
 
         // chap authentification password 
-        if(radius_in_message.attributes['CHAP-Password']){
+        if(radius_in_message.attributes['CHAP-Password']){ //if vendor attributes has object data
             attribute_container.push(['CHAP-Password', radius_in_message.attributes['CHAP-Password']]);
         }
 
-        console.log('code', reply_code);
-        console.log('secret', radius_secret);
-        console.log(attribute_container);
+        // console.log('code', reply_code);
+        // console.log('secret', radius_secret);
+        // console.log(attribute_container);
 
-        try{
-            var reply = radius_module.encode({  
-                code: reply_code,
-                secret: radius_secret,
-                identifier : radius_in_message.identifier,
-                authenticator : radius_in_message.authenticator,
-                attributes : attribute_container
 
-            })
+        // ---------------------- authetification reply components
+
+        if(radius_in_message.identifier){ //if identifier provided // add to reply data
+            reply_contents.identifie = radius_in_message.identifier;
         }
-        catch(err){
+        if(radius_in_message.authenticator){ //if authentificator provided // add to reply data
+            reply_contents.authenticator = radius_in_message.authenticator;
+        }
+      
+
+        var reply_contents = {  //reply data
+
+            code: reply_code,
+            secret: radius_secret,
+            attributes : attribute_container
+        };
+
+
+        try{ //encode reply to radius formate
+
+            var reply = radius_module.encode(reply_contents);
+        }
+        catch(err){ //if encoding error
+
             console.log('error attempting to encode, reply data : ', err);
             return;
          };
