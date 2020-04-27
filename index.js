@@ -190,7 +190,7 @@ socket.on('message', (msg, reply_info) => {
                     vendor_specific_attributes_to_array.push([object_property, vendor_provided_attributes_object_array[object_property]]);
                 })
             }
-            attribute_container.push(['Vendor-Specific', vendor_specific_attributes_to_array]);
+            attribute_container.push(['Vendor-Specific', 'dictionary.mikrotik', vendor_specific_attributes_to_array]);
 
             console.log(vendor_provided_attributes_object_array)
             console.log(Object.keys(vendor_provided_attributes_object_array), Object.keys(vendor_provided_attributes_object_array).length > 0)
