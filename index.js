@@ -178,7 +178,16 @@ socket.on('message', (msg, reply_info) => {
             attribute_container.push( ['Framed-IP-Address', radius_in_message.attributes['Framed-IP-Address']]);
         }
         if(radius_in_message.attributes['Vendor-Specific']){
-            attribute_container.push(['Vendor-Specific', radius_in_message.attributes['Vendor-Specific']]);
+
+            var vendor_specific_attributes_to_array = [];
+
+            if(radius_in_message.attributes['Vendor-Specific'] > 0){
+
+                Object.keys(radius_in_message.attributes['Vendor-Specific']).forEach(function(object_property){
+                    vendor_specific_attributes_to_array.push([object_property, radius_in_message.attributes['Vendor-Specific'][object_property]]);
+                })
+            }
+            attribute_container.push(['Vendor-Specific', vendor_specific_attributes_to_array]);
         }
         if(radius_in_message.attributes['User-Password']){
             attribute_container.push(['User-Password', radius_in_message.attributes['User-Password']]);
