@@ -176,6 +176,8 @@ socket.on('message', (msg, reply_info) => {
         }
         if(radius_in_message.attributes['Framed-IP-Address']){
             attribute_container.push( ['Framed-IP-Address', radius_in_message.attributes['Framed-IP-Address']]);
+
+
         }
         if(radius_in_message.attributes['Vendor-Specific']){
 
@@ -184,17 +186,21 @@ socket.on('message', (msg, reply_info) => {
 
             if(vendor_provided_attributes_object_array.length > 0){
 
-                Object.keys().forEach(function(object_property){
+                Object.keys(vendor_provided_attributes_object_array).forEach(function(object_property){
                     vendor_specific_attributes_to_array.push([object_property, vendor_provided_attributes_object_array[object_property]]);
                 })
             }
             attribute_container.push(['Vendor-Specific', vendor_specific_attributes_to_array]);
 
-            console.log('Vendor-Specific', vendor_specific_attributes_to_array)
-            console.log()
-            console.log()
-            console.log()
+            console.log(vendor_provided_attributes_object_array)
+            console.log(vendor_provided_attributes_object_array.length, vendor_provided_attributes_object_array.length > 0)
+            console.log(Object.keys(vendor_provided_attributes_object_array))
+            console.log(vendor_specific_attributes_to_array)
         }
+
+
+
+
         if(radius_in_message.attributes['User-Password']){
             attribute_container.push(['User-Password', radius_in_message.attributes['User-Password']]);
         }
