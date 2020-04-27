@@ -184,7 +184,7 @@ socket.on('message', (msg, reply_info) => {
             var vendor_specific_attributes_to_array = [];
             var vendor_provided_attributes_object_array = radius_in_message.attributes['Vendor-Specific'];
 
-            if(vendor_provided_attributes_object_array.length > 0){
+            if(Object.keys(vendor_provided_attributes_object_array).length > 0){
 
                 Object.keys(vendor_provided_attributes_object_array).forEach(function(object_property){
                     vendor_specific_attributes_to_array.push([object_property, vendor_provided_attributes_object_array[object_property]]);
@@ -193,7 +193,7 @@ socket.on('message', (msg, reply_info) => {
             attribute_container.push(['Vendor-Specific', vendor_specific_attributes_to_array]);
 
             console.log(vendor_provided_attributes_object_array)
-            console.log(vendor_provided_attributes_object_array.length, vendor_provided_attributes_object_array.length > 0)
+            console.log(Object.keys(vendor_provided_attributes_object_array), Object.keys(vendor_provided_attributes_object_array).length > 0)
             console.log(Object.keys(vendor_provided_attributes_object_array))
             console.log(vendor_specific_attributes_to_array)
         }
