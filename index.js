@@ -131,15 +131,16 @@ socket.on('message', (msg, reply_info) => {
             reply_code = 'Access-Reject';
 
         }
-        
-        //set account limits
+
+         //--------------------- Authenticated user account limits
+             
         // radius_in_message.attributes['Acct-Link-Count'] = '167544565543';
         // radius_in_message.attributes['Acct-Output-Packets'] = '2G';
         
-       
         //Mikrotik-Total-Limit 
-
-    
+        attribute_container.push(['Vendor-Specific', 'Mikrotik',[['Mikrotik-Total-Limit', 124467765432]] ]);
+        
+       
         // ---------------------- radius authentification attributes
         
         //check attributes, en add to be encoded if they have values // you may need to add more for other routers //tested on mikrotik
@@ -214,10 +215,10 @@ socket.on('message', (msg, reply_info) => {
         if(radius_in_message.authenticator){ //if authentificator provided // add to reply data
             reply_contents.authenticator = radius_in_message.authenticator;
         }
+
       
 
         //reply data
-
         reply_contents.code = reply_code;
         reply_contents.secret = radius_secret;
         reply_contents.attributes = attribute_container;
