@@ -197,14 +197,19 @@ socket.on('message', (msg, reply_info) => {
             attribute_container.push(['CHAP-Password', radius_in_message.attributes['CHAP-Password']]);
         }
 
-        var reply = radius_module.encode({
 
-            
-            code: reply_code,
-            secret: radius_secret,
-            attributes : attribute_container
+        try{
+            var reply = radius_module.encode({  
+                code: reply_code,
+                secret: radius_secret,
+                attributes : attribute_container
 
-        });
+            })
+        }
+        catch(err){
+                    console.log('error attempting to encode, reply data', err);
+                    return;
+         };
 
         //accounts limit
 
