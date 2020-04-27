@@ -180,11 +180,12 @@ socket.on('message', (msg, reply_info) => {
         if(radius_in_message.attributes['Vendor-Specific']){
 
             var vendor_specific_attributes_to_array = [];
+            var vendor_provided_attributes_object_array = radius_in_message.attributes['Vendor-Specific'];
 
-            if(radius_in_message.attributes['Vendor-Specific'].length > 0){
+            if(vendor_provided_attributes_object_array.length > 0){
 
-                Object.keys(radius_in_message.attributes['Vendor-Specific']).forEach(function(object_property){
-                    vendor_specific_attributes_to_array.push([object_property, radius_in_message.attributes['Vendor-Specific'][object_property]]);
+                Object.keys().forEach(function(object_property){
+                    vendor_specific_attributes_to_array.push([object_property, vendor_provided_attributes_object_array[object_property]]);
                 })
             }
             attribute_container.push(['Vendor-Specific', vendor_specific_attributes_to_array]);
