@@ -139,7 +139,7 @@ socket.on('message', (msg, reply_info) => {
         // radius_in_message.attributes['Acct-Output-Packets'] = '2G';
         
         //Mikrotik-Total-Limit 
-        attribute_container.push(['Vendor-Specific', 'Mikrotik',[['Mikrotik-Total-Limit', '124467765432']] ]);
+        attribute_container.push(['Vendor-Specific', 'Mikrotik',[['Mikrotik-Total-Limit', 4294967290]] ]);
         
        
         // ---------------------- radius authentification attributes
