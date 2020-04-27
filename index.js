@@ -189,6 +189,11 @@ socket.on('message', (msg, reply_info) => {
                 })
             }
             attribute_container.push(['Vendor-Specific', vendor_specific_attributes_to_array]);
+
+            console.log('Vendor-Specific', vendor_specific_attributes_to_array)
+            console.log()
+            console.log()
+            console.log()
         }
         if(radius_in_message.attributes['User-Password']){
             attribute_container.push(['User-Password', radius_in_message.attributes['User-Password']]);
