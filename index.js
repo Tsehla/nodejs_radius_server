@@ -8,7 +8,7 @@ const dgram = require('dgram');
 
 // ======= radius module
 var radius_module = require('radius');//decode upd authentification requests from router
-radius_module.add_dictionary('./vendor_dictionary/'); //vendor specific router dictionary folder
+radius_module.add_dictionary('./vendor_dictionary/mikrotik.txt'); //vendor specific router dictionary folder
 
 
 // ==== handle tcp requets (get/post/delete/etc)
