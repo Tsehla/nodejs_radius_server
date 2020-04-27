@@ -118,6 +118,7 @@ socket.on('message', (msg, reply_info) => {
 
         var  reply_code; //will contain reply code
         var reply_contents = {}; //will contain reply data to be encoded
+        var attribute_container = []; //contains atribute data of reply data
 
         if (username == 'usbwalt' && password == 'usbwalt') {
 
@@ -144,7 +145,7 @@ socket.on('message', (msg, reply_info) => {
         // ---------------------- radius authentification attributes
         
         //check attributes, en add to be encoded if they have values // you may need to add more for other routers //tested on mikrotik
-        var attribute_container = [];
+       
        
         if(radius_in_message.attributes['NAS-Port-Type']){ //if provided // add to  reply data attributes
             attribute_container.push(['NAS-Port-Type', radius_in_message.attributes['NAS-Port-Type']]);
