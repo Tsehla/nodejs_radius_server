@@ -208,7 +208,7 @@ socket.on('message', (msg, reply_info) => {
         // ---------------------- authetification reply components
 
         if(radius_in_message.identifier){ //if identifier provided // add to reply data
-            reply_contents.identifie = radius_in_message.identifier;
+            reply_contents.identifier = radius_in_message.identifier;
         }
         if(radius_in_message.authenticator){ //if authentificator provided // add to reply data
             reply_contents.authenticator = radius_in_message.authenticator;
