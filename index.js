@@ -148,19 +148,61 @@ socket.on('message', (msg, reply_info) => {
 
         // });
 
+        
+        //check attributes, en add to be encoded if they have values // you may need to add more for other routers //tested on mikrotik
+        var attribute_container = [];
+       
+        if(radius_in_message.attributes['NAS-Port-Type']){
+            attribute_container.push(['NAS-Port-Type', radius_in_message.attributes['NAS-Port-Type']]);
+        }
+        if(radius_in_message.attributes['Calling-Station-Id']){
+            attribute_container.push(['Calling-Station-Id',radius_in_message.attributes['Calling-Station-Id']]);
+        }
+        if(radius_in_message.attributes['Called-Station-Id']){
+            attribute_container.push(['Called-Station-Id', radius_in_message.attributes['Called-Station-Id']]);
+        }
+        if(radius_in_message.attributes['NAS-Port-Id']){
+            attribute_container.push(['NAS-Port-Id', radius_in_message.attributes['NAS-Port-Id']]);
+        }
+        if(radius_in_message.attributes['User-Name']){
+            attribute_container.push(['User-Name', radius_in_message.attributes['User-Name']]);
+        }
+        if(radius_in_message.attributes['NAS-Port']){
+            attribute_container.push(['NAS-Port', radius_in_message.attributes['NAS-Port']]);
+        }
+        if(radius_in_message.attributes['Acct-Session-Id']){
+            attribute_container.push(['Acct-Session-Id', radius_in_message.attributes['Acct-Session-Id']]);
+        }
+        if(radius_in_message.attributes['Framed-IP-Address']){
+            attribute_container.push( ['Framed-IP-Address', radius_in_message.attributes['Framed-IP-Address']]);
+        }
+        if(radius_in_message.attributes['Vendor-Specific']){
+            attribute_container.push(['Vendor-Specific', radius_in_message.attributes['Vendor-Specific']]);
+        }
+        if(radius_in_message.attributes['User-Password']){
+            attribute_container.push(['User-Password', radius_in_message.attributes['User-Password']]);
+        }
+        if( radius_in_message.attributes['Service-Type']){
+            attribute_container.push(['Service-Type', radius_in_message.attributes['Service-Type']]); 
+        } 
+        if(radius_in_message.attributes['NAS-Identifier']){
+            attribute_container.push(['NAS-Identifier', radius_in_message.attributes['NAS-Identifier']]);
+        }
+        if(radius_in_message.attributes['NAS-IP-Address']){
+            attribute_container.push(['NAS-IP-Address', radius_in_message.attributes['NAS-IP-Address']]);
+        }
+
+        // chap authentification password 
+        if(radius_in_message.attributes['CHAP-Password']){
+            attribute_container.push(['CHAP-Password', radius_in_message.attributes['CHAP-Password']]);
+        }
+
         var reply = radius_module.encode({
 
             
             code: reply_code,
             secret: radius_secret,
-            attributes : [
-
-                //['NAS-IP-Address', '10.5.5.5'],
-                ['User-Name', 'usbwalt'],
-                ['User-Password', 'usbwalt'],
-                //['Vendor-Specific', 555, [['Real-Name', 'arobinson']]]
-
-            ]
+            attributes : attribute_container
 
         });
 
