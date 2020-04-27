@@ -8,7 +8,7 @@ const dgram = require('dgram');
 
 // ======= radius module
 var radius_module = require('radius');//decode upd authentification requests from router
-radius_module.add_dictionary(__dirname + '/vendor_dictionary/'); //vendor specific router dictionary folder
+radius_module.add_dictionary('../vendor_dictionary/'); //vendor specific router dictionary folder
 
 
 // ==== handle tcp requets (get/post/delete/etc)
@@ -49,7 +49,6 @@ socket.on('message', (msg, reply_info) => {
   console.log('Recieved UDP message');
  // console.log('msg',msg)
   //console.log('rinfo',rinfo)
-  console.log(__dirname + '/vendor_dictionary/')
 
   // decode message recieved 
   var radius_in_message; //will contain decoded message
