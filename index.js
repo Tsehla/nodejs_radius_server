@@ -117,7 +117,7 @@ socket.on('message', (msg, reply_info) => {
         //if password match // give accepted response
 
         var  reply_code; //will contain reply code
-        var reply_contents; //will contain reply data to be encoded
+        var reply_contents = {}; //will contain reply data to be encoded
 
         if (username == 'usbwalt' && password == 'usbwalt') {
 
@@ -216,12 +216,12 @@ socket.on('message', (msg, reply_info) => {
         }
       
 
-        reply_contents = {  //reply data
+        //reply data
 
-            code: reply_code,
-            secret: radius_secret,
-            attributes : attribute_container
-        };
+        reply_contents.code = reply_code;
+        reply_contents.secret = radius_secret;
+        reply_contents.attributes = attribute_container;
+       
 
 
         try{ //encode reply to radius formate
