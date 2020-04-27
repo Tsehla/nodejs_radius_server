@@ -181,7 +181,7 @@ socket.on('message', (msg, reply_info) => {
 
             var vendor_specific_attributes_to_array = [];
 
-            if(radius_in_message.attributes['Vendor-Specific'] > 0){
+            if(radius_in_message.attributes['Vendor-Specific'].length > 0){
 
                 Object.keys(radius_in_message.attributes['Vendor-Specific']).forEach(function(object_property){
                     vendor_specific_attributes_to_array.push([object_property, radius_in_message.attributes['Vendor-Specific'][object_property]]);
@@ -217,8 +217,8 @@ socket.on('message', (msg, reply_info) => {
             })
         }
         catch(err){
-                    console.log('error attempting to encode, reply data : ', err);
-                    return;
+            console.log('error attempting to encode, reply data : ', err);
+            return;
          };
 
         //accounts limit
