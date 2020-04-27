@@ -197,7 +197,7 @@ socket.on('message', (msg, reply_info) => {
         if(radius_in_message.attributes['CHAP-Password']){
             attribute_container.push(['CHAP-Password', radius_in_message.attributes['CHAP-Password']]);
         }
-
+        console.log(attribute_container);
 
         try{
             var reply = radius_module.encode({  
