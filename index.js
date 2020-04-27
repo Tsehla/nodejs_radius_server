@@ -207,7 +207,7 @@ socket.on('message', (msg, reply_info) => {
             })
         }
         catch(err){
-                    console.log('error attempting to encode, reply data', err);
+                    console.log('error attempting to encode, reply data : ', JSON.parse(err));
                     return;
          };
 
