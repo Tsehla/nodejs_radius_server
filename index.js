@@ -131,24 +131,41 @@ socket.on('message', (msg, reply_info) => {
         }
         
         //set account limits
-        radius_in_message.attributes['Acct-Link-Count'] = '1G';
-        radius_in_message.attributes['Acct-Output-Gigawords'] = '2G';
+        radius_in_message.attributes['Acct-Link-Count'] = '167544565543';
+        radius_in_message.attributes['Acct-Output-Packets'] = '2G';
         
        
         //Mikrotik-Total-Limit 
 
 
         // ... prepare reply data
+        
+        // var reply = radius_module.encode_response({
 
-        var reply = radius_module.encode_response({
+        //     packet: radius_in_message,
+        //     code: reply_code,
+        //     secret: radius_secret
 
-            packet: radius_in_message,
+        // });
+
+        var reply = radius_module.encode({
+
+            
             code: reply_code,
-            secret: radius_secret
+            secret: radius_secret,
+            attributes : [
+
+                //['NAS-IP-Address', '10.5.5.5'],
+                ['User-Name', 'usbwalt'],
+                ['User-Password', 'usbwalt'],
+                //['Vendor-Specific', 555, [['Real-Name', 'arobinson']]]
+
+            ]
 
         });
 
         //accounts limit
+
 
 
 
