@@ -174,6 +174,11 @@ socket.on('message', (msg, reply_info) => {
 
 
         /* --- This give vendor library name if vendor specific Object has content. [ development was done using mikrotik router for testing : hence vendor is Mikrotik ] ---
+                IF YOU USING NON MIKROTIK ROUTER AND GETTING SOME AUTHENTIFICATION PROBLEM
+                1) CHANGE attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]), "MIKROTIK" TO YOU VENDOR RADIUS LIBRARY ID OR NAME, ASK MANUFACTURE FOR THAT
+                2) MAKE SURE 'library' FOLDER CONTAINS YOU VENDOR SPECIFIC RADIUS LIBRARY ATTRIBUTES, IF NOT FIND AND ADD THEM
+                3) ENABLE THIS
+                4) TRY BELOW SOLUTION FIRST, BEFORE THIS
 
         if(radius_in_message.attributes['Vendor-Specific']){ //if provided 
 
@@ -193,6 +198,11 @@ socket.on('message', (msg, reply_info) => {
 
         /* --- attempt to circumvent the above by replacing with raw attribute that present the vendor line ---  */
 
+
+
+
+        /*              IF YOU USING NON MIKROTIK ROUTER AND GETTING SOME ISSUSUE DOING AUTHENTIFICATION ENABLE THIS,
+                        DO NOT ENABLE THE ABOVE,
 
         if(radius_in_message.attributes['Vendor-Specific']){
 
@@ -285,6 +295,7 @@ socket.on('message', (msg, reply_info) => {
 
         }
 
+        */
 
         if(radius_in_message.attributes['User-Password']){ //if vendor attributes has object data
             attribute_container.push(['User-Password', radius_in_message.attributes['User-Password']]);
