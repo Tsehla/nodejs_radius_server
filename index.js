@@ -173,7 +173,7 @@ socket.on('message', (msg, reply_info) => {
         }
 
 
-        /* --- This give vendor library name if vendor specific Object has content. [ development was done using mikrotik router for testing : hence vendor is Mikrotik ] ---
+    /* --- This give vendor library name if vendor specific Object has content. [ development was done using mikrotik router for testing : hence vendor is Mikrotik ] ---
                 IF YOU USING NON MIKROTIK ROUTER AND GETTING SOME AUTHENTIFICATION PROBLEM
                 1) CHANGE attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]), "MIKROTIK" TO YOU VENDOR RADIUS LIBRARY ID OR NAME, ASK MANUFACTURE FOR THAT
                 2) MAKE SURE 'library' FOLDER CONTAINS YOU VENDOR SPECIFIC RADIUS LIBRARY ATTRIBUTES, IF NOT FIND AND ADD THEM
@@ -194,15 +194,18 @@ socket.on('message', (msg, reply_info) => {
             attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]);// include vendor dictionary name en add to  reply data attributes
         }
 
-        */
-
-        /* --- attempt to circumvent the above by replacing with raw attribute that present the vendor line ---  */
+    */
 
 
 
 
-        /*              IF YOU USING NON MIKROTIK ROUTER AND GETTING SOME ISSUSUE DOING AUTHENTIFICATION ENABLE THIS,
-                        DO NOT ENABLE THE ABOVE,
+     //--- attempt to circumvent the above by replacing with raw attribute that present the vendor line ---  */
+
+
+    /*              IF YOU USING NON MIKROTIK ROUTER AND GETTING SOME ISSUSUE DOING AUTHENTIFICATION ENABLE THIS,
+                        DO NOT ENABLE THE ABOVE, 
+
+
 
         if(radius_in_message.attributes['Vendor-Specific']){
 
@@ -214,7 +217,8 @@ socket.on('message', (msg, reply_info) => {
                  if(raw_attribute[1].toString().indexOf(':') != -1 && Number(raw_attribute[0]) == 26){ //find attributes that has id of 26 [ its a non vendor specific code for [ vendor-specic ] attribute ]
                     
                     
-                    /* 
+                    /* *
+                    
                             ----------------------------------------------------
                              on mikrotik two attribute passes the filter    ;
                             ----------------------------------------------------
@@ -279,7 +283,7 @@ socket.on('message', (msg, reply_info) => {
                                 doing that will remove the need to specifiy which vendor library to use to find [ Mikrotik-Host-IP ] id code, 
                                 when encoding the message to be sent router that did request, 
                     
-                    */
+                    *//*
 
 
                     if(raw_attribute[1].toString().indexOf(':') < 4){//return attribute thas has ':' closer to position 1, 
