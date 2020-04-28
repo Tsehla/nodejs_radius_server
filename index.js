@@ -171,6 +171,10 @@ socket.on('message', (msg, reply_info) => {
         if(radius_in_message.attributes['Framed-IP-Address']){ //if provided // add to  reply data attributes
             attribute_container.push( ['Framed-IP-Address', radius_in_message.attributes['Framed-IP-Address']]);
         }
+
+
+        /* --- This give vendor library name if vendor specific Object has content. [ development was done using mikrotik router for testing : hence vendor is Mikrotik ] ---
+
         if(radius_in_message.attributes['Vendor-Specific']){ //if provided 
 
             var vendor_specific_attributes_to_array = [];
@@ -182,8 +186,105 @@ socket.on('message', (msg, reply_info) => {
                     vendor_specific_attributes_to_array.push([object_property, vendor_provided_attributes_object_array[object_property]]);
                 })
             }
-            attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]);// add to  reply data attributes
+            attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]);// include vendor dictionary name en add to  reply data attributes
         }
+
+        */
+
+        /* --- attempt to circumvent the above by replacing with raw attribute that present the vendor line ---  */
+
+
+        if(radius_in_message.attributes['Vendor-Specific']){
+
+            var vendor_raw_attribute_id = ''; //vendor atribute name default id is 26
+            var vendor_raw_attribute_value = ''; // its value is an object
+
+            radius_in_message.raw_attributes.forEach(function(raw_attribute){
+  
+                 if(raw_attribute[1].toString().indexOf(':') != -1 && Number(raw_attribute[0]) == 26){ //find attributes that has id of 26 [ its a non vendor specific code for [ vendor-specic ] attribute ]
+                    
+                    
+                    /* 
+                            ----------------------------------------------------
+                             on mikrotik two attribute passes the filter    ;
+                            ----------------------------------------------------
+
+                            // Attribute one, when converted from buffer to string give nonsense results, its likely whant im looking for
+
+                            26,  :���X�
+
+                            // attribute two that also passes the filter, its certainly not what im looking for 
+                            26,  7*http://192.168.88.1/logout
+
+
+                            ----------------------------------------------------------------------------------
+                                    console log of request from Mikrotik router after being decoded
+                            -----------------------------------------------------------------------------------
+
+                            { 
+                                code: 'Access-Request',
+                                identifier: 56,
+                                length: 209,
+                                authenticator: <Buffer 2d f6 d6 48 46 b7 d4 47 4a 2a c3 15 39 ee 01 5c>,
+                                attributes:
+                                { 'NAS-Port-Type': 'Wireless-802.11',
+                                    'Calling-Station-Id': '90:2E:1C:69:B3:BA',
+                                    'Called-Station-Id': 'hotspot1',
+                                    'NAS-Port-Id': 'bridge',
+                                    'User-Name': 'usbwalt',
+                                    'NAS-Port': 2159018029,
+                                    'Acct-Session-Id': '80b0002d',
+                                    'Framed-IP-Address': '192.168.88.252',
+                                    'Vendor-Specific': { 'Mikrotik-Host-IP': '192.168.88.252' },
+                                    'User-Password': 'usbwalt',
+                                    'Service-Type': 'Login-User',
+                                    'NAS-Identifier': 'MikroTik-OrangeFarm_Extension_9_iCafe',
+                                    'NAS-IP-Address': '192.168.88.1' },
+                                raw_attributes:
+                                [ [ 61, <Buffer 00 00 00 13> ],
+                                    [ 31,
+                                    <Buffer 39 30 3a 32 45 3a 31 43 3a 36 39 3a 42 33 3a 42 41> ],
+                                    [ 30, <Buffer 68 6f 74 73 70 6f 74 31> ],
+                                    [ 87, <Buffer 62 72 69 64 67 65> ],
+                                    [ 1, <Buffer 75 73 62 77 61 6c 74> ],
+                                    [ 5, <Buffer 80 b0 00 2d> ],
+                                    [ 44, <Buffer 38 30 62 30 30 30 32 64> ],
+                                    [ 8, <Buffer c0 a8 58 fc> ],
+                                    [ 26, <Buffer 00 00 3a 8c 0a 06 c0 a8 58 fc> ],
+                                    [ 2, <Buffer 79 89 59 bc 2f 98 2f 33 98 11 59 ed 38 28 ac 3e> ],
+                                    [ 6, <Buffer 00 00 00 01> ],
+                                    [ 26,
+                                    <Buffer 00 00 37 2a 03 1c 68 74 74 70 3a 2f 2f 31 39 32 2e 31 36 38 2e 38 38 2e 31 2f 6c 6f 67 6f 75 74> ],
+                                    [ 32,
+                                    <Buffer 4d 69 6b 72 6f 54 69 6b 2d 4f 72 61 6e 67 65 46 61 72 6d 5f 45 78 74 65 6e 73 69 6f 6e 5f 39 5f 69 43 61 66 65> ],
+                                    [ 4, <Buffer c0 a8 58 01> ] ] 
+                                
+                                }
+
+
+                                -----------------------------------------------------------------------------
+
+                                attempt was to get a raw value presentation of : 'Vendor-Specific': { 'Mikrotik-Host-IP': '192.168.88.252' },
+
+                                doing that will remove the need to specifiy which vendor library to use to find [ Mikrotik-Host-IP ] id code, 
+                                when encoding the message to be sent router that did request, 
+                    
+                    */
+
+
+                    if(raw_attribute[1].toString().indexOf(':') < 4){//return attribute thas has ':' closer to position 1, 
+
+                       // console.log(raw_attribute);
+                        attribute_container.push(raw_attribute);// included un decoded vendor library name, this way no need to define libary specific to vendor
+
+                    }    
+
+                 }
+
+            });
+
+        }
+
 
         if(radius_in_message.attributes['User-Password']){ //if vendor attributes has object data
             attribute_container.push(['User-Password', radius_in_message.attributes['User-Password']]);
@@ -227,23 +328,20 @@ socket.on('message', (msg, reply_info) => {
 
 
         try{ //encode reply to radius formate
-
+            console.log('reply message not encoded : ',reply_contents);
             var reply = radius_module.encode(reply_contents);
         }
         catch(err){ //if encoding error
-
+            
             console.log('error attempting to encode, reply data : ', err);
             return;
          };
-
-        //accounts limit
-
-
 
 
         // ... send reply data
 
         socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+           // console.log('reply sending')
             
             if (err) {
 
