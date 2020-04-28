@@ -16,8 +16,22 @@ const app = express();
 
 
 
-// ===================== radius server =====================
 
+// ===================== Cross servers variabls =====================
+
+//account/voucher limits [data/time/download speeds]
+var login_in_account_limit = null || 
+['Vendor-Specific', 'Mikrotik',[['Mikrotik-Total-Limit', 4294967290]] ];
+
+// logged in or logged out users
+var users = [];
+
+//radius requesting device name
+var nas_dentifier = [];
+
+
+
+// ===================== radius server =====================
 
 const socket = dgram.createSocket('udp4');// udp socket
 
@@ -134,12 +148,12 @@ socket.on('message', (msg, reply_info) => {
         }
 
          //--------------------- Authenticated user account limits
-             
-        // radius_in_message.attributes['Acct-Link-Count'] = '167544565543';
-        // radius_in_message.attributes['Acct-Output-Packets'] = '2G';
+
+        if(login_in_account_limit){//add authentification limits, if available
+            attribute_container.push(login_in_account_limit);
+
+        }
         
-        //Mikrotik-Total-Limit 
-        attribute_container.push(['Vendor-Specific', 'Mikrotik',[['Mikrotik-Total-Limit', 4294967290]] ]);
         
        
         // ---------------------- radius authentification attributes
