@@ -1,0 +1,84 @@
+*{
+    box-sizing: border-box;
+    border: 0px solid ;
+}
+
+body{
+   
+    padding:0px;
+    margin:0px;
+    width:100vw;
+    height:auto;
+    font-size:13px;
+    background-color: blanchedalmond;
+} 
+
+
+/* repeatables */
+.resizable_window_min_width {
+  min-width: 320px;   
+}
+.resizable_window_min-height {
+    min-height: 568px;
+}
+.full_width_percent {
+    width: 100%;
+}
+.full_height_percent {
+    height: 100%;
+}
+.height_percent_auto {
+    height: auto;
+}
+.div_display_none {
+    display: none;
+}
+/* navigation belt main */
+
+#main_navi_belt{
+
+    width: 100vw;
+    min-height: 110px;
+    height: 20%;
+    background-color: white;
+}
+.main_navi_belt_buttons {
+    min-height: 110px;
+    height: 20%;
+    width: 33%;
+    border: none;
+    font-size: 15px;
+
+}
+.main_navi_belt_buttons_middle_button {
+
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-radius: 0px;
+    
+    
+}
+
+/* body content */
+
+/* -- main -- */
+#main_body_content_main { }
+
+/* -- connect -- */
+#main_body_content_connect { 
+    display: none;
+}
+
+/* -- data -- */
+#main_body_content_data { 
+    display: none;
+}
+.main_body_content_data_buttons {
+    width: 100px;
+    height: 50px;
+
+}
+.data_main_choice_button_profile_user_create_div {
+    display: none;
+
+}

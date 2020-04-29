@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WiFi radius</title>
+
+        <meta name='viewport' content="width=device-width, initial-scale=1">
+
+       
+        <link rel="stylesheet" href="style/bootstrap.min.css">
+        <link rel="stylesheet" href="style/line-awesome/css/line-awesome.css">
+        <link rel="stylesheet" href="style/w3.css">
+        <link rel="stylesheet" href="style/index.css">
+
+        
+    </head>
+    <body>
+
+        <!-- navigation belt -->
+        <div id ='main_navi_belt' class='resizable_window_min_width'>
+
+            <div id='' class='btn full_width_percent full_height_percent' >
+
+                <button class='btn btn-default main_navi_belt_buttons' onclick='hide_show_div("main_body_content_main", "show");hide_show_div("main_body_content_connect" ,"hide");hide_show_div("main_body_content_data" ,"hide")'>Main</button>
+
+                <button class='btn btn-default main_navi_belt_buttons main_navi_belt_buttons_middle_button'  onclick='hide_show_div("main_body_content_connect", "show");hide_show_div("main_body_content_main" ,"hide");hide_show_div("main_body_content_data" ,"hide")'>Connect</button>
+
+                <button class='btn btn-default main_navi_belt_buttons' onclick='hide_show_div("main_body_content_data", "show");hide_show_div("main_body_content_main" ,"hide");hide_show_div("main_body_content_connect" ,"hide")'>Data</button>
+
+            </div>
+
+        </div>
+
+        <!-- --- Body contents --- -->
+        <!-- ========= Main ========= -->
+        <div id='main_body_content_main' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height'>
+            1
+
+
+        </div>
+
+
+        <!-- ========= Connect ========= -->
+        <div id='main_body_content_connect' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height'>
+            2
+
+            
+        </div>
+
+
+        <!-- ========= Data ========= -->
+        <div id='main_body_content_data' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height'>
+            <!-- data main choice buttons -->
+            <div id='' class='btn height_percent_auto full_width_percent resizable_window_min_width' >
+                <button id='' class='btn btn-primary w3-margin-top w3-margin-bottom main_body_content_data_buttons' onclick='hide_show_div("data_main_choice_button_users","show"); hide_show_div("data_main_choice_button_profile","hide")'>Users</button>
+                <button id='' class='btn btn-success w3-margin-top w3-margin-bottom main_body_content_data_buttons' onclick='hide_show_div("data_main_choice_button_profile","show"); hide_show_div("data_main_choice_button_users","hide");authenticating_device_vendor_names()'>Profile</button>
+
+            </div>
+
+            <!-- data main choice div-->
+            <!-- users table -->
+            <div id='data_main_choice_button_users' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height w3-container' >
+                
+                <!--create user -->
+                <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-container' >
+                    <button id='' class='btn btn-warning height_percent_auto full_width_percent'>Create new user</button>
+                </div>
+
+                <!-- Manage/ View users -->
+                <div id='' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height w3-container'>
+                    user view
+
+                </div>
+
+            </div>
+
+
+
+
+            <!-- data main choice div -->
+            <!-- profile table -->
+            <div id='data_main_choice_button_profile' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height div_display_none w3-container' >
+                
+                <!--create user -->
+                <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-container' >
+                    <button id='' class='btn btn-warning height_percent_auto full_width_percent'>Create new profile</button>
+                </div>
+                <!-- user create menu -->
+                <div id='data_main_choice_button_profile_user_create_div' class='height_percent_auto full_width_percent resizable_window_min_width w3-container w3-margin-top w3-border' >
+
+
+
+
+                </div>
+
+
+                <!-- Manage / View users -->
+                <div id='' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height w3-container'>
+                    profile view
+
+                </div>
+
+            </div>
+
+            
+        </div>
+
+
+
+
+
+
+
+
+
+        <!-- scripts -->
+        <script type='text/JavaScript' src='/script/jquery-3.3.1.min.js' ></script> <!-- jquery -->  
+        <script type='text/JavaScript' src="/script/index.js"></script>
+
+    </body>
+</html>

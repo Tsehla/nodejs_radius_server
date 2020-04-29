@@ -1,0 +1,24 @@
+# -*- text -*-
+# Copyright (C) 2014 The FreeRADIUS Server project and contributors
+##############################################################################
+#
+#	Packeteer VSAs, who followed the Cisco way of putting everything
+#	into one text string.
+#
+#	Packeteer was acquired by Blue Coat in 2008.
+#
+#	$Id: 566c77e3870fb15eb026e9eb0e1c46c1f3ad80e5 $
+#
+##############################################################################
+
+VENDOR		Packeteer			2334
+
+#
+#	Standard attribute
+#
+BEGIN-VENDOR	Packeteer
+
+ATTRIBUTE	Packeteer-AVPair			1	string
+ATTRIBUTE	Packeteer-PC-AVPair			2	string
+
+END-VENDOR	Packeteer

@@ -1,10 +1,15 @@
-const express = require('express');
+// ======== Modules
+//express module
+var express = require('express');
+// fs/ file system module
+var fs = require('fs');
+
 
 // ====== enviroment variables file
 require('dotenv').config();
 
 // ======= picks udp request from router
-const dgram = require('dgram');
+var dgram = require('dgram');
 
 // ======= radius module
 var radius_module = require('radius');//decode upd authentification requests from router
@@ -12,7 +17,7 @@ radius_module.add_dictionary(__dirname + '/vendor_dictionary/'); //vendor specif
 
 
 // ==== handle tcp requets (get/post/delete/etc)
-const app = express();
+var app = express();
 
 
 
@@ -70,7 +75,7 @@ socket.on('message', (msg, reply_info) => {
   try {
 
     radius_in_message = radius_module.decode({packet: msg, secret:  radius_secret});
-    //console.log(radius_in_message);
+    console.log(radius_in_message);
 
   } catch(error){
 
@@ -729,12 +734,100 @@ if(radius_in_message.code == 'Status-Server'){// return user account data
 
 // ===================== non radius -=====================
 
-app.get('/', function(req,res){
 
-    console.log('recieved, get request')
-    res.send('hello');
-    res.end
-})
+// ----- front page serving -----
+
+//serve index html
+// app.get('/', function(req,res){
+
+//     res.sendFile(path.resolve('./html/index.html'));
+  
+// });
+
+
+//---- log requests of tcp incoming ----
+app.use(function(req, res,next){
+    console.log(req.protocol + '://' + req.get('host') + req.originalUrl);//shor url of request
+    next()
+});
+
+// serve images/scripts/etc
+app.use(express.static('public'));
+
+
+
+/* ---- radius dictionary ----- */
+// --- read dictioanry foder contents
+
+app.get('/dictionary_files', function(req, res){
+
+  
+   
+   
+
+    fs.readdir(__dirname + '/vendor_dictionary/', function (err, files) {
+        
+        
+        if(err){//give error response back
+
+            res.jsonp('unable to scan vendor dictionary directory');
+            console.log('unable to scan directory: ' + err);
+            return;
+        } 
+        
+        //give sucess response back
+        res.jsonp(files);
+
+        //console.log(files);
+
+
+        // //listing all files using forEach
+        // files.forEach(function (file) {
+        //     // Do whatever you want to do with the file
+        //     console.log(file); 
+        // });
+    });
+
+
+
+
+
+
+
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
