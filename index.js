@@ -762,21 +762,56 @@ app.use(express.static('public'));
 app.get('/dictionary_files', function(req, res){
 
   
-   
-   
-
     fs.readdir(__dirname + '/vendor_dictionary/', function (err, files) {
         
         
         if(err){//give error response back
 
             res.jsonp('unable to scan vendor dictionary directory');
-            console.log('unable to scan directory: ' + err);
+            console.log('Radius :: unable to scan vendor library directory: ' + err);
             return;
         } 
         
         //give sucess response back
         res.jsonp(files);
+
+        //console.log(files);
+
+
+    });
+
+
+});
+
+
+// --- read vendor dictioanary file contents
+app.get('/dictionary_files_content', function(req, res){
+
+  
+    fs.readFile(__dirname + '/vendor_dictionary/'+ req.query.library_name,'utf-8', function (err, file_content) {
+        
+        
+        if(err){
+
+            //if error do search again this time do not add prefix to file name 'dictionaray.'
+            fs.readFile(__dirname + '/vendor_dictionary/dictionary.'+ req.query.library_name,'utf-8', function (err, file_content_) {
+
+                if(err){//give error response back
+
+                    res.jsonp('unable to scan vendor dictionary file content');
+                    console.log('Radius :: unable to scan vendor dictionary file content: ' + err);
+                    return;
+                }
+                //give second try success response back
+                res.jsonp(file_content_);
+
+            });
+
+            return;
+        } 
+        
+        //give sucess response back
+        res.jsonp(file_content);
 
         //console.log(files);
 

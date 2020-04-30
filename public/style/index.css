@@ -82,3 +82,9 @@ body{
     display: none;
 
 }
+.data_main_choice_button_profile_device_vendor_attribute_select { 
+    display: none;
+}
+.data_main_choice_button_profile_device_vendor_attribute_value {
+    display: none;
+}
