@@ -106,7 +106,7 @@ function profile_attributes_add(){
     var vendor_device_names_options = '<option default>Select Authenticating device vendor</option><option>wifi-radius-standard</option>';
 
     device_vendor_names.forEach(function(vendor_names){
-        console.log(vendor_names.replace('dictionary.', ''))
+        //console.log(vendor_names.replace('dictionary.', ''))
         
         if(vendor_names != 'dictionary.wifi-radius-standard'){//skip adding default library/already added at the top
             vendor_device_names_options = vendor_device_names_options +`<option>${vendor_names.replace('dictionary.', '')}</option>`;//create vendo names with no dictionary
@@ -122,12 +122,10 @@ function profile_attributes_add(){
         </select>
 
         <!-- limit attribute -->
-        <select id='${profile_attributes_added_tracking}_device_vendor_attribute' class='form-control data_main_choice_button_profile_device_vendor_attribute_select'>
-            <option default>select Athentification attribute</option>
-        </select>
+        <div id='${profile_attributes_added_tracking}_device_vendor_attribute_container' class='height_percent_auto full_width_percent'></div>
 
         <!-- attribute value -->
-        <input type="text" placeholder="enter Authenticating attribute value" id='${profile_attributes_added_tracking}_device_vendor_attribute_value' class='form-control data_main_choice_button_profile_device_vendor_attribute_value'>
+        <div id='${profile_attributes_added_tracking}_device_vendor_attribute_value_container' class='height_percent_auto full_width_percent'></div>
         <hr>
         
    `
@@ -136,7 +134,8 @@ function profile_attributes_add(){
 }
 
 
-// get device vendor library file contenst
+// get device vendor library file content
+var device_vendor_library_attribute_input_box_type = {};//keep track of vendor library attribute value types
 
 function get_device_vendor_file_data(caller_id=0){
 
@@ -147,12 +146,9 @@ function get_device_vendor_file_data(caller_id=0){
     var requested_device_vendor_dictionary_file_name = document.getElementById(caller_id).value; //name of dictionary requested / withouth 'dictionary.' prefix
     var url= window.location.origin + '/dictionary_files_content?library_name=' + requested_device_vendor_dictionary_file_name;
 
-    console.log(url)
+    //console.log(url)
 
-    //show device vendor dictionary content attributes select 
-    hide_show_div(caller_id.trim().charAt(0) + '_device_vendor_attribute', 'show');
-
-    
+      
     $.get(url, function(data, result){
 
         if(result != 'success'){
@@ -166,20 +162,51 @@ function get_device_vendor_file_data(caller_id=0){
             return;
         }
 
-        // device_vendor_names = data;// stores vendor device names
-        console.log(data);
+        //console.log(data);
 
+        //creates attributes options from retrieved attributes data
+        device_vendor_library_attribute_input_box_type = {}; //reset attribute type value container, object array
 
-        // if(data.length > 1){ //if response has contents
-        //     dictionary_file_names_collcted = true; // set to true/ function has been run and names collected
-        // }
+        var device_vendor_attribute_option = '<option default>select Athentification attribute</option>';
         
-        // profile_attributes_add();//add first run profile attributes
-       
+        data.forEach(function(attribute){
+            device_vendor_attribute_option = device_vendor_attribute_option + '<option>' + attribute.attribute_name + '</option>';
+
+            // save attribute type value, by order options are added to div select
+            //console.log(attribute.attribute_type)
+            device_vendor_library_attribute_input_box_type[attribute.attribute_name] = attribute.attribute_type;
+            
+        })
+
+
+        var device_vendor_attribute_div = `
+            <select id='${caller_id.trim().charAt(0)}_device_vendor_attribute' class='form-control data_main_choice_button_profile_device_vendor_attribute_select w3-margin-top w3-margin-bottom' onchange='show_device_vendor_library_attribute_input_box(this.id)'>
+                ${device_vendor_attribute_option}
+            </select>`; 
+
+        add_by_innerhtml(`${caller_id.trim().charAt(0)}_device_vendor_attribute_container`, device_vendor_attribute_div);
+
+        //show device vendor dictionary content attributes select 
+        hide_show_div(caller_id.trim().charAt(0) + '_device_vendor_attribute', 'show');
+      
 
     });
 
+}
 
+// get device vendor library attribute string or number input box
+function show_device_vendor_library_attribute_input_box(caller_id){
+
+    // alert(device_vendor_library_attribute_input_box_type[document.getElementById(caller_id).value]);
+
+    //create text or number input box
+    var device_vendor_attribute_div = `
+        <input type="${(device_vendor_library_attribute_input_box_type[document.getElementById(caller_id).value]=='string')?'text':'number'}" placeholder="enter Authenticating attribute value" id='${caller_id.trim().charAt(0)}_device_vendor_attribute_value' class='form-control data_main_choice_button_profile_device_vendor_attribute_value'>`; 
+
+    add_by_innerhtml(`${caller_id.trim().charAt(0)}_device_vendor_attribute_value_container`, device_vendor_attribute_div);
+
+    //show device vendor dictionary content attributes select 
+    hide_show_div(caller_id.trim().charAt(0) + '_device_vendor_attribute_value', 'show');
 }
 
 

@@ -788,13 +788,13 @@ app.get('/dictionary_files', function(req, res){
 app.get('/dictionary_files_content', function(req, res){
 
   
-    fs.readFile(__dirname + '/vendor_dictionary/'+ req.query.library_name,'utf-8', function (err, file_content) {
+    fs.readFile(__dirname + '/vendor_dictionary/dictionary.'+ req.query.library_name,'utf-8', function (err, file_content) {
         
         
         if(err){
 
             //if error do search again this time do not add prefix to file name 'dictionaray.'
-            fs.readFile(__dirname + '/vendor_dictionary/dictionary.'+ req.query.library_name,'utf-8', function (err, file_content_) {
+            fs.readFile(__dirname + '/vendor_dictionary/'+ req.query.library_name,'utf-8', function (err, file_content_) {
 
                 if(err){//give error response back
 
@@ -802,39 +802,94 @@ app.get('/dictionary_files_content', function(req, res){
                     console.log('Radius :: unable to scan vendor dictionary file content: ' + err);
                     return;
                 }
-                //give second try success response back
-                res.jsonp(file_content_);
+                //pass files to processing function
+                send_prepared_attributes_as_response(res, file_content_);
+                return;
 
             });
 
             return;
-        } 
+            
+        }
         
-        //give sucess response back
-        res.jsonp(file_content);
-
-        //console.log(files);
-
-
-        // //listing all files using forEach
-        // files.forEach(function (file) {
-        //     // Do whatever you want to do with the file
-        //     console.log(file); 
-        // });
+        //pass files to processing function
+        send_prepared_attributes_as_response(res, file_content)
     });
-
-
-
-
-
-
-
 
 });
 
 
+    //process vendor attribute library file, and give respose
+    function send_prepared_attributes_as_response(res, raw_file_content){
+        //console.log(file_content);
+
+        // ----------- filter files, send response -------------
+        var vendor_attributes_to_array = raw_file_content.split(/\s/);
+        var cleaned_attributes_and_values = [];//store filtered attributes / values names
 
 
+        //console.log(vendor_attributes_to_array);
+
+        /* =============  i do not know how to deal with 'VALUE' attribute or its purpose /  so im leaving it out ===========
+
+        vendor_attributes_to_array.forEach(function(text, index){
+
+            if(text.trim() == 'ATTRIBUTE' || text.trim() == 'VALUE' ){
+                
+                if(text.trim() == 'VALUE'){
+                        
+                    var value_attribute_combined_text = vendor_attributes_to_array[ index + 1] + ' ' + vendor_attributes_to_array[ index + 3 ];
+                    cleaned_attributes_and_values.push(value_attribute_combined_text);
+                    return;
+                }
+            
+                cleaned_attributes_and_values.push(vendor_attributes_to_array[ index + 1]);
+            
+            }
+        });
+            
+        */
+        vendor_attributes_to_array.forEach(function(text, index){
+            
+            if(text.trim() == 'ATTRIBUTE'){
+
+                // check if attribute type is number or string
+                var attribute_value_type = 'string'
+
+                // position of attribute type can change position when text file is converted to array; do console log (vendor_attributes_to_array); try different files, compare to non converted files
+                if(vendor_attributes_to_array[index + 3] == 'integer' && vendor_attributes_to_array[index + 3] != 'VALUE' && vendor_attributes_to_array[index + 3] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
+                else if(vendor_attributes_to_array[index + 4]  == 'integer' && vendor_attributes_to_array[index + 4] != 'VALUE' && vendor_attributes_to_array[index + 4] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
+                else if(vendor_attributes_to_array[index + 5]  == 'integer' && vendor_attributes_to_array[index + 5] != 'VALUE' && vendor_attributes_to_array[index + 5] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
+                else if(vendor_attributes_to_array[index + 6]  == 'integer' && vendor_attributes_to_array[index + 6] != 'VALUE' && vendor_attributes_to_array[index + 6] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
+                else if(vendor_attributes_to_array[index + 7]  == 'integer' && vendor_attributes_to_array[index + 7] != 'VALUE' && vendor_attributes_to_array[index + 7] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
+                else if(vendor_attributes_to_array[index + 8]  == 'integer' && vendor_attributes_to_array[index + 8] != 'VALUE' && vendor_attributes_to_array[index + 8] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
+                else if(vendor_attributes_to_array[index + 9] == 'integer' && vendor_attributes_to_array[index + 9] != 'VALUE' && vendor_attributes_to_array[index + 9] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
+
+                cleaned_attributes_and_values.push({attribute_name : vendor_attributes_to_array[ index + 1], attribute_type : attribute_value_type});
+            
+            }
+        });
+            
+            
+        //console.log(cleaned_attributes_and_values);
+        //send response
+        res.jsonp(cleaned_attributes_and_values);
+
+    };
 
 
 
