@@ -46,12 +46,13 @@ function add_by_innerhtml(div_id, content_to_append){//innerHTML will overide ol
 // ---------------------- Data -----------------------
 
 // ------ profile
-//Select authenticating vendor // get vendor list
+// ---- Select authenticating vendor // get vendor list
 var device_vendor_names = ''; //stores array of retrived vendors file names
 var dictionary_file_names_collcted = false; //will enforce collcetion of dictionary files once per session from server
 function authenticating_device_vendor_names(){
 
     if(dictionary_file_names_collcted){ //if dictionary_file_names_collcted  true/ this function has been run before in this seesion /end function
+        profile_attributes_add();//add first run profile attributes
         return;
     }
 
@@ -88,14 +89,17 @@ function authenticating_device_vendor_names(){
 
 }
 
-//Select authenticating  attributes // get vendor list  dictioary contenst
-function authenticating_device_vendor_content(){
+// ---- Select authenticating  attributes // get vendor list  dictioary contenst
+// function authenticating_device_vendor_content(){
 
-}
+// }
 
-//adds profile attributes with vendor names
-var profile_attributes_added_tracking = 1;//gives div id, for profile attributes and tracks numbers to avoid duplicates
+// ---- adds profile attributes with vendor names
+var profile_attributes_added_tracking = 0;//gives div id, for profile attributes and tracks numbers to avoid duplicates
 function profile_attributes_add(){
+
+    //start tracking 
+    profile_attributes_added_tracking = profile_attributes_added_tracking + 1;
     
     if(typeof device_vendor_names == 'string'){ //if device_vendor_names is a string and not an array, end function
         console.log('Error, vendor device names have not been retrived');
@@ -126,15 +130,14 @@ function profile_attributes_add(){
 
         <!-- attribute value -->
         <div id='${profile_attributes_added_tracking}_device_vendor_attribute_value_container' class='height_percent_auto full_width_percent'></div>
-        <hr>
-        
+        <hr>        
    `
     add_by_append('data_main_choice_button_profile_user_create_div', attributes_content);//show profile attribute with selectable device vendor library
 
 }
 
 
-// get device vendor library file content
+// ---- get device vendor library file content
 var device_vendor_library_attribute_input_box_type = {};//keep track of vendor library attribute value types
 
 function get_device_vendor_file_data(caller_id=0){
@@ -169,12 +172,12 @@ function get_device_vendor_file_data(caller_id=0){
 
         var device_vendor_attribute_option = '<option default>select Athentification attribute</option>';
         
-        data.forEach(function(attribute){
+        data.library_attributes.forEach(function(attribute){
             device_vendor_attribute_option = device_vendor_attribute_option + '<option>' + attribute.attribute_name + '</option>';
 
-            // save attribute type value, by order options are added to div select
+            // save attribute type value, by order options are added to div select element
             //console.log(attribute.attribute_type)
-            device_vendor_library_attribute_input_box_type[attribute.attribute_name] = attribute.attribute_type;
+            device_vendor_library_attribute_input_box_type[attribute.attribute_name] = [ attribute.attribute_type, data.vendor_library_name ];
             
         })
 
@@ -194,19 +197,191 @@ function get_device_vendor_file_data(caller_id=0){
 
 }
 
-// get device vendor library attribute string or number input box
+// ---- get device vendor library attribute string or number input box
 function show_device_vendor_library_attribute_input_box(caller_id){
 
     // alert(device_vendor_library_attribute_input_box_type[document.getElementById(caller_id).value]);
 
     //create text or number input box
     var device_vendor_attribute_div = `
-        <input type="${(device_vendor_library_attribute_input_box_type[document.getElementById(caller_id).value]=='string')?'text':'number'}" placeholder="enter Authenticating attribute value" id='${caller_id.trim().charAt(0)}_device_vendor_attribute_value' class='form-control data_main_choice_button_profile_device_vendor_attribute_value'>`; 
+        <input type="${(device_vendor_library_attribute_input_box_type[document.getElementById(caller_id).value][0] == 'string')?'text':'number'}" placeholder="enter Authenticating attribute value" id='${caller_id.trim().charAt(0)}_device_vendor_attribute_value' class='form-control data_main_choice_button_profile_device_vendor_attribute_value' data-library-attribite='${device_vendor_library_attribute_input_box_type[document.getElementById(caller_id).value][1] }'>`; 
 
+    //add input box to user front
     add_by_innerhtml(`${caller_id.trim().charAt(0)}_device_vendor_attribute_value_container`, device_vendor_attribute_div);
+
+    //show attribute add/cancel/save buttons
+    hide_show_div('device_vendor_attribute_buttons', 'show');
 
     //show device vendor dictionary content attributes select 
     hide_show_div(caller_id.trim().charAt(0) + '_device_vendor_attribute_value', 'show');
 }
+
+
+// ---- prepare profile attribute creation menu and show div
+// function show_profile_creation_attributes_menu(){
+
+//     //reset elements to default
+//     profile_attributes_added_tracking = 1
+
+// }
+
+
+// --- save attributes as profile
+function attributes_profile_save(){
+
+    //check if attributes where added
+    if(profile_attributes_added_tracking == 0){//no attribute is selected, give error
+        alert("Please fill all attributes.");
+        return;
+    }
+
+    
+
+    
+    var new_profile_name = ''; //profile name
+
+    var new_authentification_profiles = [];//stores new profiles from attributes
+
+    var err_attribute_missing = false;//keep track of error/ prevent processing
+
+    for(var a=1; a <= profile_attributes_added_tracking; a++){
+
+        //get input/select element values
+        var div_library_name = document.getElementById( a + '_device_vendor_name').value //get selected library name
+        var div_library_attribute_name = document.getElementById( a + '_device_vendor_attribute').value //get selected vendor attribute name
+        var div_library_attribute_value = document.getElementById( a + '_device_vendor_attribute_value') //get entered attribute value
+
+        //check if all attribute have been selected
+        if(div_library_name == 'Select Authenticating device vendor' || div_library_attribute_name == 'select Athentification attribute' ){
+
+            alert("Please fill all attributes.");
+
+            err_attribute_missing = true;
+            break;
+        }
+
+        //console.log(a, div_library_name, div_library_attribute_name, div_library_attribute_value.value, div_library_attribute_value.getAttribute('data-library-attribite') );
+
+        //create profile as array
+        new_authentification_profiles.push(['Vendor-Specific', div_library_attribute_value.getAttribute('data-library-attribite'),[ [div_library_attribute_name, div_library_attribute_value.value] ] ]);
+        
+    }
+
+    //check if error was produced by for loop
+    if(err_attribute_missing == true){
+        return;//end function
+    }
+
+    //get name for profile
+    new_profile_name = prompt('Please give profile a name.');//ask for name for the profile
+
+    if(new_profile_name == null || new_profile_name.trim().length == 0){// if no name is given, give error alert en end function
+        alert('Profile has no name. Please try again')
+        return;
+    }
+
+    //console.log(new_authentification_profiles);
+
+    // send profile to server
+    var url= window.location.origin + '/new_profiles_data';
+
+      
+    $.get(url, { new_profiles : [ new_profile_name ,new_authentification_profiles] }, function(data, result){
+
+        if(result != 'success'){//if error
+
+            console.log('recieved error when sending new profile data to server : ' + error);
+            alert('error sending new Profile data to server, please try again later.')
+            return;
+        }
+
+        if(data == 'unable to save new profile data'){// if error
+
+            console.log('recieved error : unable to save new profile data to server, see server logs for error message');
+            alert('error saving new Profile data to server, please try again later or contact system administartor.')
+            return;
+        }
+
+        if(data == 'Name is not unique'){ //if name duplicate error
+            console.log('error, Profile name is not unique');
+
+            //give alert
+            alert('Profile with name : ' + new_profile_name + ', is already registered.\nPlease provide a different name');
+
+            //restart profile saving function and ask for a name again
+            attributes_profile_save();
+            return;
+
+        }
+
+        // console.log(result);
+
+        // request newly updated profiles data from server
+        attributes_profile_get();
+
+    });
+
+
+}
+
+
+
+// --- get saved profiles
+var attributes_profiles = ''; //saved retreived profile attributes
+
+function attributes_profile_get(){
+
+    var url= window.location.origin + '/get_profiles_data';
+
+      
+    $.get(url, function(data, result){//request profile data from server
+
+        if(result != 'success'){ //if failed
+
+            console.log('recieved error when requesting new profile data from server : ' + error);
+            return;
+        }
+
+        if(data == 'profile data not found'){//if issue
+
+            console.log('recieved error : profile data not found, see server logs for error message');
+            return;
+        }
+
+        //console.log(data);
+
+        // save retrieved profile attributes
+        attributes_profiles = data;
+
+        //cleav div of old contents
+        add_by_innerhtml('data_main_choice_button_profile_view', '');
+
+        // show profile div
+        var profiles_div = '<ol class="w3-margin-top">';
+
+        data.forEach(function(data, index){
+            
+            profiles_div = profiles_div + `<li class='w3-margin-bottom'><a href='#'>${data[0]}</a></li>`;
+
+        });
+
+        profiles_div = profiles_div + '</ol>';
+
+       //append list to div
+       add_by_append('data_main_choice_button_profile_view', profiles_div);
+
+       //clear and hide profile creation menu 
+       add_by_innerhtml('data_main_choice_button_profile_user_create_div', '');
+       hide_show_div('device_vendor_attribute_buttons', 'hide');      
+
+    });
+
+}
+
+//auto show profiles on page load
+attributes_profile_get();
+
+
+
 
 

@@ -25,8 +25,13 @@ var app = express();
 // ===================== Cross servers variabls =====================
 
 //account/voucher limits [data/time/download speeds]
-var login_in_account_limit = null || 
-['Vendor-Specific', 'Mikrotik',[['Mikrotik-Total-Limit', 4294967290]] ];
+// var login_in_account_limit = null || 
+// ['Vendor-Specific', 'Mikrotik',[['Mikrotik-Total-Limit', 4294967290]] ];
+
+
+var login_in_account_limit = [ //stores defined authorization profiles
+    ['Mikrotik 4.9 gig total data', ['Vendor-Specific', 'Mikrotik',[['Mikrotik-Total-Limit', 4294967290]] ]]
+];
 
 // logged in or logged out users
 var users = [];
@@ -821,14 +826,15 @@ app.get('/dictionary_files_content', function(req, res){
 
     //process vendor attribute library file, and give respose
     function send_prepared_attributes_as_response(res, raw_file_content){
-        //console.log(file_content);
+        //console.log(raw_file_content);
 
         // ----------- filter files, send response -------------
         var vendor_attributes_to_array = raw_file_content.split(/\s/);
         var cleaned_attributes_and_values = [];//store filtered attributes / values names
-
+        var library_vendor_name = 'none';//store registred library vendor name
 
         //console.log(vendor_attributes_to_array);
+
 
         /* =============  i do not know how to deal with 'VALUE' attribute or its purpose /  so im leaving it out ===========
 
@@ -878,22 +884,153 @@ app.get('/dictionary_files_content', function(req, res){
                 else if(vendor_attributes_to_array[index + 9] == 'integer' && vendor_attributes_to_array[index + 9] != 'VALUE' && vendor_attributes_to_array[index + 9] != 'ATTRIBUTE'){
                     attribute_value_type = 'number';
                 }
+                else if(vendor_attributes_to_array[index + 10] == 'integer' && vendor_attributes_to_array[index + 10] != 'VALUE' && vendor_attributes_to_array[index + 10] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
+                else if(vendor_attributes_to_array[index + 11] == 'integer' && vendor_attributes_to_array[index + 11] != 'VALUE' && vendor_attributes_to_array[index + 11] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
+                else if(vendor_attributes_to_array[index + 12] == 'integer' && vendor_attributes_to_array[index + 12] != 'VALUE' && vendor_attributes_to_array[index + 12] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
+                else if(vendor_attributes_to_array[index + 13] == 'integer' && vendor_attributes_to_array[index + 13] != 'VALUE' && vendor_attributes_to_array[index + 13] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
+                else if(vendor_attributes_to_array[index + 14] == 'integer' && vendor_attributes_to_array[index + 14] != 'VALUE' && vendor_attributes_to_array[index + 14] != 'ATTRIBUTE'){
+                    attribute_value_type = 'number';
+                }
 
-                cleaned_attributes_and_values.push({attribute_name : vendor_attributes_to_array[ index + 1], attribute_type : attribute_value_type});
+                //find clean attributes values
+                var find_attribute_name = (vendor_attributes_to_array[ index + 1] != '')?vendor_attributes_to_array[ index + 1]: (vendor_attributes_to_array[ index + 2] != '')? vendor_attributes_to_array[ index + 2]:(vendor_attributes_to_array[ index + 4] != '')?vendor_attributes_to_array[ index + 4]: (vendor_attributes_to_array[ index + 5] != '')? vendor_attributes_to_array[ index + 5]:(vendor_attributes_to_array[ index + 6] != '')?vendor_attributes_to_array[ index + 6]: (vendor_attributes_to_array[ index + 7] != '')? vendor_attributes_to_array[ index + 7]:(vendor_attributes_to_array[ index + 8] != '')?vendor_attributes_to_array[ index + 8]: (vendor_attributes_to_array[ index + 9] != '')? vendor_attributes_to_array[ index + 9]:(vendor_attributes_to_array[ index + 10] != '')? vendor_attributes_to_array[ index + 10]:(vendor_attributes_to_array[ index + 11] != '')? vendor_attributes_to_array[ index + 11]:(vendor_attributes_to_array[ index + 12] != '')? vendor_attributes_to_array[ index + 12]:(vendor_attributes_to_array[ index + 13] != '')? vendor_attributes_to_array[ index + 13]:(vendor_attributes_to_array[ index + 14] != '')? vendor_attributes_to_array[ index + 14]:'error, Please check library format and spacing';
+
+                //save attribute value
+                cleaned_attributes_and_values.push({attribute_name : find_attribute_name, attribute_type : attribute_value_type});
             
             }
+
+             //find lbrary vendor
+             if(text.trim() == 'VENDOR'){
+                //console.log(0, vendor_attributes_to_array[index ], 1,vendor_attributes_to_array[index + 1], 2,vendor_attributes_to_array[index + 2],3, vendor_attributes_to_array[index + 3]   )
+                
+                if(vendor_attributes_to_array[index + 1].length != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 1];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 2] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 2];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 3] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 3];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 4] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 4];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 5] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 5];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 6] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 6];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 7] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 7];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 8] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 8];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 9] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 9];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 10] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 10];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 11] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 11];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 12] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 12];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 13] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 13];//save vendo name
+                }
+                else if(vendor_attributes_to_array[index + 14] != '' ){
+
+                    library_vendor_name = vendor_attributes_to_array[index + 14];//save vendo name
+                }
+
+
+             }
+
+
         });
             
             
         //console.log(cleaned_attributes_and_values);
+        //console.log('vendor : ',library_vendor_name);
         //send response
-        res.jsonp(cleaned_attributes_and_values);
+        res.jsonp({library_attributes:cleaned_attributes_and_values,vendor_library_name:library_vendor_name});
 
     };
 
 
+// --- save new profile
+app.get('/new_profiles_data', function(req, res){
+
+   // console.log(req.query.new_profiles);
+    
+    // check if profiles name duplicate
+    var duplicate_profile_name_found = false;//track if duplicate name found
+
+   login_in_account_limit.forEach(function(data){
+
+        //console.log(req.query.new_profiles[0],data[0])
 
 
+        //if duplicate found
+        if(req.query.new_profiles[0].toString().trim().toLowerCase() == data[0].toString().trim().toLowerCase()){
+
+            duplicate_profile_name_found = true;//set duplicate found true  
+        }
+
+
+    });
+
+    if(duplicate_profile_name_found){
+
+        // give name duplicate error response, en end function
+        res.jsonp('Name is not unique');
+        return;
+    }
+
+    // ---- save new profiles -----
+    login_in_account_limit.push(req.query.new_profiles);
+
+    //give success response back
+    res.jsonp('data recived');
+
+
+});
+
+// -- get available profiles
+app.get('/get_profiles_data', function(req, res){
+
+    //give response back
+    //console.log(login_in_account_limit);
+    res.jsonp(login_in_account_limit);
+
+
+});
 
 
 

@@ -33,6 +33,9 @@ body{
 .div_display_none {
     display: none;
 }
+.div_border {
+    border: 1px solid black;
+}
 /* navigation belt main */
 
 #main_navi_belt{
@@ -87,4 +90,12 @@ body{
 }
 .data_main_choice_button_profile_device_vendor_attribute_value {
     display: none;
+}
+#data_main_choice_button_profile_device_vendor_attribute_buttons_cancel_button {
+    width: 49%;
+    float: left;
+}
+#data_main_choice_button_profile_device_vendor_attribute_buttons_save_button{
+    width: 49%;
+    float: right;
 }

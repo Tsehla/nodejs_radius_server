@@ -52,20 +52,22 @@
             <!-- data main choice buttons -->
             <div id='' class='btn height_percent_auto full_width_percent resizable_window_min_width' >
                 <button id='' class='btn btn-primary w3-margin-top w3-margin-bottom main_body_content_data_buttons' onclick='hide_show_div("data_main_choice_button_users","show"); hide_show_div("data_main_choice_button_profile","hide")'>Users</button>
-                <button id='' class='btn btn-success w3-margin-top w3-margin-bottom main_body_content_data_buttons' onclick='hide_show_div("data_main_choice_button_profile","show"); hide_show_div("data_main_choice_button_users","hide");authenticating_device_vendor_names()'>Profile</button>
+                <button id='' class='btn btn-success w3-margin-top w3-margin-bottom main_body_content_data_buttons' onclick='hide_show_div("data_main_choice_button_profile","show"); hide_show_div("data_main_choice_button_users","hide");'>Profile</button>
 
             </div>
 
             <!-- data main choice div-->
-            <!-- users table -->
+            <!-- ----- users table ----- -->
             <div id='data_main_choice_button_users' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height w3-container' >
                 
-                <!--create user -->
+                <!--create user button -->
                 <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-container' >
-                    <button id='' class='btn btn-warning height_percent_auto full_width_percent'>Create new user</button>
+                    <button id='' class='btn btn-warning height_percent_auto full_width_percent' >Create new user</button>
                 </div>
 
-                <!-- Manage/ View users -->
+
+
+                <!-- Manage/ View radius users -->
                 <div id='' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height w3-container'>
                     user view
 
@@ -77,31 +79,40 @@
 
 
             <!-- data main choice div -->
-            <!-- profile table -->
+            <!-- ----- profile table ----- -->
             <div id='data_main_choice_button_profile' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height div_display_none w3-container' >
                 
-                <!--create user -->
+                <!--create profile button-->
                 <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-container' >
-                    <button id='' class='btn btn-warning height_percent_auto full_width_percent'>Create new profile</button>
+                    <button id='' class='btn btn-warning height_percent_auto full_width_percent' onclick="profile_attributes_added_tracking = 0;add_by_innerhtml('data_main_choice_button_profile_user_create_div', '');authenticating_device_vendor_names();  hide_show_div('device_vendor_attribute_buttons', 'hide')">Create new profile</button>
+                </div> 
+
+                <!-- profile create menu -->
+                <div class='height_percent_auto full_width_percent'>
+
+                    <div id='data_main_choice_button_profile_user_create_div' class='height_percent_auto full_width_percent resizable_window_min_width w3-container w3-margin-top' > 
+                    </div>
+
+                    <!-- save/cancel/add buttons -->
+                    <div class='height_percent_auto full_width_percent w3-margin-bottom div_display_none ' id='device_vendor_attribute_buttons'>
+
+                        <button class='btn btn-primary height_percent_auto full_width_percent la la-plus ' onclick='profile_attributes_add()'> </button>
+                        <button class='w3-button w3-white w3-border w3-border-red w3-margin-top height_percent_auto' id='data_main_choice_button_profile_device_vendor_attribute_buttons_cancel_button' onclick="add_by_innerhtml('data_main_choice_button_profile_user_create_div', '');hide_show_div('device_vendor_attribute_buttons', 'hide')">Cancel</button>
+                        <button class='w3-button w3-white w3-border w3-border-blue w3-margin-top height_percent_auto' id='data_main_choice_button_profile_device_vendor_attribute_buttons_save_button' onclick='attributes_profile_save()'>Save</button>
+
+                    </div>
+
                 </div>
-                <!-- user create menu -->
-                <div id='data_main_choice_button_profile_user_create_div' class='height_percent_auto full_width_percent resizable_window_min_width w3-container w3-margin-top w3-border' >
 
-
-
-
-                </div>
-
-
-                <!-- Manage / View users -->
-                <div id='' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height w3-container'>
+                <!-- Manage / View radius authentification limit profiles -->
+                <div id='data_main_choice_button_profile_view' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height w3-container w3-topbar w3-margin-top'>
                     profile view
 
                 </div>
 
             </div>
 
-            
+           
         </div>
 
 
