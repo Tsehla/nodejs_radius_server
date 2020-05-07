@@ -306,7 +306,7 @@ function attributes_profile_save(){
             console.log('error, Profile name is not unique');
 
             //give alert
-            alert('Profile with name : ' + new_profile_name + ', is already registered.\nPlease provide a different name');
+            alert('Profile with name : "' + new_profile_name + '", is already registered.\nPlease provide a different name');
 
             //restart profile saving function and ask for a name again
             attributes_profile_save();
@@ -315,6 +315,9 @@ function attributes_profile_save(){
         }
 
         // console.log(result);
+
+        //give success alert
+        alert('Success, Profile with name : ' + new_profile_name + ', created.');
 
         // request newly updated profiles data from server
         attributes_profile_get();
@@ -382,6 +385,158 @@ function attributes_profile_get(){
 attributes_profile_get();
 
 
+// --- get saved profiles group
+function profiles_group_get(){
+
+    $.get('/saved_profiles', function(data, response){
+
+        //console.log(data,response);
+
+        if(response == 'success'){
+
+            //cleav div of old contents
+            add_by_innerhtml('data_main_choice_button_profile_profile_group_view', '');
+
+            // show profile group div
+            var profiles_group_div = '<ol class="w3-margin-top">';
+
+            data.forEach(function(data, index){
+                
+                profiles_group_div = profiles_group_div + `<li class='w3-margin-bottom'><a href='#'>${data[0]}</a></li>`;
+
+            });
+
+            profiles_group_div = profiles_group_div + '</ol>';
+
+        //append list to div
+        add_by_append('data_main_choice_button_profile_profile_group_view', profiles_group_div);
+
+        //clear and hide profile group creation menu 
+        add_by_innerhtml('data_main_choice_button_profile_profile_group_create_menu_attributes', '');
+        hide_show_div('data_main_choice_button_profile_profile_group_create_menu', 'hide'); 
+
+            return;
+        }
+
+        alert('Error, getting Profile Group data from server.\nPlease try again later, or contact administrator');
+        
+    })
+
+}
+
+//auto show profiles groups on page load
+profiles_group_get();
+
+
+// --- create new profiles groups
+var create_new_profile_group_tracking = 0;//tracks created profiles
+
+function profile_group_create(){
+
+    var profile_create_name_input = ''; //contains input box 
+
+    // clear old contents
+    if(create_new_profile_group_tracking == 0){
+        add_by_innerhtml('data_main_choice_button_profile_profile_group_create_menu_attributes', '');
+
+        //define input box
+        profile_create_name_input = "<input id='profile_group_name_input' type='text' placeholder='Profile group name' class='form-control w3-margin-top '>";
+    }
+    
+    //increment profile tracking 
+    create_new_profile_group_tracking = create_new_profile_group_tracking + 1;
+
+    //define iput + or select box
+    var profile_group_select_options = `${profile_create_name_input} <select id='${create_new_profile_group_tracking}_profile_groupt_attribute_select' class='form-control w3-margin-top w3-margin-bottom'><option default >Select profile attribute to group</option>`;
+
+    //get retrived attribute from server
+    attributes_profiles.forEach(function(data){
+        profile_group_select_options = profile_group_select_options + `<option>${data[0]}</option>`;
+    });
+
+
+
+    profile_group_select_options = profile_group_select_options + '</select>';
+
+    // add option box
+    add_by_append('data_main_choice_button_profile_profile_group_create_menu_attributes', profile_group_select_options);
+
+
+}
+
+
+// --- save new profiles groups
+function profiles_group_save(){
+
+    var get_profifile_group_name = document.getElementById('profile_group_name_input').value;
+    var profile_group_attributes = []; //stores selected attributes names
+
+    //get profile attributes 
+    var error_found = false;//keep track of error
+    for(a = 1; a <= create_new_profile_group_tracking; a++ ){
+
+        var profile_attribute_select = document.getElementById(a + '_profile_groupt_attribute_select').value;
+
+        //check if value is filled
+        if(profile_attribute_select == 'Select profile attribute to group' || get_profifile_group_name.trim().length == 0){
+            //give alert
+            alert('Please fill all required information.');
+
+            //set error found to true
+            error_found = true;
+
+            //end loop
+            break;
+        }
+
+        //keep found profile attributes names
+        profile_group_attributes.push(profile_attribute_select);
+        
+
+    }
+
+
+    //check if error was found on loop
+    if(error_found){ //if found
+        return; //end function
+    }
+    
+    //console.log(profile_group_attributes);
+
+    //save profile group to server
+    $.get('/profile_group_save',{'new_profile_group_data' : [ get_profifile_group_name, profile_group_attributes ]}, function(data, response){
+
+        //console.log(data, response);
+
+        //if response recived form server
+        if(response == 'success'){
+
+            //if profile group name provided is a duplicate
+            if(data == 'error, profile group name already saved'){
+                alert('Error, Profile group with name : "' + get_profifile_group_name + '" ,is already created.\n\nPlease try a different name.',)
+            }
+
+            //if profile group name is saved
+            if(data == 'profile group saved'){
+                alert('Success, Profile group with name : "' + get_profifile_group_name + '", created.');
+
+                //update profiles group views
+                profiles_group_get();
+            }
+
+            return;
+        }
+
+
+        else{ //if error
+            alert('Error Creating profile groups, Please try again later or contact adminstrator');
+        }
+
+    });
+
+
+
+}
 
 
 

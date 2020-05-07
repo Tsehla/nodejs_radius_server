@@ -84,13 +84,14 @@
                 
                 <!-- Profile/Profile group toggle -->
                 <div id='' class='btn height_percent_auto full_width_percent resizable_window_min_width' >
-                    <button id='' class='btn btn-default w3-margin-bottom data_main_choice_button_profile_attribute_profile_group_toggle div_float_left' onclick='hide_show_div("data_main_choice_button_profile_profile","show"); hide_show_div("data_main_choice_button_profile_profile_group","hide")'>Profile Attributes</button>
-                    <button id='' class='btn btn-default w3-margin-bottom data_main_choice_button_profile_attribute_profile_group_toggle div_float_right' onclick='hide_show_div("data_main_choice_button_profile_profile_group","show"); hide_show_div("data_main_choice_button_profile_profile","hide");'>Profile Group</button>
-    
+                    <button id='' class='btn btn-default w3-margin-bottom data_main_choice_button_profile_attribute_profile_group_toggle div_float_left' onclick='hide_show_div("data_main_choice_button_profile_profile_group","show"); hide_show_div("data_main_choice_button_profile_profile","hide");'>Profile Group</button>
+
+                    <button id='' class='btn btn-default w3-margin-bottom data_main_choice_button_profile_attribute_profile_group_toggle div_float_right' onclick='hide_show_div("data_main_choice_button_profile_profile","show"); hide_show_div("data_main_choice_button_profile_profile_group","hide")'>Profile Attributes</button>
+                    
                 </div>
     
                 <!-- profile -->
-                <div id ='data_main_choice_button_profile_profile' class='' >
+                <div id ='data_main_choice_button_profile_profile' class='div_display_none' >
                     
                     <!--create profile button-->
                     <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-container' >
@@ -123,10 +124,37 @@
 
 
                  <!-- profile group -->
-                <div id ='data_main_choice_button_profile_profile_group' class='div_display_none' >
+                <div id ='data_main_choice_button_profile_profile_group' class='height_percent_auto full_width_percent resizable_window_min_width' >
                     <!--create profile group button-->
-                    <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-container' >
-                        <button id='' class='btn btn-warning height_percent_auto full_width_percent' onclick="">Create profile group</button>
+                    <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-container w3-bottom-bar ' >
+                        <button id='' class='btn btn-warning height_percent_auto full_width_percent' onclick="create_new_profile_group_tracking = 0; hide_show_div('data_main_choice_button_profile_profile_group_create_menu','show');profile_group_create()">Create profile group</button>
+                    </div>
+                    <!-- create profile view -->
+
+                    <div id='data_main_choice_button_profile_profile_group_create_menu' class='height_percent_auto full_width_percent resizable_window_min_width w3-container w3-margin-top div_display_none'  >
+                        <hr />
+
+                        <!-- select profiles attributes -->
+                        <div id='data_main_choice_button_profile_profile_group_create_menu_attributes' class=''>
+                            
+                        </div>               
+
+                        <!-- save /cancel profile group-->
+                        <div class='height_percent_auto full_width_percent w3-margin-bottom ' id='device_vendor_attribute_buttons'>
+
+                            <!-- add more profile attributes -->
+                            <button class='btn btn-primary height_percent_auto full_width_percent la la-plus ' onclick='profile_group_create()'></button>
+                            <hr />
+                            <button class='w3-button w3-white w3-border w3-border-red w3-margin-top height_percent_auto' id='data_main_choice_button_profile_device_vendor_attribute_buttons_cancel_button' onclick="hide_show_div('data_main_choice_button_profile_profile_group_create_menu','hide')">Cancel</button>
+                            <button class='w3-button w3-white w3-border w3-border-blue w3-margin-top height_percent_auto' id='data_main_choice_button_profile_device_vendor_attribute_buttons_save_button' onclick='profiles_group_save()'>Save</button>
+
+                        </div>
+
+                    
+                    </div>
+                    <!-- view saved profile groups -->
+                    <div id='data_main_choice_button_profile_profile_group_view' class='height_percent_auto full_width_percent resizable_window_min_width w3-margin-top w3-topbar'>
+                        view profile group
                     </div>
 
                 </div>

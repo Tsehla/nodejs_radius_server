@@ -24,12 +24,13 @@ var app = express();
 
 // ===================== Cross servers variabls =====================
 
-//account/voucher limits [data/time/download speeds]
-// var login_in_account_limit = null || 
-// ['Vendor-Specific', 'Mikrotik',[['Mikrotik-Total-Limit', 4294967290]] ];
+//profiles group / allow grouping of attributes 
+// -- this allowes adding or removing of login attributes to already existing user accounts
+var login_in_account_limit_profile_groups = [ [ 'Mikrotik 4.9 gig data, 1meg download speed',[ 'Mikrotik 4.9 gig total data', 'Mikrotik 4.9 gig total data' ] ] ];
 
-
-var login_in_account_limit = [ //stores defined authorization profiles
+//account profile attributes
+// --- vendor specific limits / attributes add-able to profiles
+var login_in_account_limit_profile_attributes = [ //stores defined authorization profiles
     ['Mikrotik 4.9 gig total data', ['Vendor-Specific', 'Mikrotik',[['Mikrotik-Total-Limit', 4294967290]] ]]
 ];
 
@@ -41,7 +42,7 @@ var nas_dentifier = [];
 
 
 
-// ===================== radius server =====================
+// ===================== radius server / udp server =====================
 
 const socket = dgram.createSocket('udp4');// udp socket
 
@@ -992,7 +993,7 @@ app.get('/new_profiles_data', function(req, res){
     // check if profiles name duplicate
     var duplicate_profile_name_found = false;//track if duplicate name found
 
-   login_in_account_limit.forEach(function(data){
+   login_in_account_limit_profile_attributes.forEach(function(data){
 
         //console.log(req.query.new_profiles[0],data[0])
 
@@ -1014,7 +1015,7 @@ app.get('/new_profiles_data', function(req, res){
     }
 
     // ---- save new profiles -----
-    login_in_account_limit.push(req.query.new_profiles);
+    login_in_account_limit_profile_attributes.push(req.query.new_profiles);
 
     //give success response back
     res.jsonp('data recived');
@@ -1026,13 +1027,56 @@ app.get('/new_profiles_data', function(req, res){
 app.get('/get_profiles_data', function(req, res){
 
     //give response back
-    //console.log(login_in_account_limit);
-    res.jsonp(login_in_account_limit);
+    //console.log(login_in_account_limit_profile_attributes);
+    res.jsonp(login_in_account_limit_profile_attributes);
 
 
 });
 
 
+
+// -- save recieved profile group
+app.get('/profile_group_save', function(req, res){
+
+    //console.log(req.query);
+
+    // check names duplicates
+    var is_duplicate_found = false; //tracks if duplicate was found
+
+    login_in_account_limit_profile_groups.forEach(function(stored_profile_group_names){
+        
+        //test each profile group name
+        req.query.new_profile_group_data.forEach(function(new_profile_group_names){
+            if(new_profile_group_names.toString().trim().toLowerCase() == stored_profile_group_names[0].toString().trim().toLowerCase()){ //if match found
+                is_duplicate_found = true;//select en set to true
+            }
+        })
+    });
+
+    //check if duplicate was found
+    if(is_duplicate_found == true){
+
+        res.jsonp('error, profile group name already saved');//send error response message
+    }
+
+    //no error
+    else{
+
+        // save profile group
+        login_in_account_limit_profile_groups.push(req.query.new_profile_group_data);// save sent profile group array
+        res.jsonp('profile group saved');// give success response
+    }
+
+});
+
+// -- get available profile groups
+app.get('/saved_profiles', function(req, res){
+
+    res.jsonp(login_in_account_limit_profile_groups);// give stored profile groups
+
+
+
+})
 
 
 
