@@ -385,7 +385,9 @@ function attributes_profile_get(){
 attributes_profile_get();
 
 
-// --- get saved profiles group
+// --- get saved profiles group data 
+var retrived_profile_groups = [];// saves retrieved profile group data
+
 function profiles_group_get(){
 
     $.get('/saved_profiles', function(data, response){
@@ -393,6 +395,9 @@ function profiles_group_get(){
         //console.log(data,response);
 
         if(response == 'success'){
+
+            //stored retrived profile group data 
+            retrived_profile_groups = data;
 
             //cleav div of old contents
             add_by_innerhtml('data_main_choice_button_profile_profile_group_view', '');
@@ -408,12 +413,12 @@ function profiles_group_get(){
 
             profiles_group_div = profiles_group_div + '</ol>';
 
-        //append list to div
-        add_by_append('data_main_choice_button_profile_profile_group_view', profiles_group_div);
+            //append list to div
+            add_by_append('data_main_choice_button_profile_profile_group_view', profiles_group_div);
 
-        //clear and hide profile group creation menu 
-        add_by_innerhtml('data_main_choice_button_profile_profile_group_create_menu_attributes', '');
-        hide_show_div('data_main_choice_button_profile_profile_group_create_menu', 'hide'); 
+            //clear and hide profile group creation menu 
+            add_by_innerhtml('data_main_choice_button_profile_profile_group_create_menu_attributes', '');
+            hide_show_div('data_main_choice_button_profile_profile_group_create_menu', 'hide'); 
 
             return;
         }
@@ -466,6 +471,7 @@ function profile_group_create(){
 
 
 // --- save new profiles groups
+
 function profiles_group_save(){
 
     var get_profifile_group_name = document.getElementById('profile_group_name_input').value;
