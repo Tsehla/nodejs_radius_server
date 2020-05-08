@@ -35,10 +35,105 @@ var login_in_account_limit_profile_attributes = [ //stores defined authorization
 ];
 
 // logged in or logged out users
-var users = [];
+var  users = [
+    {
+        name : '', 
+        password : '', 
+        bind_mac : false, //restrict usage of this account to binded mac
+        binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
+        max_users : 1; //number of users who can use this voucher at same time
+        user_device_mac : [], //keep track of mac of users using the vouchers, //mac are removed when user log out
+        last_contact_date : { day: '', month : '', year : '' }, //used to keep track of reset
+        last_contact_time :{ hour : '', minute : '', second : '' }, //used to keep track of reset
+        voucher_used : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
+        reset : false, // is account reset-able
+        reset_time : {day : 0, month : 0, hour : 0 }, // used to reset account limits
+        active : false, //is voucher active 
+        first_used_date : {day : 0, month : 0, hour : 0 }, //used to allow reset calculation
+        expire : true, //is voucher expire
+        expire_date : {day : 0, month : 0, hour : 0 }, //expires after first activation
+
+        profile_attribute_group : '',//keep track of profile attriute, changable
+
+        nas_identifier_id : '', // tracks name of device used to contact radius server
+        
+
+        profile_default_data : '',//account limit / at account define
+        profile_available_data : '', //account left after each update
+
+        profile_default_time : '',
+        profile_available_time : '',
+
+        profile_default_upload : '',
+        profile_available_upload : '',
+
+        profile_default_download : '',
+        profile_available_download : '',
+
+    
+    }
+
+
+];
+
+/**
+ * Here define upload limit for each vendor device or router
+ * 
+ * Format shuld be 
+ * ['device vendor name','limit atribute name'];
+ * 
+ * Example
+ * 
+ * [ 'Mikrotik','Mikrotik-Total-Limit']
+ * 
+ * Add in attribute related array
+ * 
+ */
+
+var time_limit_define = [ //for time related limits 
+
+    [ 'Mikrotik','Mikrotik-Total-Limit']
+
+]
+
+var upload_limit_define = [
+    [ 'Mikrotik','Mikrotik-Total-Limit']
+]
+
+var download_limit_define = [
+    [ 'Mikrotik','Mikrotik-Total-Limit']
+
+]
+
+var total_download_upload_limit_define = [
+    [ 'Mikrotik','Mikrotik-Total-Limit']
+]
+
+
+
 
 //radius requesting device name
-var nas_dentifier = [];
+var nas_identifier = [
+    {
+        identifier_name : '',
+        identifier_ip : '',
+        allow : false,
+        last_contact : {
+            date : {
+                day : '',
+                month : '',
+                year : ''
+            },
+            time : {
+                hour : '',
+                minute : '',
+                second : '',
+            }
+        }
+
+    }
+
+];
 
 
 
