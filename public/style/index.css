@@ -27,6 +27,9 @@ body{
 .full_height_percent {
     height: 100%;
 }
+.half_width_percent {
+    width: 49%;
+}
 .height_percent_auto {
     height: auto;
 }

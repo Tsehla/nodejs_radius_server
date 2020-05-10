@@ -60,9 +60,23 @@
             <!-- ----- users table ----- -->
             <div id='data_main_choice_button_users' class='height_percent_auto full_width_percent resizable_window_min_width resizable_window_min-height w3-container' >
                 
-                <!--create user button -->
-                <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-container' >
-                    <button id='' class='btn btn-warning height_percent_auto full_width_percent' >Create new user</button>
+                <!-- ---- create user ---- -->
+
+                <!-- user name + password user -->
+                <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-container w3-margin-top w3-margin-bottom' >
+                    <button id='' class='btn btn-warning height_percent_auto full_width_percent' onclick='user_create_menu("normal")'>Create "Username & Password" user</button>
+                </div>
+                <!-- create menu div -->
+                <div id='data_main_choice_button_users_normal_user_create' class='height_percent_auto full_width_percent resizable_window_min_width w3-container w3-margin-bottom'>      
+                </div>
+                
+
+                <!-- same username + password / voucher -->
+                <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-container w3-margin-top w3-margin-bottom' >
+                    <button id='' class='btn btn-warning height_percent_auto full_width_percent' onclick='user_create_menu("voucher")'>"Username & Password/Voucher" user</button>
+                </div>
+                <!-- create menu div -->
+                <div id='data_main_choice_button_users_voucher_user_create' class='height_percent_auto full_width_percent resizable_window_min_width w3-container w3-margin-bottom'>      
                 </div>
 
 
@@ -125,6 +139,7 @@
 
                  <!-- profile group -->
                 <div id ='data_main_choice_button_profile_profile_group' class='height_percent_auto full_width_percent resizable_window_min_width' >
+                    
                     <!--create profile group button-->
                     <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-container w3-bottom-bar ' >
                         <button id='' class='btn btn-warning height_percent_auto full_width_percent' onclick="create_new_profile_group_tracking = 0; hide_show_div('data_main_choice_button_profile_profile_group_create_menu','show');profile_group_create()">Create profile group</button>
@@ -140,7 +155,7 @@
                         </div>               
 
                         <!-- save /cancel profile group-->
-                        <div class='height_percent_auto full_width_percent w3-margin-bottom ' id='device_vendor_attribute_buttons'>
+                        <div class='height_percent_auto full_width_percent w3-margin-bottom resizable_window_min_width' id='device_vendor_attribute_buttons'>
 
                             <!-- add more profile attributes -->
                             <button class='btn btn-primary height_percent_auto full_width_percent la la-plus ' onclick='profile_group_create()'></button>

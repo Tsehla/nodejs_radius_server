@@ -41,8 +41,9 @@ var  users = [
         password : '', 
         bind_mac : false, //restrict usage of this account to binded mac
         binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
-        max_users : 1; //number of users who can use this voucher at same time
+        max_users : 1, //number of users who can use this voucher at same time
         user_device_mac : [], //keep track of mac of users using the vouchers, //mac are removed when user log out
+        batch_group_name : '', //used to keep track if account is part of batch // usefull for grouping
         last_contact_date : { day: '', month : '', year : '' }, //used to keep track of reset
         last_contact_time :{ hour : '', minute : '', second : '' }, //used to keep track of reset
         voucher_used : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
@@ -911,6 +912,31 @@ app.get('/dictionary_files_content', function(req, res){
 
             return;
             
+        }
+
+
+        //if its internal library requested
+        if(req.query.library_name == 'wifi-radius-standard'){
+            //console.log(file_content);
+
+            var libary_file_content = file_content.split(/\s/); //slit by white space and turn to array
+
+            var library_file_content_array = [];//contains file content as array
+
+            //process array contents
+            libary_file_content.forEach(function(data){
+
+                if(data.trim().length != 0){ //if not an empty space
+                    library_file_content_array.push({attribute_name : data, attribute_type : 'string'});//save content as object and push to array
+                }
+                
+            });
+
+
+            //send response 
+            res.jsonp({library_attributes:library_file_content_array,vendor_library_name:'none'});
+            return;
+
         }
         
         //pass files to processing function

@@ -546,3 +546,115 @@ function profiles_group_save(){
 
 
 
+// ------ profile
+
+// --------- create user ------------
+
+function user_create_menu(usertype){
+
+if(usertype == 'normal'){ //create normal user [ password + username ]
+
+    //clean normal user create menu
+    add_by_innerhtml('data_main_choice_button_users_normal_user_create', '');
+
+    // show normal user create menu
+    hide_show_div('data_main_choice_button_users_normal_user_create', 'show'); 
+
+   // contains [ normal ] profiles create elements
+    var normal_user_create_div_element = `
+        <input id='data_main_choice_button_users_normal_user_create_username' type='text' placeholder='Username' class='form-control w3-margin-top '>
+        <input id='data_main_choice_button_users_normal_user_create_password' type='text' placeholder='password' class='form-control w3-margin-top '>
+        <select id='' class='form-control w3-margin-top'>
+            <option default>Select data profile</option>
+    `
+    retrived_profile_groups.forEach(function(data){ //profiles group array contents
+
+        //console.log(data);
+        normal_user_create_div_element = normal_user_create_div_element + '<option>' + data[0] + '</option>'; //add  [ profiles group ] as select options
+
+    });
+
+    // add batch account creation option plus cancel/save buttons
+    normal_user_create_div_element = normal_user_create_div_element + `
+        </select>
+
+        <div id='' class= 'w3-panel w3-bottomBar w3-center'>
+            Batch option
+        </div>
+
+        <input type='number' placeholder='Total accounts to produce' class='form-control w3-margin-top w3-margin-bottom'>
+        <input type='text' placeholder='Batch group name' class='form-control w3-margin-top w3-margin-bottom'>
+        <input type='text' placeholder='Username suffix' class='form-control w3-margin-top w3-margin-bottom'>
+
+        <div id='' class='height_percent_auto full_width_percent resizable_window_min_width'>
+
+            <button onclick='' class='w3-button w3-white w3-border w3-border-red w3-margin-top height_percent_auto half_width_percent div_float_left'>Cancel</button>
+            <button onclick='' class='w3-button w3-white w3-border w3-border-blue w3-margin-top height_percent_auto half_width_percent div_float_right'>Create</button>
+            
+        </button>
+
+
+    `;
+
+    add_by_append('data_main_choice_button_users_normal_user_create', normal_user_create_div_element);//add menu element to div
+
+
+
+
+
+    return;
+}
+
+if(usertype == 'voucher'){ //create voucher type user [ same username + password ]
+
+
+    //clean normal user create menu
+    add_by_innerhtml('data_main_choice_button_users_voucher_user_create', '');
+
+    // show normal user create menu
+    hide_show_div('data_main_choice_button_users_voucher_user_create', 'show'); 
+
+   // contains [ normal ] profiles create elements
+    var normal_user_create_div_element = `
+        <input id='data_main_choice_button_users_normal_voucher_create_id_name' type='text' placeholder='Voucher code' class='form-control w3-margin-top '>
+        <select id='' class='form-control w3-margin-top'>
+            <option default>Select data profile</option>
+    `
+    retrived_profile_groups.forEach(function(data){ //profiles group array contents
+
+        //console.log(data);
+        normal_user_create_div_element = normal_user_create_div_element + '<option>' + data[0] + '</option>'; //add  [ profiles group ] as select options
+
+    });
+
+    // add batch account creation option plus cancel/save buttons
+    normal_user_create_div_element = normal_user_create_div_element + `
+        </select>
+
+        <div id='' class= 'w3-panel w3-bottomBar w3-center'>
+            Batch option
+        </div>
+
+        <input type='number' placeholder='Total vouchers to produce' class='form-control w3-margin-top w3-margin-bottom'>
+        <input type='text' placeholder='Batch group name' class='form-control w3-margin-top w3-margin-bottom'>
+        <input type='text' placeholder='Voucher code suffix' class='form-control w3-margin-top w3-margin-bottom'>
+
+        <div id='' class='height_percent_auto full_width_percent resizable_window_min_width'>
+
+            <button onclick='' class='w3-button w3-white w3-border w3-border-red w3-margin-top height_percent_auto half_width_percent div_float_left'>Cancel</button>
+            <button onclick='' class='w3-button w3-white w3-border w3-border-blue w3-margin-top height_percent_auto half_width_percent div_float_right'>Create</button>
+            
+        </button>
+
+
+    `;
+
+    add_by_append('data_main_choice_button_users_voucher_user_create', normal_user_create_div_element);//add menu element to div
+
+
+    return;    
+}
+
+
+
+}
