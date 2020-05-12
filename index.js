@@ -37,8 +37,8 @@ var login_in_account_limit_profile_attributes = [ //stores defined authorization
 // logged in or logged out users
 var  users = [
     {
-        name : '', 
-        password : '', 
+        name : 'usbwalt', 
+        password : 'usbwalt', 
         bind_mac : false, //restrict usage of this account to binded mac
         binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
         max_users : 1, //number of users who can use this voucher at same time
@@ -48,11 +48,11 @@ var  users = [
         last_contact_time :{ hour : '', minute : '', second : '' }, //used to keep track of reset
         voucher_used : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
         reset : false, // is account reset-able
-        reset_time : {day : 0, month : 0, hour : 0 }, // used to reset account limits
+        reset_time : {day : 0, month : 0, hour : 0 }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
         active : false, //is voucher active 
-        first_used_date : {day : 0, month : 0, hour : 0 }, //used to allow reset calculation
+        first_used_date : {day : 0, month : 0, hour : 0 }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
         expire : true, //is voucher expire
-        expire_date : {day : 0, month : 0, hour : 0 }, //expires after first activation
+        expire_date : {day : 0, month : 0, hour : 0 }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
 
         profile_attribute_group : '',//keep track of profile attriute, changable
 
@@ -1200,9 +1200,171 @@ app.get('/saved_profiles', function(req, res){
 })
 
 
+// -- create user accounts
+
+app.get('/create_user', function(req, res){
+
+    //console.log(req.query);
+
+    //var user_details = req.query.user_id;
+    var data_ptofile = req.query.data_profile;
+    var total_accounts = req.query.total_account;
+    var batch_group_name = req.query.account_group_name;
+    var voucher_username_suffix = req.query.voucher_username_suffix;
+
+    //get voucher codes and usernames  passowrd + passwords
+    var username_voucher_code = '';
+    var user_pasword = '';
+    
+    //holds usernames
+    var new_user_usernames = [];
+
+    // ----- check if type of account to produce
+
+    //if normal accont
+    if(req.query.account_type == 'normal'){ 
+
+        //check if more than one account to produce
+        if(total_accounts == ''){ //if total account not specified
+            
+            //set unsername + suffix
+            username_voucher_code = req.query.user_id['user_name'] + voucher_username_suffix.trim();
+
+            //set password
+            user_pasword  = req.query.user_id['get_normal_password'];
+
+            //save usernames to be checked for duplicate
+            new_user_usernames.push({'new_account_name' : username_voucher_code, 'new_account_password' : user_pasword});
+
+        }        
+
+    }
+
+    //if voucher account
+    if(req.query.account_type == 'voucher'){ 
+
+        //check if more than one account to produce
+        if(total_accounts == ''){ //if total account not specified
+            
+            //set unsername + suffix
+            username_voucher_code = req.query.user_id['user_name'] + voucher_username_suffix.trim();
+
+            //set password as username + suffix
+            user_pasword  =  req.query.user_id['user_name'] + voucher_username_suffix.trim();
+
+            //save usernames to be checked for duplicate
+            new_user_usernames.push({'new_account_name' : username_voucher_code, 'new_account_password' : user_pasword});
+        }        
+
+    }
+    
 
 
 
+    //if batch create unique usernames
+    if(parseInt(total_accounts) > 0 ){ //if total account specified
+
+
+
+    }
+
+
+    // -- for non batch new accounts
+
+    //check for usernames duplicates against existing users
+    var duplicates_usernames_exists_single_account = false;//track if duplicates where found
+
+    if(total_accounts == ''){ 
+       
+        //loop through stored user accounts usernames
+   
+        new_user_usernames.forEach(function(new_users){ //loop through provided username array
+
+            users.forEach(function(data, index){ //loop through stored user accounts usernames
+
+                if(new_users.new_account_name.toLowerCase() == data.name){ //compare stored user account names with new user account names
+                    
+                    duplicates_usernames_exists_single_account = true; //if match set true
+                        
+                }
+    
+                //if no match and main loop is on last run
+                if(index == users.length -1 && duplicates_usernames_exists_single_account == false){
+                            
+                // call user create function
+                    user_create_fn (new_users.new_account_name, new_users.new_account_password);
+                         
+                }
+
+            });
+            
+
+        });
+    }
+
+    
+
+    //if duplicate found end processing, send message
+    if(duplicates_usernames_exists_single_account == true){//if true
+
+        res.jsonp('Error, username or voucher code duplicate'); //send message
+        return; //end function
+    }
+
+    // ----- create user
+     
+    function user_create_fn (username, password){
+        var new_user = 
+        {
+            name : username, 
+            password : password, 
+            bind_mac : false, //restrict usage of this account to binded mac
+            binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
+            max_users : 1, //number of users who can use this voucher at same time
+            user_device_mac : [], //keep track of mac of users using the vouchers, //mac are removed when user log out
+            batch_group_name : batch_group_name, //used to keep track if account is part of batch // usefull for grouping
+            last_contact_date : { day: '', month : '', year : '' }, //used to keep track of reset
+            last_contact_time :{ hour : '', minute : '', second : '' }, //used to keep track of reset
+            voucher_used : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
+            reset : false, // is account reset-able
+            reset_time : {day : 0, month : 0, hour : 0 }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+            active : false, //is voucher active 
+            first_used_date : {day : 0, month : 0, hour : 0 }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+            expire : true, //is voucher expire
+            expire_date : {day : 0, month : 0, hour : 0 }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+    
+            profile_attribute_group : data_ptofile,//keep track of profile attriute, changable
+    
+            nas_identifier_id : '', // tracks name of device used to contact radius server
+            
+    
+            profile_default_data : '',//account limit / at account define
+            profile_available_data : '', //account left after each update
+    
+            profile_default_time : '',
+            profile_available_time : '',
+    
+            profile_default_upload : '',
+            profile_available_upload : '',
+    
+            profile_default_download : '',
+            profile_available_download : '',
+    
+        
+        }
+    
+    //save user 
+    //console.log(new_user)
+    users.push(new_user);
+    
+    }
+
+    //console.log(users)
+    //send account created message
+    res.jsonp('account created.')    
+
+
+});
 
 
 

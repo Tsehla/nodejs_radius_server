@@ -552,109 +552,256 @@ function profiles_group_save(){
 
 function user_create_menu(usertype){
 
-if(usertype == 'normal'){ //create normal user [ password + username ]
+    if(usertype == 'normal'){ //create normal user [ password + username ]
 
-    //clean normal user create menu
-    add_by_innerhtml('data_main_choice_button_users_normal_user_create', '');
+        //clean normal user create menu
+        add_by_innerhtml('data_main_choice_button_users_normal_user_create', '');
 
-    // show normal user create menu
-    hide_show_div('data_main_choice_button_users_normal_user_create', 'show'); 
+        // show normal user create menu
+        hide_show_div('data_main_choice_button_users_normal_user_create', 'show'); 
 
-   // contains [ normal ] profiles create elements
-    var normal_user_create_div_element = `
-        <input id='data_main_choice_button_users_normal_user_create_username' type='text' placeholder='Username' class='form-control w3-margin-top '>
-        <input id='data_main_choice_button_users_normal_user_create_password' type='text' placeholder='password' class='form-control w3-margin-top '>
-        <select id='' class='form-control w3-margin-top'>
-            <option default>Select data profile</option>
-    `
-    retrived_profile_groups.forEach(function(data){ //profiles group array contents
+    // contains [ normal ] profiles create elements
+        var normal_user_create_div_element = `
+            <input id='data_main_choice_button_users_normal_user_create_username' type='text' placeholder='Username' class='form-control w3-margin-top '>
+            <input id='data_main_choice_button_users_normal_user_create_password' type='text' placeholder='password' class='form-control w3-margin-top '>
+            <select id='data_main_choice_button_users_normal_user_data_group' class='form-control w3-margin-top'>
+                <option default>Select data profile</option>
+        `
+        retrived_profile_groups.forEach(function(data){ //profiles group array contents
 
-        //console.log(data);
-        normal_user_create_div_element = normal_user_create_div_element + '<option>' + data[0] + '</option>'; //add  [ profiles group ] as select options
+            //console.log(data);
+            normal_user_create_div_element = normal_user_create_div_element + '<option>' + data[0] + '</option>'; //add  [ profiles group ] as select options
+
+        });
+
+        // add batch account creation option plus cancel/save buttons
+        normal_user_create_div_element = normal_user_create_div_element + `
+            </select>
+
+            <div id='' class= 'w3-panel w3-bottomBar w3-center'>
+                Batch option
+            </div>
+
+            <input id='data_main_choice_button_users_normal_user_batch_total' type='number' placeholder='Total accounts to produce' class='form-control w3-margin-top w3-margin-bottom'>
+            <input id='data_main_choice_button_users_normal_user_batch_name' type='text' placeholder='Batch group name' class='form-control w3-margin-top w3-margin-bottom'>
+            <input id='data_main_choice_button_users_normal_user_username_suffix' type='text' placeholder='Username suffix' class='form-control w3-margin-top w3-margin-bottom'>
+
+            <div id='' class='height_percent_auto full_width_percent resizable_window_min_width'>
+
+                <button onclick='hide_show_div("data_main_choice_button_users_normal_user_create", "hide")' class='w3-button w3-white w3-border w3-border-red w3-margin-top height_percent_auto half_width_percent div_float_left'>Cancel</button>
+                <button onclick='user_create_save("normal")' class='w3-button w3-white w3-border w3-border-blue w3-margin-top height_percent_auto half_width_percent div_float_right'>Create</button>
+                
+            </button>
+
+
+        `;
+
+        add_by_append('data_main_choice_button_users_normal_user_create', normal_user_create_div_element);//add menu element to div
+
+
+
+
+
+        return;
+    }
+
+    if(usertype == 'voucher'){ //create voucher type user [ same username + password ]
+
+
+        //clean normal user create menu
+        add_by_innerhtml('data_main_choice_button_users_voucher_user_create', '');
+
+        // show normal user create menu
+        hide_show_div('data_main_choice_button_users_voucher_user_create', 'show'); 
+
+    // contains [ normal ] profiles create elements
+        var voucher_user_create_div_element = `
+            <input id='data_main_choice_button_users_voucher_create_voucher_code' type='text' placeholder='Voucher code' class='form-control w3-margin-top '>
+            <select id='data_main_choice_button_users_voucher_create_data_group' class='form-control w3-margin-top'>
+                <option default>Select data profile</option>
+        `
+        retrived_profile_groups.forEach(function(data){ //profiles group array contents
+
+            //console.log(data);
+            voucher_user_create_div_element = voucher_user_create_div_element + '<option>' + data[0] + '</option>'; //add  [ profiles group ] as select options
+
+        });
+
+        // add batch account creation option plus cancel/save buttons
+        voucher_user_create_div_element = voucher_user_create_div_element + `
+            </select>
+
+            <div id='' class= 'w3-panel w3-bottomBar w3-center'>
+                Batch option
+            </div>
+
+            <input id='data_main_choice_button_users_voucher_create_batch_total' type='number' placeholder='Total vouchers to produce' class='form-control w3-margin-top w3-margin-bottom'>
+            <input id='data_main_choice_button_users_voucher_create_batch_name' type='text' placeholder='Batch group name' class='form-control w3-margin-top w3-margin-bottom'>
+            <input id='data_main_choice_button_users_voucher_create_batch_suffix' type='text' placeholder='Voucher code suffix' class='form-control w3-margin-top w3-margin-bottom'>
+
+            <div id='' class='height_percent_auto full_width_percent resizable_window_min_width'>
+
+                <button onclick='hide_show_div("data_main_choice_button_users_voucher_user_create", "hide")' class='w3-button w3-white w3-border w3-border-red w3-margin-top height_percent_auto half_width_percent div_float_left'>Cancel</button>
+                <button onclick='user_create_save("voucher")' class='w3-button w3-white w3-border w3-border-blue w3-margin-top height_percent_auto half_width_percent div_float_right'>Create</button>
+                
+            </button>
+
+
+        `;
+
+        add_by_append('data_main_choice_button_users_voucher_user_create', voucher_user_create_div_element);//add menu element to div
+
+
+        return;    
+    }
+
+}
+
+// --------- save user ------------
+function user_create_save(type_of_user){
+
+    var vouchercode_username_password = ''; //stores usernames + pasword or voucher code
+    var data_profile_group = ''; //store data profile
+    var batch_total = 0; //stores batch total
+    var batch_name = '';//stores name of batch
+    var vouchercode_username_password_suffix = ''; //stores suffix
+   
+
+    if(type_of_user == 'normal'){ 
+        
+        //get normal account create menu data
+        var get_normal_username = document.getElementById('data_main_choice_button_users_normal_user_create_username').value;
+        var get_normal_password = document.getElementById('data_main_choice_button_users_normal_user_create_password').value;
+        var get_normal_data_group = document.getElementById('data_main_choice_button_users_normal_user_data_group').value;
+        var get_normal_batch_total = document.getElementById('data_main_choice_button_users_normal_user_batch_total').value;
+        var get_normal_batch_name = document.getElementById('data_main_choice_button_users_normal_user_batch_name').value;
+        var get_normal_suffix = document.getElementById('data_main_choice_button_users_normal_user_username_suffix').value;
+
+        //check if basic account creation elements are filled
+        if(get_normal_username.length < 3 || get_normal_password.length < 3 || get_normal_data_group == 'Select data profile'){ //if username and password is chars are less than 3 and no data profile selcted
+
+            //check if batch number is more than 0 and or data profile is not selected
+            if(Number(get_normal_batch_total.replace(/,/, '.')) < 1 || get_normal_data_group == 'Select data profile'){ //if batch number not specifiy
+
+                alert('Option 1\nPlease fill in username, password and select data profile.\n\nOption 2\nSelect data profile and type total number \nof account to produce under [batch].');//give error
+                return;//end function
+            }
+        }
+
+        //attach username and pasword
+        vouchercode_username_password = {user_name : get_normal_username.trim() , get_normal_password: get_normal_password.trim() };
+
+        //if usrename and pasword is filled and batch total number is more than one// give warning
+        var batch_produce_username_override_confirm = 'nothing pressed yet';//tracks if confirm alert [cancel] or [ok] was pressed
+
+        if(get_normal_username.trim().length > 0 && Number(get_normal_batch_total.replace(/,/, '.')) > 1 ){
+
+            batch_produce_username_override_confirm = confirm('You have selected "batch" number to be more than 1.\nThis will cause accounts to be produced automatically, and will ignore your added username and password. ')
+        }
+
+        if(batch_produce_username_override_confirm == false){ //if cancel pressed
+            return;//end function
+        }
+
+        if(batch_produce_username_override_confirm == true){ //if ok pressed
+            vouchercode_username_password = {user_name : '' , get_normal_password: '' };//set username and password to none;
+        }
+        
+        //pass account creation data // be sent to server 
+        data_profile_group = get_normal_data_group;
+        batch_total = get_normal_batch_total;
+        batch_name = get_normal_batch_name ;
+        vouchercode_username_password_suffix = get_normal_suffix;
+
+
+    }
+
+    if(type_of_user == 'voucher'){
+
+        //get voucher data
+        var get_voucher_voucher_code = document.getElementById('data_main_choice_button_users_voucher_create_voucher_code').value;
+        var get_voucher_profile_group = document.getElementById('data_main_choice_button_users_voucher_create_data_group').value;
+        var get_voucher_batch_total = document.getElementById('data_main_choice_button_users_voucher_create_batch_total').value;
+        var get_voucher_batch_name = document.getElementById('data_main_choice_button_users_voucher_create_batch_name').value;
+        var get_voucher_suffix = document.getElementById('data_main_choice_button_users_voucher_create_batch_suffix').value;
+
+        //check if basic account creation elements are filled
+        if(get_voucher_voucher_code.length < 3 || get_voucher_profile_group == 'Select data profile'){ //if username and password is chars are less than 3 and no data profile selcted
+
+            //check if batch number is more than 0 and or data profile is not selected
+            if(Number(get_voucher_batch_total.replace(/,/, '.')) < 1 || get_voucher_profile_group == 'Select data profile'){ //if batch number not specifiy
+
+                alert('Option 1\nPlease fill in voucher code and select data profile.\n\nOption 2\nSelect data profile and type total number \nof voucher to produce under [batch].');//give error
+                return;//end function
+            }
+        }
+
+        //attach voucher code
+        vouchercode_username_password = {user_name : get_voucher_voucher_code.trim()};
+
+        //if voucher code is filled and batch total number is more than one// give warning
+        var batch_produce_voucher_code_override_confirm = 'nothing pressed yet';//tracks if corfim alert [cancel] or [ok] was pressed
+
+        if(get_voucher_voucher_code.trim().length > 0 && Number(get_voucher_batch_total.replace(/,/, '.')) > 1 ){
+
+            batch_produce_voucher_code_override_confirm = confirm('You have selected "batch" number to be more than 1.\nThis will cause accounts to be produced automatically, and will ignore your added username and password. ')
+        }
+
+        if(batch_produce_voucher_code_override_confirm == false){ //if cancel pressed
+            return;//end function
+        }
+
+        if(batch_produce_voucher_code_override_confirm == true){ //if ok pressed
+            vouchercode_username_password = {user_name : ''};//set ouchercode to none;
+        }
+        
+        //pass voucher creation data // be sent to server 
+        data_profile_group = get_voucher_profile_group;
+        batch_total = get_voucher_batch_total;
+        batch_name = get_voucher_batch_name ;
+        vouchercode_username_password_suffix = get_voucher_suffix;
+
+
+    }
+
+ 
+    //sent data to server and create account
+    $.get('/create_user', {'user_id' : vouchercode_username_password, 'data_profile' : data_profile_group, 'total_account' : batch_total, 'account_group_name' : batch_name, 'voucher_username_suffix': vouchercode_username_password_suffix, account_type : type_of_user }, function(data, success){
+
+        //console.log(success, data);
+        if(success == 'success'){// if response retrieved from server 
+            console.log(data)
+
+             //if account succesfully created
+            if(data == 'account created.'){
+                //give alert
+                alert('Success : ' + batch_total + ' account/s created. ');
+                
+                return;//end function
+            }
+
+
+            if(data = 'Error, username or voucher code duplicate'){//if account voucher code or username is found to be duplicate
+
+                //give alert
+                alert('Error : "' + vouchercode_username_password.user_name + '", username or voucher code is already used\nPlease try a different one.');
+
+                return;
+            }
+            
+          
+            
+        }
+
+        //if no reponse retrived
+        alert('Error, the is an issue contacting the server to create new users.\nPlease try again later or contact administrator.');//give error
+
 
     });
 
-    // add batch account creation option plus cancel/save buttons
-    normal_user_create_div_element = normal_user_create_div_element + `
-        </select>
-
-        <div id='' class= 'w3-panel w3-bottomBar w3-center'>
-            Batch option
-        </div>
-
-        <input type='number' placeholder='Total accounts to produce' class='form-control w3-margin-top w3-margin-bottom'>
-        <input type='text' placeholder='Batch group name' class='form-control w3-margin-top w3-margin-bottom'>
-        <input type='text' placeholder='Username suffix' class='form-control w3-margin-top w3-margin-bottom'>
-
-        <div id='' class='height_percent_auto full_width_percent resizable_window_min_width'>
-
-            <button onclick='' class='w3-button w3-white w3-border w3-border-red w3-margin-top height_percent_auto half_width_percent div_float_left'>Cancel</button>
-            <button onclick='' class='w3-button w3-white w3-border w3-border-blue w3-margin-top height_percent_auto half_width_percent div_float_right'>Create</button>
-            
-        </button>
-
-
-    `;
-
-    add_by_append('data_main_choice_button_users_normal_user_create', normal_user_create_div_element);//add menu element to div
-
-
-
-
-
-    return;
-}
-
-if(usertype == 'voucher'){ //create voucher type user [ same username + password ]
-
-
-    //clean normal user create menu
-    add_by_innerhtml('data_main_choice_button_users_voucher_user_create', '');
-
-    // show normal user create menu
-    hide_show_div('data_main_choice_button_users_voucher_user_create', 'show'); 
-
-   // contains [ normal ] profiles create elements
-    var normal_user_create_div_element = `
-        <input id='data_main_choice_button_users_normal_voucher_create_id_name' type='text' placeholder='Voucher code' class='form-control w3-margin-top '>
-        <select id='' class='form-control w3-margin-top'>
-            <option default>Select data profile</option>
-    `
-    retrived_profile_groups.forEach(function(data){ //profiles group array contents
-
-        //console.log(data);
-        normal_user_create_div_element = normal_user_create_div_element + '<option>' + data[0] + '</option>'; //add  [ profiles group ] as select options
-
-    });
-
-    // add batch account creation option plus cancel/save buttons
-    normal_user_create_div_element = normal_user_create_div_element + `
-        </select>
-
-        <div id='' class= 'w3-panel w3-bottomBar w3-center'>
-            Batch option
-        </div>
-
-        <input type='number' placeholder='Total vouchers to produce' class='form-control w3-margin-top w3-margin-bottom'>
-        <input type='text' placeholder='Batch group name' class='form-control w3-margin-top w3-margin-bottom'>
-        <input type='text' placeholder='Voucher code suffix' class='form-control w3-margin-top w3-margin-bottom'>
-
-        <div id='' class='height_percent_auto full_width_percent resizable_window_min_width'>
-
-            <button onclick='' class='w3-button w3-white w3-border w3-border-red w3-margin-top height_percent_auto half_width_percent div_float_left'>Cancel</button>
-            <button onclick='' class='w3-button w3-white w3-border w3-border-blue w3-margin-top height_percent_auto half_width_percent div_float_right'>Create</button>
-            
-        </button>
-
-
-    `;
-
-    add_by_append('data_main_choice_button_users_voucher_user_create', normal_user_create_div_element);//add menu element to div
-
-
-    return;    
-}
-
-
 
 }
+
+
+
+// --------- fetch user ------------
