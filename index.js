@@ -43,22 +43,26 @@ var  users = [
         binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
         max_users : 1, //number of users who can use this voucher at same time
         user_device_mac : [], //keep track of mac of users using the vouchers, //mac are removed when user log out
+        type_of_account : 'normal', //keep record of account being normal or voucher
         batch_group_name : '', //used to keep track if account is part of batch // usefull for grouping
-        last_contact_date : { day: '', month : '', year : '' }, //used to keep track of reset
-        last_contact_time :{ hour : '', minute : '', second : '' }, //used to keep track of reset
-        voucher_used : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
+        last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //used to keep track of reset
+        last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' }, //used to keep track of reset
+        account_depleted : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
         reset : false, // is account reset-able
-        reset_time : {day : 0, month : 0, hour : 0 }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-        active : false, //is voucher active 
-        first_used_date : {day : 0, month : 0, hour : 0 }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+        reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+        reset_time : { 'hour' : '', 'minute': '', 'second' : '' },
+        active : false, //is voucher active
+        creation_date : { 'day_of_week': 2, 'day_of_month': 2, 'month': 4, 'year': 2020 }, //date account created
+        first_used_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+        first_used_time : { 'hour' : '', 'minute': '', 'second' : '' },
         expire : true, //is voucher expire
-        expire_date : {day : 0, month : 0, hour : 0 }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+        expire_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+        expire_time : { 'hour' : '', 'minute': '', 'second' : '' },
 
         profile_attribute_group : '',//keep track of profile attriute, changable
 
         nas_identifier_id : '', // tracks name of device used to contact radius server
         
-
         profile_default_data : '',//account limit / at account define
         profile_available_data : '', //account left after each update
 
@@ -70,7 +74,6 @@ var  users = [
 
         profile_default_download : '',
         profile_available_download : '',
-
     
     }
 
@@ -1195,14 +1198,78 @@ app.get('/saved_profiles', function(req, res){
 
     res.jsonp(login_in_account_limit_profile_groups);// give stored profile groups
 
-
-
 })
 
+// -- get available users accounts
+app.get('/user_accounts', function(req, res){
 
-// -- create user accounts
+    var stored_users_accounts = [];//strores prepared user accounts
 
-app.get('/create_user', function(req, res){
+    users.forEach(function(data){//loop through stored users
+            
+        stored_users_accounts.push({ //extract and store accounts details
+            account_username : data.name,
+            account_type : data.type_of_account,
+            account_depleted : data.account_depleted,
+            account_active : data.active,
+            account_batch_group_name : data.batch_group_name,
+            account_creation_date : data.creation_date,
+        });
+    });
+
+    //give accounts details as response
+    res.jsonp(stored_users_accounts);
+
+});
+
+
+// -- create user accounts ---
+
+// -- read names list and save to memory
+var names_list = []; //stores names list
+
+function read_names_list (){
+    
+    //clear name list of old contents if any
+    names_list = [];
+
+    //get directory files names
+    fs.readdir(__dirname + '/world_list/', function (err, files) {
+        
+        
+        if(err){//give error response back
+
+            console.log('User create :: unable to scan names list directory: ' + err);
+            return;
+        } 
+        
+
+        //read contnets of each of the files
+        files.forEach(function(data){
+
+            fs.readFile(__dirname + '/world_list/' + data, function (err, files_data) {
+                
+                if(err){//give error response back
+        
+                    console.log('User create :: unable to read contents of file "' + data + '" : ' + err);
+                    return;
+                }
+
+                //console.log(files_data.toString('utf-8').split(/\s/));
+                names_list = files_data.toString('utf-8').split(/\s/);//save files names array globally
+            });
+
+        });
+
+    });
+
+}
+
+read_names_list ();//auto start on server run;
+
+
+
+app.get('/create_user', function(req, res){// create new users
 
     //console.log(req.query);
 
@@ -1258,18 +1325,119 @@ app.get('/create_user', function(req, res){
 
     }
     
-
-
-
     //if batch create unique usernames
     if(parseInt(total_accounts) > 0 ){ //if total account specified
 
+        //check if name list has names
+        if(names_list.length < 1000){//if names are less than thousand
 
+            read_names_list ();//attempt names storage lists re-read
+       }
+       
+       // --- find names
+       var found_unique_names = 0;//tracks unique names found
+       var while_loops = 0; //tracks each lop
+       var are_names_fount = 'not yet';//track if names have not been found
+
+
+       //find names and check 
+       while(found_unique_names != parseInt(total_accounts) ){//while names found total is not equal requested names batch total
+
+            //create random
+            var random_name = Math.floor(Math.random() * names_list.length);
+            var random_password = Math.floor(Math.random() * names_list.length);
+
+            //console.log('name : ',names_list[random_name], ' username : ',names_list[random_password] );
+
+            //check if random username is same as any already registered in the system
+
+            for(var a = 0; a <= users.length - 1; a++){
+
+                //if username and passord
+                if(req.query.account_type == 'normal'){
+                    
+                    //check if username is already used only + batch name
+                    if(users[a].name == names_list[random_name].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+
+                        break;//end loop
+                    }
+                }
+
+                //if voucher
+                if(req.query.account_type == 'voucher'){
+
+                    //check for combined user name and password + batch name
+                    if(users[a].name == names_list[random_name].trim().toLowerCase() + names_list[random_password].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+
+                        break;//end loop
+                    }
+                }
+
+                //if loop managed to run till here then the name is unique
+                //save username and password
+                new_user_usernames.push({ 'new_account_name' : names_list[random_name].trim().toLowerCase(), 'new_account_password' : names_list[random_password].trim().toLowerCase() });
+
+                //increment found names by one
+                found_unique_names = found_unique_names + 1;
+            }
+        
+            //loop tracking
+            while_loops = while_loops + 1;
+
+            //check if loops number is 3 times total number of name list array length
+            if(while_loops == names_list.length * 3){//IF YOUSER BASE GROW BIG, INCREASE THIS, MAXIMUM NUMBER SHOULD BE (names_list.length * names_list.length ), this are possible  username + password combinations
+            //if(while_loops == 100){
+
+                console.log('in 1', names_list.length)
+                //check if names where not found at last second
+                if(found_unique_names != parseInt(total_accounts)){ //if not
+                    are_names_fount = false;//set to false
+                    console.log('in 2', while_loops)
+                }
+
+                //set unique name tracker names equal requested account total batch number
+                found_unique_names = parseInt(total_accounts);//cause loop to meet its requirements and end
+
+            }
+       }
+
+       //check if names where not found
+       if(are_names_fount == false){
+
+            res.jsonp('batch account create, unabled to create unique names, not already taken');//give response
+
+            console.log('batch account create, unabled to create unique names, not already taken');
+
+            return;//end function
+       }
+
+
+    // -- create batch users accounts
+    new_user_usernames.forEach(function(data){
+
+        //console.log(new_user_usernames);
+
+        var username = data.new_account_name + voucher_username_suffix.trim().toLowerCase(); //set username with suffix
+        var password = data.new_account_password;//set password
+
+        //if voucher
+        if(req.query.account_type == 'voucher'){
+            //combine username plus password to one 
+            username = data.new_account_name + data.new_account_password + voucher_username_suffix.trim().toLowerCase();//set password same as username
+
+            //set username as password
+            password = username ; //set password with suffix
+        }
+
+        //call user create function
+        user_create_fn (username , password);
+
+       });
 
     }
 
 
-    // -- for non batch new accounts
+    // -- for non batch new accounts ----
 
     //check for usernames duplicates against existing users
     var duplicates_usernames_exists_single_account = false;//track if duplicates where found
@@ -1291,7 +1459,7 @@ app.get('/create_user', function(req, res){
                 //if no match and main loop is on last run
                 if(index == users.length -1 && duplicates_usernames_exists_single_account == false){
                             
-                // call user create function
+                    // call user create function
                     user_create_fn (new_users.new_account_name, new_users.new_account_password);
                          
                 }
@@ -1302,7 +1470,7 @@ app.get('/create_user', function(req, res){
         });
     }
 
-    
+
 
     //if duplicate found end processing, send message
     if(duplicates_usernames_exists_single_account == true){//if true
@@ -1314,6 +1482,10 @@ app.get('/create_user', function(req, res){
     // ----- create user
      
     function user_create_fn (username, password){
+
+        //time stamp
+        var date = new Date();
+
         var new_user = 
         {
             name : username, 
@@ -1322,22 +1494,27 @@ app.get('/create_user', function(req, res){
             binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
             max_users : 1, //number of users who can use this voucher at same time
             user_device_mac : [], //keep track of mac of users using the vouchers, //mac are removed when user log out
+            type_of_account : req.query.account_type, //keep record of account being normal or voucher
             batch_group_name : batch_group_name, //used to keep track if account is part of batch // usefull for grouping
-            last_contact_date : { day: '', month : '', year : '' }, //used to keep track of reset
-            last_contact_time :{ hour : '', minute : '', second : '' }, //used to keep track of reset
-            voucher_used : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
+            last_contact_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, //used to keep track of reset
+            last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' }, //used to keep track of reset
+            account_depleted : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
             reset : false, // is account reset-able
-            reset_time : {day : 0, month : 0, hour : 0 }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-            active : false, //is voucher active 
-            first_used_date : {day : 0, month : 0, hour : 0 }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+            reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+            reset_time : { 'hour' : '', 'minute': '', 'second' : '' },
+            active : false, //is voucher active
+            creation_date : { 'day_of_week' : date.getDay(), 'day_of_month' : date.getDay(), 'month': date.getMonth(), 'year' : date.getFullYear() }, //date account created
+            creation_time : { 'hour' : date.getHours(), 'minute': date.getMinutes(), 'second' : date.getSeconds() },
+            first_used_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+            first_used_time : { 'hour' : '', 'minute': '', 'second' : '' },
             expire : true, //is voucher expire
-            expire_date : {day : 0, month : 0, hour : 0 }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+            expire_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+            expire_time : { 'hour' : '', 'minute': '', 'second' : '' },
     
             profile_attribute_group : data_ptofile,//keep track of profile attriute, changable
     
             nas_identifier_id : '', // tracks name of device used to contact radius server
             
-    
             profile_default_data : '',//account limit / at account define
             profile_available_data : '', //account left after each update
     
@@ -1352,17 +1529,15 @@ app.get('/create_user', function(req, res){
     
         
         }
-    
+        
     //save user 
     //console.log(new_user)
     users.push(new_user);
-    
     }
 
     //console.log(users)
     //send account created message
-    res.jsonp('account created.')    
-
+    res.jsonp('account created.');
 
 });
 

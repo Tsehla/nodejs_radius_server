@@ -1,4 +1,3 @@
-//alert()
 
 /* ====== repeatables ======= */
 
@@ -548,6 +547,118 @@ function profiles_group_save(){
 
 // ------ profile
 
+// --------- get vouchers / user accounts ------------
+function get_user_accounts(){
+
+
+
+
+
+    //get accounts data from server
+    $.get('/user_accounts', function(data, response){
+
+        //if serer reply
+        if(response == 'success'){
+
+            //console.log(data);
+
+            var week_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sur'];//week days array
+            var voucher_element = '';//contain vouchers formatted data
+            var users_elements = '';//contain users formatted data
+
+            //create html elements for users and vouchers
+            data.forEach(function(data){
+
+                if(data.account_type == 'normal'){//if data belong to normal user account
+
+                    users_elements  = users_elements  + `
+                        <tr onclick="alert('Username : ${data.account_username}, View, Edit/Delete menu coming later.')">
+                            <th>${data.account_username}</th>
+                            <th>${data.account_batch_group_name}</th>
+                            <th>${week_day[data.account_creation_date.day_of_week] +' '+ data.account_creation_date.day_of_month +'/'+ data.account_creation_date.month +'/'+ data.account_creation_date.year }</th>
+                            <th>${data.account_active}</th>
+                            <th>${data.account_depleted}</th>
+                        </tr>
+                    `;
+                }
+
+                if(data.account_type == 'voucher'){//if data belong to voucher account
+                    voucher_element = voucher_element + `
+                    <tr onclick="alert('Username : ${data.account_username}, View, Edit/Delete menu coming later.')">
+                        <th>${data.account_username}</th>
+                        <th>${data.account_batch_group_name}</th>
+                        <th>${week_day[data.account_creation_date.day_of_week] +' '+ data.account_creation_date.day_of_month +'/'+ data.account_creation_date.month +'/'+ data.account_creation_date.year }</th>
+                        <th>${data.account_active}</th>
+                        <th>${data.account_depleted}</th>
+                    </tr>
+                `;
+                }
+
+            });
+
+            //create voucher/users view menu
+            var user_vouchers_div = `
+                <div id='' class='height_percent_auto full_width_percent resizable_window_min_width w3-margin-top'>
+
+                    <button onclick='hide_show_div("voucher_users_view", "hide");hide_show_div("normal_users_view", "show")' class='w3-button w3-white w3-border w3-border-green w3-margin-top height_percent_auto half_width_percent div_float_left'>Users</button>
+                    <button onclick='hide_show_div("normal_users_view", "hide");hide_show_div("voucher_users_view", "show")' class='w3-button w3-white w3-border w3-border-green w3-margin-top height_percent_auto half_width_percent div_float_right'>Vouchers</button>
+                
+                
+                </div>
+
+                <!-- users -->
+                <div id='normal_users_view' class='height_percent_auto full_width_percent resizable_window_min_width'> 
+                    <hr />
+                    <table class="w3-table w3-striped w3-bordered">
+                        <tr>
+                            <th>User Name</th>
+                            <th>Group name</th>
+                            <th>Creation date</th>
+                            <th>Activated</th>
+                            <th>Depleted</th>
+                        </tr>
+                        ${users_elements}
+                    </table>
+                </div>
+
+                <!-- voucher -->
+                <div id='voucher_users_view' class='height_percent_auto full_width_percent resizable_window_min_width div_display_none '>
+                    <table class="w3-table w3-striped w3-bordered ">
+                        <tr>
+                            <th>User Name<th>
+                            <th>Group name</th>
+                            <th>Creation date</th>
+                            <th>Activated</th>
+                            <th>Depleted</th>
+                        </tr>
+                        ${voucher_element}
+                    </table>
+                </div> 
+
+            `
+
+            //clean div
+            add_by_innerhtml('data_main_choice_button_users_voucher_user_view', '');
+
+            //append users to div
+            add_by_append('data_main_choice_button_users_voucher_user_view', user_vouchers_div );
+            console.log(user_vouchers_div)
+            return;
+        }
+
+        //if server not responded
+        alert('Error getting user accounts from server, please try again later or contact administrator');
+
+
+
+    })
+
+
+}
+//auto run on system load
+get_user_accounts();//get user accounts
+
+
 // --------- create user ------------
 
 function user_create_menu(usertype){
@@ -591,7 +702,7 @@ function user_create_menu(usertype){
                 <button onclick='hide_show_div("data_main_choice_button_users_normal_user_create", "hide")' class='w3-button w3-white w3-border w3-border-red w3-margin-top height_percent_auto half_width_percent div_float_left'>Cancel</button>
                 <button onclick='user_create_save("normal")' class='w3-button w3-white w3-border w3-border-blue w3-margin-top height_percent_auto half_width_percent div_float_right'>Create</button>
                 
-            </button>
+            </div>
 
 
         `;
@@ -770,16 +881,28 @@ function user_create_save(type_of_user){
 
         //console.log(success, data);
         if(success == 'success'){// if response retrieved from server 
-            console.log(data)
+            //console.log(data)
 
              //if account succesfully created
             if(data == 'account created.'){
                 //give alert
                 alert('Success : ' + batch_total + ' account/s created. ');
-                
+
+                //reload user view 
+                get_user_accounts();
+
+                //close user / voucher create menu
+                hide_show_div("data_main_choice_button_users_normal_user_create","hide"); 
+                hide_show_div("data_main_choice_button_users_voucher_user_create","hide")
+
                 return;//end function
             }
 
+            //if un-able to create combination of unique names that are not used already using names list
+            if(data == 'batch account create, unabled to create unique names, not already taken'){
+                alert('Batch error. Not able to create unique names combinations that are not\nalready in the system.\n\nSolution 1\nDelete accounts that are used up or expired.\nSolution 2\nAdd more names list to [Word-list] folder.\nYou may need to contact administrator for that.');//give error
+                return;//end function
+            }
 
             if(data = 'Error, username or voucher code duplicate'){//if account voucher code or username is found to be duplicate
 
@@ -801,7 +924,3 @@ function user_create_save(type_of_user){
 
 
 }
-
-
-
-// --------- fetch user ------------
