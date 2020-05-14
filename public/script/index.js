@@ -262,7 +262,7 @@ function attributes_profile_save(){
         //console.log(a, div_library_name, div_library_attribute_name, div_library_attribute_value.value, div_library_attribute_value.getAttribute('data-library-attribite') );
 
         //create profile as array
-        new_authentification_profiles.push(['Vendor-Specific', div_library_attribute_value.getAttribute('data-library-attribite'),[ [div_library_attribute_name, div_library_attribute_value.value] ] ]);
+        new_authentification_profiles.push( ['Vendor-Specific', div_library_attribute_value.getAttribute('data-library-attribite'),[ [div_library_attribute_name, div_library_attribute_value.value] ]] );
         
     }
 

@@ -26,12 +26,41 @@ var app = express();
 
 //profiles group / allow grouping of attributes 
 // -- this allowes adding or removing of login attributes to already existing user accounts
-var login_in_account_limit_profile_groups = [ [ 'Mikrotik 4.9 gig data, 1meg download speed',[ 'Mikrotik 4.9 gig total data', 'Mikrotik 4.9 gig total data' ] ] ];
+var login_in_account_limit_profile_groups = [
+
+    [ 'Mikrotik 4.9 gig data, 1meg download speed',[ 'Mikrotik 4.9 gig total data', '2Gb Max data' ] ],
+    [ '4.9 gig total data',[ 'Mikrotik 4.9 gig total data' ] ],
+    [ 'limited data and down speed',[ 'data + speed limit' ] ]
+
+];
+
 
 //account profile attributes
 // --- vendor specific limits / attributes add-able to profiles
 var login_in_account_limit_profile_attributes = [ //stores defined authorization profiles
-    ['Mikrotik 4.9 gig total data', ['Vendor-Specific', 'Mikrotik',[['Mikrotik-Total-Limit', 4294967290]] ]]
+
+
+    ['2Gb Max data',
+        [
+            ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',11111 ]]]
+        ]
+    ],
+
+
+    ['Mikrotik 4.9 gig total data',
+        [
+            ['Vendor-Specific','Mikrotik', [['Mikrotik-Total-Limit',4294967290]]]
+        ]
+    ],
+
+    ['data + speed limit',
+        [
+            ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',11111 ]]],
+            ['Vendor-Specific','Mikrotik', [['Mikrotik-Total-Limit',4294967290]]]
+        ]
+    ],
+
+
 ];
 
 // logged in or logged out users
@@ -58,22 +87,22 @@ var  users = [
         expire : true, //is voucher expire
         expire_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
         expire_time : { 'hour' : '', 'minute': '', 'second' : '' },
-
-        profile_attribute_group : '',//keep track of profile attriute, changable
-
-        nas_identifier_id : '', // tracks name of device used to contact radius server
         
-        profile_default_data : '',//account limit / at account define
-        profile_available_data : '', //account left after each update
+        //profile_attribute_group : '4.9 gig total data',//keep track of profile attriute, changable
 
-        profile_default_time : '',
-        profile_available_time : '',
+        //profile_attribute_group : 'Mikrotik 4.9 gig data, 1meg download speed',//keep track of profile attriute, changable
+        
+        profile_attribute_group : 'limited data and down speed',//keep track of profile attriute, changable
+        nas_identifier_id : '', // tracks name of device used to contact radius server
 
-        profile_default_upload : '',
-        profile_available_upload : '',
+        //account usage track
+        profile_used_data : 0, 
 
-        profile_default_download : '',
-        profile_available_download : '',
+        profile_used_time : 0,
+
+        profile_used_upload : 0,
+
+        profile_used_download : 0,
     
     }
 
@@ -95,21 +124,28 @@ var  users = [
  */
 
 var time_limit_define = [ //for time related limits 
+    [ 'Mikrotik','Mikrotik-Total-Limit']
+]
 
+var upload_limit_define = [ //total upload data limits
+    [ 'Mikrotik','Mikrotik-Total-Limit']
+]
+
+var download_limit_define = [ //total download data limit
     [ 'Mikrotik','Mikrotik-Total-Limit']
 
 ]
 
-var upload_limit_define = [
-    [ 'Mikrotik','Mikrotik-Total-Limit']
+var upload_speed_limit_define = [ //upload speed limit
+    [ 'Mikrotik','Mikrotik-Xmit-Limit']
 ]
 
-var download_limit_define = [
-    [ 'Mikrotik','Mikrotik-Total-Limit']
+var download_speed_limit_define = [ //download speed limit
+    [ 'Mikrotik','Mikrotik-Recv-Limit']
 
 ]
 
-var total_download_upload_limit_define = [
+var total_download_upload_limit_define = [ //total uploaded + downloaded data limit
     [ 'Mikrotik','Mikrotik-Total-Limit']
 ]
 
@@ -225,17 +261,27 @@ socket.on('message', (msg, reply_info) => {
         */
 
         // ... retrive passwords from requests
-
-
         console.log('Authentification Access-Request message : ',radius_in_message);
 
 
-        var  username = radius_in_message.attributes['User-Name'];
-        var password =radius_in_message.attributes['User-Password'];
+        var authentication_username = radius_in_message.attributes['User-Name'];
+        var authentication_password =radius_in_message.attributes['User-Password'];
         
 
 
-        // ... check password against the db
+
+
+
+
+
+
+
+
+
+
+
+
+        // ... check password against the db ...
 
 
         //if password match // give accepted response
@@ -244,26 +290,234 @@ socket.on('message', (msg, reply_info) => {
         var reply_contents = {}; //will contain reply data to be encoded
         var attribute_container = []; //contains atribute data of reply data
 
-        if (username == 'usbwalt' && password == 'usbwalt') {
 
-            reply_code = 'Access-Accept';
+        // ----- check if authenticating device is allowed to use system
 
-        }
+            /**
+             * 
+             *      Nas identifir allowed check here
+             *          if not
+             *      give reject response
+             *      end function
+             */
+
+
+
+
+
+
+
         
-        //if no match// give rejected response
-        else {
+        // ---- check if user with password is registered
 
-            reply_code = 'Access-Reject';
+        var authenticated_user; //keep track of authenticated user data
+        
+        for(var a = 0; a <= users.length -1; a++){
+
+           //check usrename exist in database 
+           if(users[a].name == authentication_username && users[a].password == authentication_password ){//if match 
+
+                reply_code = 'Access-Accept';//give accept response
+
+                authenticated_user = users[a];//save users details
+
+                break;//end loop
+           }
+
+           if(a == users.length -1){ //if loop is at it ends/no match found
+
+                reply_code = 'Access-Reject';//give reject response
+
+           }
 
         }
+      
 
          //--------------------- Authenticated user account limits
 
-        if(login_in_account_limit){//add authentification limits, if available
-            attribute_container.push(login_in_account_limit);
+        if(authenticated_user.profile_attribute_group.length > 0 ){ //if authentification limits specified
+
+            //-- check if profile group exists
+            var authentification_profile_group_data = null;
+
+            for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
+
+                
+
+                if( login_in_account_limit_profile_groups[a] && login_in_account_limit_profile_groups[a][0] == authenticated_user.profile_attribute_group ){ //if name match found
+
+                    authentification_profile_group_data = login_in_account_limit_profile_groups[a];//save profile group data
+                    break; //end loop
+                }
+
+
+
+
+            }
+
+            // -- if profile group was found
+            if(authentification_profile_group_data != null){
+
+                //console.log(authentification_profile_group_data);
+
+                // -- get profile attributes
+                var authentification_profile_attribute = [];//save account limits attributes
+
+                var authentification_request_rejected = false;//keep track if account didnt meet any requirements when checking
+
+                // login_in_account_limit_profile_attributes 
+                 authentification_profile_group_data[1].forEach(function(data){ //loop through [profiles group], grouped attributes
+                    //console.log(data);
+
+                    //loop through profile attributes en find name matching attributes specified in [ profile group]
+                    for(var a = 0; a <= login_in_account_limit_profile_attributes.length -1; a++ ){
+                        
+                        // console.log(login_in_account_limit_profile_attributes[a]);
+                        // console.log(login_in_account_limit_profile_attributes[a][0])
+
+                        if(login_in_account_limit_profile_attributes[a] && login_in_account_limit_profile_attributes[a][0] == data){//if name match found
+
+                            //loop through grouped attributes and extract attribute contained
+                            login_in_account_limit_profile_attributes[a][1].forEach(function(data){
+
+                            
+                                //catch [wifi-radius] library attributes
+                                if(data[1].toLowerCase() == 'wifi-radius'){
+
+                                    var date = new Date(); // get system date and time
+
+                                    console.log('wifi-radius',data[1]);
+
+                                    // --- check accounts limits details and process
+
+                                     //check if voucher expired
+                                     if(authenticated_user.expire && authenticated_user.active == true &&authentification_request_rejected == false){
+
+                                        //reset usage to 0
+                                        
+                                    }
+                                    //check if accounts should be reset
+                                    // authenticated_user
+                                    if(authenticated_user.reset == true && authentification_request_rejected == false ){
+
+
+                                    }
+                                   
+                                    //check max users limit is reached
+                                    if(authenticated_user.user_device_mac.length >= parseInt(authenticated_user.max_users) &&authentification_request_rejected == false){
+
+                                        //reply_code = 'Access-Accept';//give accept response
+                                        //authentification_request_rejected == true;//set rejected true
+                                    }
+
+                                    //check if mac is binded
+                                    if(authenticated_user.bind_mac == true && authentification_request_rejected == false){
+
+                                        //check if mack is binded
+                                        // -- loop [authenticated_user.binded_mac ]
+
+                                        //if not, bind current device mac
+                                    }
+
+                                    if(authenticated_user ){
+
+                                    }
+
+                                    if(authenticated_user ){
+
+                                    }
+
+
+
+                                }
+
+                                //for non vendor specific attributes or radius default or attributes of libraries flagged with none
+                                if(data[1].toLowerCase() == 'none'){
+
+                                    console.log('none', data[1])
+                                    //strip [vendor-specific] and library name
+                                    attribute_container.push(data[2][0]);
+
+                                }
+
+
+                                //push none [wifi-radius] vendor specific attribute to be sent back to router with no further processing
+                                if(data[1].toLowerCase() != 'wifi-radius' && data[1] != 'none'){
+
+                                    console.log('other',data[1])
+                                    //save attribute
+                                    attribute_container.push(data);
+                                }
+
+
+
+
+
+
+
+                                
+
+
+
+
+
+
+
+
+
+
+
+
+                            });
+
+                            break;
+                        }
+                    }
+
+                   // console.log(authentification_profile_attribute);
+
+                });
+
+
+                
+
+
+
+
+            }
+
+
+            //attribute_container.push(login_in_account_limit);
 
         }
         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         
        
         // ---------------------- radius authentification attributes
@@ -937,7 +1191,7 @@ app.get('/dictionary_files_content', function(req, res){
 
 
             //send response 
-            res.jsonp({library_attributes:library_file_content_array,vendor_library_name:'none'});
+            res.jsonp({library_attributes:library_file_content_array,vendor_library_name:'wifi-radius'});
             return;
 
         }
@@ -1112,7 +1366,7 @@ app.get('/dictionary_files_content', function(req, res){
 // --- save new profile
 app.get('/new_profiles_data', function(req, res){
 
-   // console.log(req.query.new_profiles);
+    //console.log(JSON.stringify(req.query.new_profiles));
     
     // check if profiles name duplicate
     var duplicate_profile_name_found = false;//track if duplicate name found
@@ -1140,6 +1394,7 @@ app.get('/new_profiles_data', function(req, res){
 
     // ---- save new profiles -----
     login_in_account_limit_profile_attributes.push(req.query.new_profiles);
+
 
     //give success response back
     res.jsonp('data recived');
@@ -1515,17 +1770,14 @@ app.get('/create_user', function(req, res){// create new users
     
             nas_identifier_id : '', // tracks name of device used to contact radius server
             
-            profile_default_data : '',//account limit / at account define
-            profile_available_data : '', //account left after each update
-    
-            profile_default_time : '',
-            profile_available_time : '',
-    
-            profile_default_upload : '',
-            profile_available_upload : '',
-    
-            profile_default_download : '',
-            profile_available_download : '',
+            //account usage track
+            profile_used_data : 0, 
+
+            profile_used_time : 0,
+
+            profile_used_upload : 0,
+
+            profile_used_download : 0,
     
         
         }
