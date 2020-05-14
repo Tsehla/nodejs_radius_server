@@ -625,7 +625,7 @@ function get_user_accounts(){
                 <div id='voucher_users_view' class='height_percent_auto full_width_percent resizable_window_min_width div_display_none '>
                     <table class="w3-table w3-striped w3-bordered ">
                         <tr>
-                            <th>User Name<th>
+                            <th>User Name</th>
                             <th>Group name</th>
                             <th>Creation date</th>
                             <th>Activated</th>
@@ -633,9 +633,8 @@ function get_user_accounts(){
                         </tr>
                         ${voucher_element}
                     </table>
-                </div> 
-
-            `
+                </div>
+            `;
 
             //clean div
             add_by_innerhtml('data_main_choice_button_users_voucher_user_view', '');
