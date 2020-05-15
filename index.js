@@ -1173,7 +1173,7 @@ socket.on('message', (msg, reply_info) => {
 
     //acount usage updates
 
-    function user_account_usage_updates(update_data){
+    function user_account_usage_updates(update_data){z
 
         // { //coolected update data
         //     update_status_type : '',
@@ -1210,8 +1210,10 @@ socket.on('message', (msg, reply_info) => {
                 }
 
                 //if update reason [ interim-update ] (regular status update) or account [ stop ] (account log out usage update)
-                if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' || radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update'){
 
+                //if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' || radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update'){
+                
+                if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){//do only on stop, usage over calculation on interim updates
                     //update profile usage data
                     
                     //save time
