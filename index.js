@@ -39,7 +39,8 @@ var login_in_account_limit_profile_attributes = [ //stores defined authorization
 
     ['4.9Gb Max data',
         [
-            ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]]
+            ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
+            ['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]]
         ]
     ],
 
@@ -147,15 +148,18 @@ var upload_limit_define = [ //total upload data limits
 
 var upload_speed_limit_define = [ //upload speed limit
     [ 'Mikrotik','Mikrotik-Xmit-Limit']
+    //Mikrotik-Recv-Limit-Gigawords 
 ]
 
 var download_speed_limit_define = [ //download speed limit
     [ 'Mikrotik','Mikrotik-Recv-Limit']
-
+    //Mikrotik-Xmit-Limit-Gigawords 
 ]
 
 var total_download_upload_limit_define = [ //total uploaded + downloaded data limit
     [ 'Mikrotik','Mikrotik-Total-Limit']
+
+    //Mikrotik-Total-Limit-Gigawords
 ]
 
 
