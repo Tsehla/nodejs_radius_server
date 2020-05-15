@@ -28,9 +28,7 @@ var app = express();
 // -- this allowes adding or removing of login attributes to already existing user accounts
 var login_in_account_limit_profile_groups = [
 
-    [ 'Mikrotik 4.9 gig data, 1meg download speed',[ 'Mikrotik 4.9 gig total data', '2Gb Max data' ] ],
-    [ '4.9 gig total data',[ 'Mikrotik 4.9 gig total data' ] ],
-    [ 'limited data and down speed',[ 'data + speed limit' ] ]
+    [ '4.9 gig total data',[ '4.9Gb Max data' ] ]
 
 ];
 
@@ -39,27 +37,11 @@ var login_in_account_limit_profile_groups = [
 // --- vendor specific limits / attributes add-able to profiles
 var login_in_account_limit_profile_attributes = [ //stores defined authorization profiles
 
-
-    ['2Gb Max data',
+    ['4.9Gb Max data',
         [
-            ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',11111 ]]]
+            ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]]
         ]
     ],
-
-
-    ['Mikrotik 4.9 gig total data',
-        [
-            ['Vendor-Specific','Mikrotik', [['Mikrotik-Total-Limit',4294967290]]]
-        ]
-    ],
-
-    ['data + speed limit',
-        [
-            ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',11111 ]]],
-            ['Vendor-Specific','Mikrotik', [['Mikrotik-Total-Limit',4294967290]]]
-        ]
-    ],
-
 
 ];
 
@@ -92,7 +74,7 @@ var  users = [
 
         //profile_attribute_group : 'Mikrotik 4.9 gig data, 1meg download speed',//keep track of profile attriute, changable
         
-        profile_attribute_group : 'limited data and down speed',//keep track of profile attriute, changable
+        profile_attribute_group : '4.9 gig total data',//keep track of profile attriute, changable
         nas_identifier_id : '', // tracks name of device used to contact radius server
 
         multi_share : false, //allow single profile to attributes to be used by diffrent divice, and specific device usage tracking
@@ -449,7 +431,7 @@ socket.on('message', (msg, reply_info) => {
                                     if(data[2][0][0] == 'Max-data-total-limit' && authentification_request_rejected == false){
 
                                         //check if data is still available
-
+                                        
 
                                         var to_bytes = data[2][0][1] //hold converted data to bytes
                                         //check if value is in gigabytes
@@ -484,13 +466,21 @@ socket.on('message', (msg, reply_info) => {
                                         
 
                                         //check if usage data if less available data //this will allow profile attributes data value changes that affect all accounts data limit changes without havng to update accounts 
-                                        if(to_bytes <= authenticated_user.profile_used_data ){
+                                        if(authenticated_user.profile_used_data < to_bytes){
 
                                             //create radius reply 
                                             total_download_upload_limit_define.forEach(function(data){//loop  through max-data usade limit definitions
 
                                                 //remaining data
-                                                var remaining_data = parseInt(authenticated_user.profile_used_data) - to_bytes; 
+                                                var remaining_data = to_bytes - parseInt(authenticated_user.profile_used_data); 
+
+                                                //if remaining is creater than + 4GB in bytes, turn to words to gigs
+                                                //nodejs radius cant encode values creater than 32bit limit
+                                                if(remaining_data > 4294967295){
+
+                                                    // https://forum.mikrotik.com/viewtopic.php?t=9902
+                                                   // remaining_data
+                                                }
 
                                                 //create reply attribute format
                                                 attribute_container.push(['Vendor-Specific',data[0], [[data[1],remaining_data ]]])
@@ -500,7 +490,7 @@ socket.on('message', (msg, reply_info) => {
                                         }
 
                                         //if usage is higher than available limit
-                                        if(to_bytes >= authenticated_user.profile_used_data ){
+                                        if(authenticated_user.profile_used_data >= to_bytes ){
 
                                             //give response reject
                                             authentification_request_rejected == true;
