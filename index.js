@@ -344,7 +344,7 @@ socket.on('message', (msg, reply_info) => {
 
          //--------------------- Authenticated user account limits
 
-        if(authenticated_user.profile_attribute_group.length > 0 ){ //if authentification limits specified
+        if(authenticated_user && authenticated_user.profile_attribute_group.length > 0 ){ //if authentification limits specified
 
             //-- check if profile group exists
             var authentification_profile_group_data = null;
