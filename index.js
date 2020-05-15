@@ -463,7 +463,7 @@ socket.on('message', (msg, reply_info) => {
 
                                             }
                                             //check if value is in megabyte
-                                            if(to_bytes.search('mb') != 1 || to_bytes.search('mib') != 1 || to_bytes.search('megabyte') != 1 ){
+                                            else if(to_bytes.search('mb') != 1 || to_bytes.search('mib') != 1 || to_bytes.search('megabyte') != 1 ){
 
                                                 //covert MB to bytes
                                                 to_bytes = parseInt(to_bytes) * 1000000;
@@ -471,7 +471,7 @@ socket.on('message', (msg, reply_info) => {
 
                                             }
                                             //check if value is in kilobyte
-                                            if(to_bytes.search('kb') != 1 || to_bytes.search('kib') != 1 || to_bytes.search('kilobyte') != 1 ){
+                                            else if(to_bytes.search('kb') != 1 || to_bytes.search('kib') != 1 || to_bytes.search('kilobyte') != 1 ){
 
                                                 //covert KB to bytes
                                                 to_bytes = parseInt(to_bytes) * 1000;
