@@ -1185,9 +1185,48 @@ socket.on('message', (msg, reply_info) => {
 
         // }
 
-        console.log(update_data);
+        //console.log(update_data);
         
 
+        //get user account and update
+
+        for(var a = 0; a <= users.length; a++){
+
+            console.log(users[a].name);
+            
+            //find account matching user name
+            if(users[a].name == update_data['account_username'] ){
+
+                //if update reason [ start ], (account accounting start notification )
+                if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){
+
+                    //set account first use attribute to true or etc
+
+                }
+
+                //if update reason [ interim-update ] (regular status update) or account [ stop ] (account log out usage update)
+                if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' || radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update'){
+
+                    //update profile usage data
+                    
+                    //save time
+                    users[a].profile_used_time = parseInt(users[a].profile_used_time) + parseInt(update_data['usage_session_time']);
+
+                    //save upload
+                    //handle uploads / download gigaword / 64bit number / + 4GB 
+                    users[a].profile_used_upload = parseInt(users[a].profile_used_upload) + (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']));
+
+                    //handle download
+                    //handle uploads / download gigaword / 64bit number / + 4GB
+                    users[a].profile_used_download = parseInt(users[a].profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
+
+                    //create total data usage
+                    users[a].profile_used_data = parseInt(users[a].profile_used_data) + users[a].profile_used_upload + users[a].profile_used_download;
+
+                    
+                }
+            }
+        }
 
 
 
