@@ -225,7 +225,7 @@ socket.on('message', (msg, reply_info) => {
   try {
 
     radius_in_message = radius_module.decode({packet: msg, secret:  radius_secret});
-    console.log(radius_in_message);
+    //console.log(radius_in_message);
 
   } catch(error){
 
@@ -1199,7 +1199,7 @@ socket.on('message', (msg, reply_info) => {
 
 
 if(radius_in_message.code == 'Status-Server'){// return user account data
-    console.log('Accounting + authentification data of user requested : ', radius_in_message)
+    //console.log('Accounting + authentification data of user requested : ', radius_in_message)
     /*
 
     { 
