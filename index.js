@@ -95,6 +95,26 @@ var  users = [
         profile_attribute_group : 'limited data and down speed',//keep track of profile attriute, changable
         nas_identifier_id : '', // tracks name of device used to contact radius server
 
+        multi_share : false, //allow single profile to attributes to be used by diffrent divice, and specific device usage tracking
+
+        multi_share_mac : [ //keep track of devices [mac] sharing profile
+            {
+                'device_mac_id' : '',
+                last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
+                last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' },
+                reset : false,
+                //reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
+                //reset_time : { 'hour' : '', 'minute': '', 'second' : '' }
+
+                usage : {
+                    profile_used_data : 0,
+                    profile_used_time : 0,
+                    profile_used_upload : 0,
+                    profile_used_download : 0,
+                }
+            }
+        ],
+
         //account usage track
         profile_used_data : 0, 
 
@@ -103,6 +123,18 @@ var  users = [
         profile_used_upload : 0,
 
         profile_used_download : 0,
+
+        authentications_request_logs : [//keep logs of account authentificaton activity
+            {
+                'username' : '',
+                'password' : '',
+                'mac_id' : '',
+                'ip' : '',
+                'date' : '',
+                'time' : '',
+                'status' : 'rejected/accepted'
+            }
+        ]
     
     }
 
@@ -129,11 +161,6 @@ var time_limit_define = [ //for time related limits
 
 var upload_limit_define = [ //total upload data limits
     [ 'Mikrotik','Mikrotik-Total-Limit']
-]
-
-var download_limit_define = [ //total download data limit
-    [ 'Mikrotik','Mikrotik-Total-Limit']
-
 ]
 
 var upload_speed_limit_define = [ //upload speed limit
@@ -386,7 +413,7 @@ socket.on('message', (msg, reply_info) => {
 
                                     var date = new Date(); // get system date and time
 
-                                    console.log('wifi-radius',data[1]);
+                                    console.log('wifi-radius',data[2][0][0]);
 
                                     // --- check accounts limits details and process
 
@@ -419,22 +446,91 @@ socket.on('message', (msg, reply_info) => {
                                         //if not, bind current device mac
                                     }
 
-                                    if(authenticated_user ){
+                                    if(data[2][0][0] == 'Max-data-total-limit' && authentification_request_rejected == false){
+
+                                        //check if data is still available
+
+
+                                        var to_bytes = data[2][0][1] //hold converted data to bytes
+                                        //check if value is in gigabytes
+
+                                        if(typeof(to_bytes) == 'string'){
+
+                                            if( to_bytes.search('gb') != 1 || to_bytes.search('gib') != 1 || to_bytes.search('gigabyte') != 1 ){
+
+                                                //covert GB to bytes
+                                                to_bytes = parseInt(to_bytes) * 1000000000;
+
+                                            }
+                                            //check if value is in megabyte
+                                            if(to_bytes.search('mb') != 1 || to_bytes.search('mib') != 1 || to_bytes.search('megabyte') != 1 ){
+
+                                                //covert MB to bytes
+                                                to_bytes = parseInt(to_bytes) * 1000000;
+
+
+                                            }
+                                            //check if value is in kilobyte
+                                            if(to_bytes.search('kb') != 1 || to_bytes.search('kib') != 1 || to_bytes.search('kilobyte') != 1 ){
+
+                                                //covert KB to bytes
+                                                to_bytes = parseInt(to_bytes) * 1000;
+
+                                            }
+                                        }
+
+                                        //if data come a byte in string format turn to number
+                                        to_bytes = parseInt(to_bytes);
+                                        
+
+                                        //check if usage data if less available data //this will allow profile attributes data value changes that affect all accounts data limit changes without havng to update accounts 
+                                        if(to_bytes <= authenticated_user.profile_used_data ){
+
+                                            //create radius reply 
+                                            total_download_upload_limit_define.forEach(function(data){//loop  through max-data usade limit definitions
+
+                                                //remaining data
+                                                var remaining_data = parseInt(authenticated_user.profile_used_data) - to_bytes; 
+
+                                                //create reply attribute format
+                                                attribute_container.push(['Vendor-Specific',data[0], [[data[1],remaining_data ]]])
+
+                                            });
+
+                                        }
+
+                                        //if usage is higher than available limit
+                                        if(to_bytes >= authenticated_user.profile_used_data ){
+
+                                            //give response reject
+                                            authentification_request_rejected == true;
+
+                                        }
 
                                     }
 
-                                    if(authenticated_user ){
+                                    if(data[2][0][0] ==  'Max-time-limit' && authentification_request_rejected == false){
+
 
                                     }
 
+                                    if(data[2][0][0] ==  'Max-upload-limit' && authentification_request_rejected == false){
 
+
+                                    }
+
+                                    if(data[2][0][0] ==  'Max-download-limit' && authentification_request_rejected == false){
+
+
+                                    }
+                                   
 
                                 }
 
                                 //for non vendor specific attributes or radius default or attributes of libraries flagged with none
                                 if(data[1].toLowerCase() == 'none'){
 
-                                    console.log('none', data[1])
+                                    //console.log('none', data[1])
                                     //strip [vendor-specific] and library name
                                     attribute_container.push(data[2][0]);
 
@@ -444,26 +540,10 @@ socket.on('message', (msg, reply_info) => {
                                 //push none [wifi-radius] vendor specific attribute to be sent back to router with no further processing
                                 if(data[1].toLowerCase() != 'wifi-radius' && data[1] != 'none'){
 
-                                    console.log('other',data[1])
+                                    //console.log('other',data[1])
                                     //save attribute
                                     attribute_container.push(data);
                                 }
-
-
-
-
-
-
-
-                                
-
-
-
-
-
-
-
-
 
 
 
@@ -718,7 +798,7 @@ socket.on('message', (msg, reply_info) => {
         reply_contents.secret = radius_secret;
         reply_contents.attributes = attribute_container;
        
-
+        //console.log(reply_contents.attributes)
 
         try{ //encode reply to radius formate
             console.log('reply message not encoded : ',reply_contents);
@@ -1528,6 +1608,13 @@ app.get('/create_user', function(req, res){// create new users
 
     //console.log(req.query);
 
+    /**
+     * 
+     *  add voucher expire option here
+     *  if voucher should be shared option here
+     *  and all other option here and front
+     */
+
     //var user_details = req.query.user_id;
     var data_ptofile = req.query.data_profile;
     var total_accounts = req.query.total_account;
@@ -1769,6 +1856,26 @@ app.get('/create_user', function(req, res){// create new users
             profile_attribute_group : data_ptofile,//keep track of profile attriute, changable
     
             nas_identifier_id : '', // tracks name of device used to contact radius server
+
+            multi_share : false, //allow single profile to attributes to be used by diffrent divice, and specific device usage tracking
+
+            multi_share_mac : [ //keep track of devices [mac] sharing profile
+                {
+                    'device_mac_id' : '',
+                    last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
+                    last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' },
+                    reset : false,
+                    //reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
+                    //reset_time : { 'hour' : '', 'minute': '', 'second' : '' }
+
+                    usage : {
+                        profile_used_data : 0,
+                        profile_used_time : 0,
+                        profile_used_upload : 0,
+                        profile_used_download : 0,
+                    }
+                }
+            ],
             
             //account usage track
             profile_used_data : 0, 
