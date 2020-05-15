@@ -1190,12 +1190,14 @@ socket.on('message', (msg, reply_info) => {
 
         //get user account and update
 
-        for(var a = 0; a <= users.length; a++){
+        for(var a = 0; a <= users.length - 1; a++){
 
-            console.log(users[a].name);
             
+
             //find account matching user name
             if(users[a].name == update_data['account_username'] ){
+
+                console.log(users[a]);
 
                 //if update reason [ start ], (account accounting start notification )
                 if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){
