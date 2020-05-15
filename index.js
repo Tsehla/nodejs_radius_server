@@ -40,7 +40,7 @@ var login_in_account_limit_profile_attributes = [ //stores defined authorization
     ['4.9Gb Max data',
         [
             ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
-            ['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]]
+            //['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]] 
         ]
     ],
 
