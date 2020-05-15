@@ -395,7 +395,7 @@ socket.on('message', (msg, reply_info) => {
 
                                     var date = new Date(); // get system date and time
 
-                                    console.log('wifi-radius',data[2][0][0]);
+                                    //console.log('wifi-radius',data[2][0][0]);
 
                                     // --- check accounts limits details and process
 
@@ -494,6 +494,9 @@ socket.on('message', (msg, reply_info) => {
 
                                             //give response reject
                                             authentification_request_rejected == true;
+
+                                            //deny account authentification request
+                                            reply_code = 'Access-Reject';//give accept response
 
                                         }
 
