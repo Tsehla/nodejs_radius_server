@@ -239,7 +239,7 @@ socket.on('message', (msg, reply_info) => {
   // radius in message types
 
   //  --------------- access requesting authentification request  ---------------
-  if (radius_in_message.code == 'Access-Request') { 
+    if (radius_in_message.code == 'Access-Request') {
 
 
         /* user authentification request from mikrotik  [ console.log(radius_in_message) ]
@@ -822,8 +822,6 @@ socket.on('message', (msg, reply_info) => {
 
   if (radius_in_message.code == 'Accounting-Request') {
 
-
-
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){ // start accounting data for user
 
         console.log('Accounting start for user, requested : ', radius_in_message);
@@ -878,7 +876,17 @@ socket.on('message', (msg, reply_info) => {
             if (err) {
 
               console.log('Error sending response to ', reply_info);
+
+              return;
             }
+
+             //do status update
+             user_account_usage_updates({ 
+                update_status_type : radius_in_message.attributes['Acct-Status-Type'],
+                user_device_mac_id : radius_in_message.attributes['Calling-Station-Id'],
+                account_username : radius_in_message.attributes['User-Name'],
+                nas_identifier_name : radius_in_message.attributes['NAS-Identifier']
+            });
 
         });
         
@@ -952,8 +960,23 @@ socket.on('message', (msg, reply_info) => {
             
             if (err) {
 
-            console.log('Error sending response to ', reply_info);
+            //console.log('Error sending response to ', reply_info);
+
+            return;
             }
+
+             //do status update
+             user_account_usage_updates({ 
+                update_status_type : radius_in_message.attributes['Acct-Status-Type'],
+                user_device_mac_id : radius_in_message.attributes['Calling-Station-Id'],
+                account_username : radius_in_message.attributes['User-Name'],
+                account_download_use : radius_in_message.attributes['Acct-Input-Octets'],
+                account_upload_use : radius_in_message.attributes['Acct-Output-Octets'],
+                account_upload_use_gig_words : radius_in_message.attributes['Acct-Output-Gigawords'],
+                account_download_use_gig_words : radius_in_message.attributes['Acct-Input-Gigawords'],
+                usage_session_time : radius_in_message.attributes['Acct-Session-Time'],
+                nas_identifier_name : radius_in_message.attributes['NAS-Identifier']
+            });
 
         });
 
@@ -965,7 +988,7 @@ socket.on('message', (msg, reply_info) => {
 
         
 
-        console.log('Accounting data update for user, requested : ', radius_in_message);
+        //console.log('Accounting data update for user, requested : ', radius_in_message);
 
         /*  accounting usage update for active user session from mikrotik  [ console.log(radius_in_message) ]
         {
@@ -1020,8 +1043,23 @@ socket.on('message', (msg, reply_info) => {
             
             if (err) {
 
-                console.log('Error sending response to ', reply_info);
+                //console.log('Error sending response to ', reply_info);
+                return;
             }
+
+            //do status update
+            user_account_usage_updates({ 
+                update_status_type : radius_in_message.attributes['Acct-Status-Type'],
+                user_device_mac_id : radius_in_message.attributes['Calling-Station-Id'],
+                account_username : radius_in_message.attributes['User-Name'],
+                account_download_use : radius_in_message.attributes['Acct-Input-Octets'],
+                account_upload_use : radius_in_message.attributes['Acct-Output-Octets'],
+                account_upload_use_gig_words : radius_in_message.attributes['Acct-Output-Gigawords'],
+                account_download_use_gig_words : radius_in_message.attributes['Acct-Input-Gigawords'],
+                usage_session_time : radius_in_message.attributes['Acct-Session-Time'],
+                nas_identifier_name : radius_in_message.attributes['NAS-Identifier']
+            });
+
 
         });
 
@@ -1031,7 +1069,7 @@ socket.on('message', (msg, reply_info) => {
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Accounting-On' ){ // set accounting on for user
 
         
-        console.log('Accounting on for user, requested : ', radius_in_message);
+        //console.log('Accounting on for user, requested : ', radius_in_message);
 
         /* -- accounting on request from mikrotik after user login [ console.log(radius_in_message) ]
         
@@ -1083,7 +1121,7 @@ socket.on('message', (msg, reply_info) => {
 
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Accounting-Off' ){// set accounting off for user
-        console.log('Accounting off for user, requested : ', radius_in_message)
+       // console.log('Accounting off for user, requested : ', radius_in_message)
 
         /*
          { code: 'Accounting-Request',
@@ -1128,6 +1166,31 @@ socket.on('message', (msg, reply_info) => {
         });
 
         return;
+    }
+
+    //acount usage updates
+
+    function user_account_usage_updates(update_data){
+
+        // { //coolected update data
+        //     update_status_type : '',
+        //     user_device_mac_id : '',
+        //     account_username : '',
+        //     account_download_use : '',
+        //     account_upload_use : '',
+        //     account_upload_use_gig_words : '',
+        //     account_download_use_gig_words : '',
+        //     usage_session_time : '',
+        //     nas_identifier_name : '',
+
+        // }
+
+        console.log(update_data);
+        
+
+
+
+
     }
 
    
