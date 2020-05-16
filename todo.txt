@@ -1,0 +1,6 @@
+-> get interim update working
+-> make interim update reply with available data, to keep track of shared account usage
+
+
+//implement
+https://wiki.mikrotik.com/wiki/Manual:RADIUS_Client/reference_dictionary
