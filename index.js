@@ -8,121 +8,502 @@ var fs = require('fs');
 // ====== enviroment variables file
 require('dotenv').config();
 
+//mongo db 
+var mongo_db = require('mongodb').MongoClient;
+
+//mongo db link
+var db_url = process.env.MongoDB || 'mongodb://127.0.0.1/';
+
 // ======= picks udp request from router
 var dgram = require('dgram');
 
 // ======= radius module
 var radius_module = require('radius');//decode upd authentification requests from router
-radius_module.add_dictionary(__dirname + '/vendor_dictionary/'); //vendor specific router dictionary folder
+radius_module.add_dictionary(__dirname + '/vendor_dictionary/wifi_radius'); //vendor specific router dictionary folder
 
 
 // ==== handle tcp requets (get/post/delete/etc)
 var app = express();
+
+// ==================== mongo db first run ====================
+
+
+
+mongo_db.connect(db_url, function(err, db_data){
+
+    if(err){
+        console.log('db connection error : ', err);
+        return;
+    }
+
+        
+    var radius_db = db_data.db('wifi_radius_db');
+
+    // --- create default users in users collection
+      
+    
+    // radius_db.collection('users').find() 
+    // .each(function(err, document){
+
+    //     if(err){
+    //         console.log('first run db, user finding error : ',err);
+    //         return;
+    //     }
+
+
+        
+    //     if( document == null){ //if no users in table
+
+    //         //add default users
+    //         radius_db.collection('users').insertMany(radius_users, function(err, response){
+    //             if(err){
+    //                 console.log('db error adding users : ',err);
+
+    //                 return;
+    //             }
+    //         console.log('default users added to db : ',response);
+    
+    //         })
+
+    //     }
+
+    //     console.log(document == null)
+
+        
+    // });
+
+
+    //check if user collection if empty
+
+    db_data.db('wifi_radius_db').collection('radius_users').find().toArray(function(err, data){
+      
+        if(data.length == 0){ //if empty
+
+            let radius_users = {
+                
+                name : 'usbwalt', 
+                password : 'usbwalt', 
+                bind_mac : false, //restrict usage of this account to binded mac
+                binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
+                max_users : 1, //number of users who can use this voucher at same time
+                user_device_mac : [], //keep track of mac of users using the vouchers, //mac are removed when user log out
+                type_of_account : 'normal', //keep record of account being normal or voucher
+                batch_group_name : '', //used to keep track if account is part of batch // usefull for grouping
+                last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //used to keep track of reset
+                last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' }, //used to keep track of reset
+                account_depleted : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
+                reset : false, // is account reset-able
+                reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+                reset_time : { 'hour' : '', 'minute': '', 'second' : '' },
+                active : false, //is voucher active
+                creation_date : { 'day_of_week': 2, 'day_of_month': 2, 'month': 4, 'year': 2020 }, //date account created
+                first_used_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+                first_used_time : { 'hour' : '', 'minute': '', 'second' : '' },
+                expire : true, //is voucher expire
+                expire_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+                expire_time : { 'hour' : '', 'minute': '', 'second' : '' },
+                  
+                //profile_attribute_group : '4.9 gig total data',//keep track of profile attriute, changable
+          
+                //profile_attribute_group : 'Mikrotik 4.9 gig data, 1meg download speed',//keep track of profile attriute, changable
+                  
+                profile_attribute_group : '4.9 gig total data',//keep track of profile attriute, changable
+                nas_identifier_id : '', // tracks name of device used to contact radius server
+          
+                multi_share : false, //allow single profile to attributes to be used by diffrent divice, and specific device usage tracking
+          
+                multi_share_mac : [ //keep track of devices [mac] sharing profile
+                    {
+                        'device_mac_id' : '',
+                        last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
+                        last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' },
+                        reset : false,
+                        //reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
+                        //reset_time : { 'hour' : '', 'minute': '', 'second' : '' }
+          
+                        usage : {
+                            profile_used_data : 0,
+                            profile_used_time : 0,
+                            profile_used_upload : 0,
+                            profile_used_download : 0,
+                        }
+                    }
+                ],
+          
+                //account usage track
+                profile_used_data : 0, 
+          
+                profile_used_time : 0,
+          
+                profile_used_upload : 0,
+          
+                profile_used_download : 0,
+          
+                authentications_request_logs : [//keep logs of account authentificaton activity
+                    { 
+                        'username' : '',
+                        'password' : '',
+                        'mac_id' : '',
+                        'ip' : '',
+                        'date' : '',
+                        'time' : '',
+                        'status' : 'rejected/accepted'
+                    }
+                ]
+              
+            };
+      
+
+            //add default users
+            db_data.db('wifi_radius_db').collection('radius_users').insertOne(radius_users, function(err, response){
+
+                if(err){
+                    console.log('db error adding "radius_users" : ',err);
+
+                    return;
+                }
+
+                //console.log('default "radius_users" added to db : ',response);
+                console.log('default "radius_users" added to db ');
+    
+            })
+        }
+
+    });
+
+    // --- limit profiles group default
+    //check if profile group collection is empty
+    db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').find().toArray(function(err, data){
+      
+        if(data.length == 0){ //if empty
+
+            //profiles group / allow grouping of attributes 
+            var login_in_account_limit_profile_groups = [ '4.9 gig total data',[ '4.9Gb Max data' ] ];
+
+
+            //add default login_in_account_limit_profile_groups
+            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').insertOne({login_in_account_limit_profile_groups}, function(err, response){
+
+                if(err){
+                    console.log('db error adding " login_in_account_limit_profile_groups " : ',err);
+
+                    return;
+                }
+
+                //console.log('default "login_in_account_limit_profile_groups" added to db : ',response);
+                console.log('default "login_in_account_limit_profile_groups" added to db');
+    
+            })
+        }
+
+    });
+
+
+    // --- defined uploads limits -----
+
+    /**
+     * Here define upload limit for each vendor device or router
+     * 
+     * Format shuld be 
+     * ['device vendor name','limit atribute name'];
+     * 
+     * Example
+     * 
+     * [ 'Mikrotik','Mikrotik-Total-Limit']
+     * 
+     * Add in attribute related array
+     * 
+     */
+
+
+    // --- time limits
+    //check if time limit collection is empty
+    db_data.db('wifi_radius_db').collection('time_limit_define').find().toArray(function(err, data){
+      
+        if(data.length == 0){ //if empty
+
+            var time_limit_define =  [ 'Mikrotik','Mikrotik-Total-Limit'];
+          
+
+            //add default time_limit_define
+            db_data.db('wifi_radius_db').collection('time_limit_define').insertOne({time_limit_define}, function(err, response){
+
+                if(err){
+                    console.log('db error adding " time_limit_define " : ',err);
+
+                    return;
+                }
+
+                //console.log('default " time_limit_define " added to db : ',response);
+                console.log('default " time_limit_define " added to db : ');
+    
+            })
+        }
+
+    });
+
+
+    // --- total upload data limits
+    //check if total upload data limits collection is empty
+    db_data.db('wifi_radius_db').collection('upload_limit_define').find().toArray(function(err, data){
+      
+        if(data.length == 0){ //if empty
+
+            var upload_limit_define = [ 'Mikrotik','Mikrotik-Total-Limit'];
+            
+            //add default upload_limit_define
+            db_data.db('wifi_radius_db').collection('upload_limit_define').insertOne({upload_limit_define}, function(err, response){
+
+                if(err){
+                    console.log('db error adding " upload_limit_define " : ',err);
+
+                    return;
+                }
+
+                //console.log('default "upload_limit_define" added to db : ',response);
+                console.log('default "upload_limit_define" added to db');
+    
+            })
+        }
+
+    });
+
+
+    // --- create default upload speed limit 
+    //check if upload speed limit collection if empty
+    db_data.db('wifi_radius_db').collection('upload_speed_limit_define').find().toArray(function(err, data){
+      
+        if(data.length == 0){ //if empty
+
+            
+            var upload_speed_limit_define = [ 'Mikrotik','Mikrotik-Xmit-Limit'];
+                //Mikrotik-Recv-Limit-Gigawords 
+            
+
+            //add default upload_speed_limit_define
+            db_data.db('wifi_radius_db').collection('upload_speed_limit_define').insertOne({upload_speed_limit_define}, function(err, response){
+
+                if(err){
+                    console.log('db error adding " upload_speed_limit_define " : ',err);
+
+                    return;
+                }
+
+                //console.log('default "upload_speed_limit_define" added to db : ',response);
+                console.log('default "upload_speed_limit_define" added to db : ');
+    
+            })
+        }
+
+    });
+
+
+    // --- create default download speed limit 
+    //check if download speed limit collection if empty
+    db_data.db('wifi_radius_db').collection('download_speed_limit_define').find().toArray(function(err, data){
+      
+        if(data.length == 0){ //if empty
+
+            var download_speed_limit_define = [ 'Mikrotik','Mikrotik-Recv-Limit'];
+                //Mikrotik-Xmit-Limit-Gigawords 
+
+            //add default download speed limit
+            db_data.db('wifi_radius_db').collection('download_speed_limit_define').insertOne({download_speed_limit_define}, function(err, response){
+
+                if(err){
+                    console.log('db error adding " download_speed_limit_define " : ',err);
+
+                    return;
+                }
+
+                //console.log('default "download_speed_limit_define" added to db : ',response);
+                console.log('default "download_speed_limit_define" added to db');
+    
+            })
+        }
+
+    });
+
+
+    // --- create default total uploaded + downloaded data limit
+    //check if total uploaded + downloaded data limit collection if empty
+    db_data.db('wifi_radius_db').collection('total_download_upload_limit_define').find().toArray(function(err, data){
+      
+        if(data.length == 0){ //if empty
+
+            var total_download_upload_limit_define = [ 'Mikrotik','Mikrotik-Total-Limit'];
+            
+                //Mikrotik-Total-Limit-Gigawords
+           
+
+            //add default total uploaded + downloaded data limit
+            db_data.db('wifi_radius_db').collection('total_download_upload_limit_define').insertOne({total_download_upload_limit_define}, function(err, response){
+
+                if(err){
+                    console.log('db error adding " total_download_upload_limit_define " : ',err);
+
+                    return;
+                }
+
+                //console.log('default "total_download_upload_limit_define" added to db : ',response);
+                console.log('default "total_download_upload_limit_define" added to db');
+            })
+        }
+
+    });
+
+
+
+    // --- create default radius requesting device (nas)
+    //check if radius requesting device (nas) collection if empty
+    db_data.db('wifi_radius_db').collection('nas_identifier').find().toArray(function(err, data){
+      
+        if(data.length == 0){ //if empty
+
+            var nas_identifier = 
+                {
+                    identifier_name : '',
+                    identifier_ip : '',
+                    allow : false,
+                    last_contact : {
+                        date : {
+                            day : '',
+                            month : '',
+                            year : ''
+                        },
+                        time : {
+                            hour : '',
+                            minute : '',
+                            second : '',
+                        }
+                    }
+            
+                };
+
+
+            //add default nas_identifier
+            db_data.db('wifi_radius_db').collection('nas_identifier').insertOne(nas_identifier, function(err, response){
+
+                if(err){
+                    console.log('db error adding " nas_identifier " : ',err);
+
+                    return;
+                }
+
+                //console.log('default "nas_identifier" added to db : ',response);
+                console.log('default "nas_identifier" added to db');
+    
+            })
+        }
+
+    });
+
+
+  
+    //close db connection
+    db_data.close;
+   
+
+});
 
 
 
 
 // ===================== Cross servers variabls =====================
 
-//profiles group / allow grouping of attributes 
-// -- this allowes adding or removing of login attributes to already existing user accounts
-var login_in_account_limit_profile_groups = [
-
-    [ '4.9 gig total data',[ '4.9Gb Max data' ] ]
-
-];
 
 
-//account profile attributes
+
+//account profile attributes ***
 // --- vendor specific limits / attributes add-able to profiles
-var login_in_account_limit_profile_attributes = [ //stores defined authorization profiles
+// var login_in_account_limit_profile_attributes = [ //stores defined authorization profiles
 
-    ['4.9Gb Max data',
-        [
-            ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
-            //['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]] 
-        ]
-    ],
+//     ['4.9Gb Max data',
+//         [
+//             ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
+//             //['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]] 
+//         ]
+//     ],
 
-];
+// ];
 
-// logged in or logged out users
-var  users = [
-    {
-        name : 'usbwalt', 
-        password : 'usbwalt', 
-        bind_mac : false, //restrict usage of this account to binded mac
-        binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
-        max_users : 1, //number of users who can use this voucher at same time
-        user_device_mac : [], //keep track of mac of users using the vouchers, //mac are removed when user log out
-        type_of_account : 'normal', //keep record of account being normal or voucher
-        batch_group_name : '', //used to keep track if account is part of batch // usefull for grouping
-        last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //used to keep track of reset
-        last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' }, //used to keep track of reset
-        account_depleted : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
-        reset : false, // is account reset-able
-        reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-        reset_time : { 'hour' : '', 'minute': '', 'second' : '' },
-        active : false, //is voucher active
-        creation_date : { 'day_of_week': 2, 'day_of_month': 2, 'month': 4, 'year': 2020 }, //date account created
-        first_used_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-        first_used_time : { 'hour' : '', 'minute': '', 'second' : '' },
-        expire : true, //is voucher expire
-        expire_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-        expire_time : { 'hour' : '', 'minute': '', 'second' : '' },
+// logged in or logged out users ***
+// var  users = [
+//     {
+//         name : 'usbwalt', 
+//         password : 'usbwalt', 
+//         bind_mac : false, //restrict usage of this account to binded mac
+//         binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
+//         max_users : 1, //number of users who can use this voucher at same time
+//         user_device_mac : [], //keep track of mac of users using the vouchers, //mac are removed when user log out
+//         type_of_account : 'normal', //keep record of account being normal or voucher
+//         batch_group_name : '', //used to keep track if account is part of batch // usefull for grouping
+//         last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //used to keep track of reset
+//         last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' }, //used to keep track of reset
+//         account_depleted : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
+//         reset : false, // is account reset-able
+//         reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+//         reset_time : { 'hour' : '', 'minute': '', 'second' : '' },
+//         active : false, //is voucher active
+//         creation_date : { 'day_of_week': 2, 'day_of_month': 2, 'month': 4, 'year': 2020 }, //date account created
+//         first_used_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+//         first_used_time : { 'hour' : '', 'minute': '', 'second' : '' },
+//         expire : true, //is voucher expire
+//         expire_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+//         expire_time : { 'hour' : '', 'minute': '', 'second' : '' },
         
-        //profile_attribute_group : '4.9 gig total data',//keep track of profile attriute, changable
+//         //profile_attribute_group : '4.9 gig total data',//keep track of profile attriute, changable
 
-        //profile_attribute_group : 'Mikrotik 4.9 gig data, 1meg download speed',//keep track of profile attriute, changable
+//         //profile_attribute_group : 'Mikrotik 4.9 gig data, 1meg download speed',//keep track of profile attriute, changable
         
-        profile_attribute_group : '4.9 gig total data',//keep track of profile attriute, changable
-        nas_identifier_id : '', // tracks name of device used to contact radius server
+//         profile_attribute_group : '4.9 gig total data',//keep track of profile attriute, changable
+//         nas_identifier_id : '', // tracks name of device used to contact radius server
 
-        multi_share : false, //allow single profile to attributes to be used by diffrent divice, and specific device usage tracking
+//         multi_share : false, //allow single profile to attributes to be used by diffrent divice, and specific device usage tracking
 
-        multi_share_mac : [ //keep track of devices [mac] sharing profile
-            {
-                'device_mac_id' : '',
-                last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
-                last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' },
-                reset : false,
-                //reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
-                //reset_time : { 'hour' : '', 'minute': '', 'second' : '' }
+//         multi_share_mac : [ //keep track of devices [mac] sharing profile
+//             {
+//                 'device_mac_id' : '',
+//                 last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
+//                 last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' },
+//                 reset : false,
+//                 //reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
+//                 //reset_time : { 'hour' : '', 'minute': '', 'second' : '' }
 
-                usage : {
-                    profile_used_data : 0,
-                    profile_used_time : 0,
-                    profile_used_upload : 0,
-                    profile_used_download : 0,
-                }
-            }
-        ],
+//                 usage : {
+//                     profile_used_data : 0,
+//                     profile_used_time : 0,
+//                     profile_used_upload : 0,
+//                     profile_used_download : 0,
+//                 }
+//             }
+//         ],
 
-        //account usage track
-        profile_used_data : 0, 
+//         //account usage track
+//         profile_used_data : 0, 
 
-        profile_used_time : 0,
+//         profile_used_time : 0,
 
-        profile_used_upload : 0,
+//         profile_used_upload : 0,
 
-        profile_used_download : 0,
+//         profile_used_download : 0,
 
-        authentications_request_logs : [//keep logs of account authentificaton activity
-            {
-                'username' : '',
-                'password' : '',
-                'mac_id' : '',
-                'ip' : '',
-                'date' : '',
-                'time' : '',
-                'status' : 'rejected/accepted'
-            }
-        ]
+//         authentications_request_logs : [//keep logs of account authentificaton activity
+//             {
+//                 'username' : '',
+//                 'password' : '',
+//                 'mac_id' : '',
+//                 'ip' : '',
+//                 'date' : '',
+//                 'time' : '',
+//                 'status' : 'rejected/accepted'
+//             }
+//         ]
     
-    }
+//     }
 
 
-];
+// ];
 
 /**
  * Here define upload limit for each vendor device or router
@@ -138,55 +519,55 @@ var  users = [
  * 
  */
 
-var time_limit_define = [ //for time related limits 
-    [ 'Mikrotik','Mikrotik-Total-Limit']
-]
+// var time_limit_define = [ //for time related limits 
+//     [ 'Mikrotik','Mikrotik-Total-Limit']
+// ]
 
-var upload_limit_define = [ //total upload data limits
-    [ 'Mikrotik','Mikrotik-Total-Limit']
-]
+// var upload_limit_define = [ //total upload data limits
+//     [ 'Mikrotik','Mikrotik-Total-Limit']
+// ]
 
-var upload_speed_limit_define = [ //upload speed limit
-    [ 'Mikrotik','Mikrotik-Xmit-Limit']
-    //Mikrotik-Recv-Limit-Gigawords 
-]
+// var upload_speed_limit_define = [ //upload speed limit
+//     [ 'Mikrotik','Mikrotik-Xmit-Limit']
+//     //Mikrotik-Recv-Limit-Gigawords 
+// ]
 
-var download_speed_limit_define = [ //download speed limit
-    [ 'Mikrotik','Mikrotik-Recv-Limit']
-    //Mikrotik-Xmit-Limit-Gigawords 
-]
+// var download_speed_limit_define = [ //download speed limit
+//     [ 'Mikrotik','Mikrotik-Recv-Limit']
+//     //Mikrotik-Xmit-Limit-Gigawords 
+// ]
 
-var total_download_upload_limit_define = [ //total uploaded + downloaded data limit
-    [ 'Mikrotik','Mikrotik-Total-Limit']
+// var total_download_upload_limit_define = [ //total uploaded + downloaded data limit
+//     [ 'Mikrotik','Mikrotik-Total-Limit']
 
-    //Mikrotik-Total-Limit-Gigawords
-]
+//     //Mikrotik-Total-Limit-Gigawords
+// ]
 
 
 
 
 //radius requesting device name
-var nas_identifier = [
-    {
-        identifier_name : '',
-        identifier_ip : '',
-        allow : false,
-        last_contact : {
-            date : {
-                day : '',
-                month : '',
-                year : ''
-            },
-            time : {
-                hour : '',
-                minute : '',
-                second : '',
-            }
-        }
+// var nas_identifier = [
+//     {
+//         identifier_name : '',
+//         identifier_ip : '',
+//         allow : false,
+//         last_contact : {
+//             date : {
+//                 day : '',
+//                 month : '',
+//                 year : ''
+//             },
+//             time : {
+//                 hour : '',
+//                 minute : '',
+//                 second : '',
+//             }
+//         }
 
-    }
+//     }
 
-];
+// ];
 
 
 
