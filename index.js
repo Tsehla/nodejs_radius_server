@@ -25,20 +25,126 @@ radius_module.add_dictionary(__dirname + '/vendor_dictionary/wifi_radius'); //ve
 // ==== handle tcp requets (get/post/delete/etc)
 var app = express();
 
+
+
+
+// ===================== Cross servers variabls =====================
+
+
+// *** account profile attributes ***
+
+// logged in or logged out users ***
+ var  users = [];
+
+ //profiles group / allow grouping of attributes 
+
+ var login_in_account_limit_profile_groups=[];
+
+ /* example data format
+ var login_in_account_limit_profile_groups =[ //groups profile atributes
+
+    [ '4.9 gig total data',[ '4.9Gb Max data' ] ]
+
+ ]
+ */
+
+// --- vendor specific limits / attributes add-able to profiles
+
+var login_in_account_limit_profile_attributes=[];
+/* example format
+var login_in_account_limit_profile_attributes = [ //stores defined authorization profiles
+
+    ['4.9Gb Max data',
+        [
+            ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
+            //['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]] 
+        ]
+    ],
+
+];
+*/
+
+/**
+ * Here define upload limit for each vendor device or router
+ * 
+ * Format shuld be 
+ * ['device vendor name','limit atribute name'];
+ * 
+ * Example
+ * 
+ * [ 'Mikrotik','Mikrotik-Total-Limit']
+ * 
+ * Add in attribute related array
+ * 
+ */
+
+var time_limit_define=[];
+ /* example format
+var time_limit_define = [ //for time related limits 
+    [ 'Mikrotik','Mikrotik-Total-Limit']
+]
+*/
+
+
+var upload_limit_define=[];
+/* example format
+var upload_limit_define = [ //total upload data limits
+    [ 'Mikrotik','Mikrotik-Total-Limit']
+]
+*/
+
+
+var upload_speed_limit_define=[];
+/* example format
+var upload_speed_limit_define = [ //upload speed limit
+    [ 'Mikrotik','Mikrotik-Xmit-Limit']
+    //Mikrotik-Recv-Limit-Gigawords 
+]
+*/
+
+
+
+var download_speed_limit_define=[];
+/* example format
+var download_speed_limit_define = [ //download speed limit
+    [ 'Mikrotik','Mikrotik-Recv-Limit']
+    //Mikrotik-Xmit-Limit-Gigawords 
+]
+*/
+
+
+var total_download_upload_limit_define =[];
+/* example format
+var total_download_upload_limit_define = [ //total uploaded + downloaded data limit
+     [ 'Mikrotik','Mikrotik-Total-Limit']
+
+    //Mikrotik-Total-Limit-Gigawords
+ ]
+ */
+
+
+//radius requesting device name
+var nas_identifier = [];
+
+
+
+
+
+
+
+
+
+
 // ==================== mongo db first run ====================
 
-
-
-mongo_db.connect(db_url, function(err, db_data){
+mongo_db.connect(db_url, async function(err, db_data){
 
     if(err){
         console.log('db connection error : ', err);
         return;
     }
 
-        
-    var radius_db = db_data.db('wifi_radius_db');
-
+  
     // --- create default users in users collection
       
     
@@ -75,11 +181,11 @@ mongo_db.connect(db_url, function(err, db_data){
 
     //check if user collection if empty
 
-    db_data.db('wifi_radius_db').collection('radius_users').find().toArray(function(err, data){
+    await db_data.db('wifi_radius_db').collection('users').find().toArray(function(err, data){
       
         if(data.length == 0){ //if empty
 
-            let radius_users = {
+            let default_users = {
                 
                 name : 'usbwalt', 
                 password : 'usbwalt', 
@@ -155,21 +261,28 @@ mongo_db.connect(db_url, function(err, db_data){
       
 
             //add default users
-            db_data.db('wifi_radius_db').collection('radius_users').insertOne(radius_users, function(err, response){
+            db_data.db('wifi_radius_db').collection('users').insertOne(default_users, function(err, response){
 
                 if(err){
-                    console.log('db error adding "radius_users" : ',err);
+                    console.log('db error adding "users" : ',err);
 
                     return;
                 }
 
                 //console.log('default "radius_users" added to db : ',response);
-                console.log('default "radius_users" added to db ');
+                console.log('default "users" added to db ');
     
             })
         }
 
     });
+
+    //update cross server user variable
+    await db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
+
+        users.push(data);
+    });
+
 
     // --- limit profiles group default
     //check if profile group collection is empty
@@ -178,11 +291,11 @@ mongo_db.connect(db_url, function(err, db_data){
         if(data.length == 0){ //if empty
 
             //profiles group / allow grouping of attributes 
-            var login_in_account_limit_profile_groups = [ '4.9 gig total data',[ '4.9Gb Max data' ] ];
+            var default_login_in_account_limit_profile_groups = [ '4.9 gig total data',[ '4.9Gb Max data' ] ];
 
 
             //add default login_in_account_limit_profile_groups
-            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').insertOne({login_in_account_limit_profile_groups}, function(err, response){
+            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').insertOne({data : default_login_in_account_limit_profile_groups}, function(err, response){
 
                 if(err){
                     console.log('db error adding " login_in_account_limit_profile_groups " : ',err);
@@ -195,6 +308,50 @@ mongo_db.connect(db_url, function(err, db_data){
     
             })
         }
+
+    });
+    //update cross server login_in_account_limit_profile_groups variable
+    db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').find().each(function(err, data){
+
+        login_in_account_limit_profile_groups.push(data.data);
+    });
+
+
+    // --- profiles attributes
+    //check if profile attributes collection is empty
+    db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').find().toArray(function(err, data){
+      
+        if(data.length == 0){ //if empty
+
+        //profiles group / allow grouping of attributes 
+        var default_login_in_account_limit_profile_attributes = ['4.9Gb Max data',
+            [
+                ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
+                //['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]] 
+            ]
+         ];
+
+
+            //add default login_in_account_limit_profile_attributes
+            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').insertOne({data : default_login_in_account_limit_profile_attributes}, function(err, response){
+
+                if(err){
+                    console.log('db error adding " login_in_account_limit_profile_attributes " : ',err);
+
+                    return;
+                }
+
+                //console.log('default "login_in_account_limit_profile_groups" added to db : ',response);
+                console.log('default "login_in_account_limit_profile_attributes" added to db');
+    
+            })
+        }
+
+    });
+    //update cross server login_in_account_limit_profile_groups variable
+    db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').find().each(function(err, data){
+
+        login_in_account_limit_profile_attributes.push(data.data);
 
     });
 
@@ -216,17 +373,18 @@ mongo_db.connect(db_url, function(err, db_data){
      */
 
 
+
     // --- time limits
     //check if time limit collection is empty
     db_data.db('wifi_radius_db').collection('time_limit_define').find().toArray(function(err, data){
       
         if(data.length == 0){ //if empty
 
-            var time_limit_define =  [ 'Mikrotik','Mikrotik-Total-Limit'];
+            var default_time_limit_define =  [ 'Mikrotik','Mikrotik-Total-Limit'];
           
 
             //add default time_limit_define
-            db_data.db('wifi_radius_db').collection('time_limit_define').insertOne({time_limit_define}, function(err, response){
+            db_data.db('wifi_radius_db').collection('time_limit_define').insertOne({data : default_time_limit_define}, function(err, response){
 
                 if(err){
                     console.log('db error adding " time_limit_define " : ',err);
@@ -242,6 +400,12 @@ mongo_db.connect(db_url, function(err, db_data){
 
     });
 
+    //update cross server time_limit_define variable
+    db_data.db('wifi_radius_db').collection('time_limit_define').find().each(function(err, data){
+
+        time_limit_define.push(data.data);
+    });
+
 
     // --- total upload data limits
     //check if total upload data limits collection is empty
@@ -249,10 +413,10 @@ mongo_db.connect(db_url, function(err, db_data){
       
         if(data.length == 0){ //if empty
 
-            var upload_limit_define = [ 'Mikrotik','Mikrotik-Total-Limit'];
+            var default_upload_limit_define = [ 'Mikrotik','Mikrotik-Total-Limit'];
             
             //add default upload_limit_define
-            db_data.db('wifi_radius_db').collection('upload_limit_define').insertOne({upload_limit_define}, function(err, response){
+            db_data.db('wifi_radius_db').collection('upload_limit_define').insertOne({data : default_upload_limit_define}, function(err, response){
 
                 if(err){
                     console.log('db error adding " upload_limit_define " : ',err);
@@ -268,6 +432,11 @@ mongo_db.connect(db_url, function(err, db_data){
 
     });
 
+    //update cross server upload_limit_define variable
+    db_data.db('wifi_radius_db').collection('upload_limit_define').find().each(function(err, data){
+
+        upload_limit_define.push(data.data);
+    });
 
     // --- create default upload speed limit 
     //check if upload speed limit collection if empty
@@ -276,12 +445,12 @@ mongo_db.connect(db_url, function(err, db_data){
         if(data.length == 0){ //if empty
 
             
-            var upload_speed_limit_define = [ 'Mikrotik','Mikrotik-Xmit-Limit'];
+            var default_upload_speed_limit_define = [ 'Mikrotik','Mikrotik-Xmit-Limit'];
                 //Mikrotik-Recv-Limit-Gigawords 
             
 
             //add default upload_speed_limit_define
-            db_data.db('wifi_radius_db').collection('upload_speed_limit_define').insertOne({upload_speed_limit_define}, function(err, response){
+            db_data.db('wifi_radius_db').collection('upload_speed_limit_define').insertOne({data : default_upload_speed_limit_define}, function(err, response){
 
                 if(err){
                     console.log('db error adding " upload_speed_limit_define " : ',err);
@@ -296,7 +465,13 @@ mongo_db.connect(db_url, function(err, db_data){
         }
 
     });
+    
+    //update cross server upload_speed_limit_define variable
+    db_data.db('wifi_radius_db').collection('dupload_speed_limit_define').find().each(function(err, data){
 
+        upload_speed_limit_define.push(data.data);
+    });
+    
 
     // --- create default download speed limit 
     //check if download speed limit collection if empty
@@ -304,11 +479,11 @@ mongo_db.connect(db_url, function(err, db_data){
       
         if(data.length == 0){ //if empty
 
-            var download_speed_limit_define = [ 'Mikrotik','Mikrotik-Recv-Limit'];
+            var default_download_speed_limit_define = [ 'Mikrotik','Mikrotik-Recv-Limit'];
                 //Mikrotik-Xmit-Limit-Gigawords 
 
             //add default download speed limit
-            db_data.db('wifi_radius_db').collection('download_speed_limit_define').insertOne({download_speed_limit_define}, function(err, response){
+            db_data.db('wifi_radius_db').collection('download_speed_limit_define').insertOne({data : default_download_speed_limit_define}, function(err, response){
 
                 if(err){
                     console.log('db error adding " download_speed_limit_define " : ',err);
@@ -324,6 +499,12 @@ mongo_db.connect(db_url, function(err, db_data){
 
     });
 
+    //update cross server download_speed_limit_define variable
+    db_data.db('wifi_radius_db').collection('download_speed_limit_define').find().each(function(err, data){
+
+        download_speed_limit_define.push(data.data);
+    });
+
 
     // --- create default total uploaded + downloaded data limit
     //check if total uploaded + downloaded data limit collection if empty
@@ -331,13 +512,13 @@ mongo_db.connect(db_url, function(err, db_data){
       
         if(data.length == 0){ //if empty
 
-            var total_download_upload_limit_define = [ 'Mikrotik','Mikrotik-Total-Limit'];
+            var default_total_download_upload_limit_define = [ 'Mikrotik','Mikrotik-Total-Limit'];
             
                 //Mikrotik-Total-Limit-Gigawords
            
 
             //add default total uploaded + downloaded data limit
-            db_data.db('wifi_radius_db').collection('total_download_upload_limit_define').insertOne({total_download_upload_limit_define}, function(err, response){
+            db_data.db('wifi_radius_db').collection('total_download_upload_limit_define').insertOne({data : default_total_download_upload_limit_define}, function(err, response){
 
                 if(err){
                     console.log('db error adding " total_download_upload_limit_define " : ',err);
@@ -352,6 +533,11 @@ mongo_db.connect(db_url, function(err, db_data){
 
     });
 
+    //update cross server total_download_upload_limit_define variable
+    db_data.db('wifi_radius_db').collection('total_download_upload_limit_define').find().each(function(err, data){
+
+        total_download_upload_limit_define.push(data.data);
+    });
 
 
     // --- create default radius requesting device (nas)
@@ -360,7 +546,7 @@ mongo_db.connect(db_url, function(err, db_data){
       
         if(data.length == 0){ //if empty
 
-            var nas_identifier = 
+            var default_nas_identifier = 
                 {
                     identifier_name : '',
                     identifier_ip : '',
@@ -382,7 +568,7 @@ mongo_db.connect(db_url, function(err, db_data){
 
 
             //add default nas_identifier
-            db_data.db('wifi_radius_db').collection('nas_identifier').insertOne(nas_identifier, function(err, response){
+            db_data.db('wifi_radius_db').collection('nas_identifier').insertOne(default_nas_identifier, function(err, response){
 
                 if(err){
                     console.log('db error adding " nas_identifier " : ',err);
@@ -398,176 +584,20 @@ mongo_db.connect(db_url, function(err, db_data){
 
     });
 
+    //update cross server nas_identifier variable
+    db_data.db('wifi_radius_db').collection('nas_identifier').find().each(function(err, data){
 
-  
+        nas_identifier.push(data);
+
+    });
+   
+   
     //close db connection
     db_data.close;
    
 
 });
 
-
-
-
-// ===================== Cross servers variabls =====================
-
-
-
-
-//account profile attributes ***
-// --- vendor specific limits / attributes add-able to profiles
-// var login_in_account_limit_profile_attributes = [ //stores defined authorization profiles
-
-//     ['4.9Gb Max data',
-//         [
-//             ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
-//             //['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]] 
-//         ]
-//     ],
-
-// ];
-
-// logged in or logged out users ***
-// var  users = [
-//     {
-//         name : 'usbwalt', 
-//         password : 'usbwalt', 
-//         bind_mac : false, //restrict usage of this account to binded mac
-//         binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
-//         max_users : 1, //number of users who can use this voucher at same time
-//         user_device_mac : [], //keep track of mac of users using the vouchers, //mac are removed when user log out
-//         type_of_account : 'normal', //keep record of account being normal or voucher
-//         batch_group_name : '', //used to keep track if account is part of batch // usefull for grouping
-//         last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //used to keep track of reset
-//         last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' }, //used to keep track of reset
-//         account_depleted : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
-//         reset : false, // is account reset-able
-//         reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-//         reset_time : { 'hour' : '', 'minute': '', 'second' : '' },
-//         active : false, //is voucher active
-//         creation_date : { 'day_of_week': 2, 'day_of_month': 2, 'month': 4, 'year': 2020 }, //date account created
-//         first_used_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-//         first_used_time : { 'hour' : '', 'minute': '', 'second' : '' },
-//         expire : true, //is voucher expire
-//         expire_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-//         expire_time : { 'hour' : '', 'minute': '', 'second' : '' },
-        
-//         //profile_attribute_group : '4.9 gig total data',//keep track of profile attriute, changable
-
-//         //profile_attribute_group : 'Mikrotik 4.9 gig data, 1meg download speed',//keep track of profile attriute, changable
-        
-//         profile_attribute_group : '4.9 gig total data',//keep track of profile attriute, changable
-//         nas_identifier_id : '', // tracks name of device used to contact radius server
-
-//         multi_share : false, //allow single profile to attributes to be used by diffrent divice, and specific device usage tracking
-
-//         multi_share_mac : [ //keep track of devices [mac] sharing profile
-//             {
-//                 'device_mac_id' : '',
-//                 last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
-//                 last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' },
-//                 reset : false,
-//                 //reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
-//                 //reset_time : { 'hour' : '', 'minute': '', 'second' : '' }
-
-//                 usage : {
-//                     profile_used_data : 0,
-//                     profile_used_time : 0,
-//                     profile_used_upload : 0,
-//                     profile_used_download : 0,
-//                 }
-//             }
-//         ],
-
-//         //account usage track
-//         profile_used_data : 0, 
-
-//         profile_used_time : 0,
-
-//         profile_used_upload : 0,
-
-//         profile_used_download : 0,
-
-//         authentications_request_logs : [//keep logs of account authentificaton activity
-//             {
-//                 'username' : '',
-//                 'password' : '',
-//                 'mac_id' : '',
-//                 'ip' : '',
-//                 'date' : '',
-//                 'time' : '',
-//                 'status' : 'rejected/accepted'
-//             }
-//         ]
-    
-//     }
-
-
-// ];
-
-/**
- * Here define upload limit for each vendor device or router
- * 
- * Format shuld be 
- * ['device vendor name','limit atribute name'];
- * 
- * Example
- * 
- * [ 'Mikrotik','Mikrotik-Total-Limit']
- * 
- * Add in attribute related array
- * 
- */
-
-// var time_limit_define = [ //for time related limits 
-//     [ 'Mikrotik','Mikrotik-Total-Limit']
-// ]
-
-// var upload_limit_define = [ //total upload data limits
-//     [ 'Mikrotik','Mikrotik-Total-Limit']
-// ]
-
-// var upload_speed_limit_define = [ //upload speed limit
-//     [ 'Mikrotik','Mikrotik-Xmit-Limit']
-//     //Mikrotik-Recv-Limit-Gigawords 
-// ]
-
-// var download_speed_limit_define = [ //download speed limit
-//     [ 'Mikrotik','Mikrotik-Recv-Limit']
-//     //Mikrotik-Xmit-Limit-Gigawords 
-// ]
-
-// var total_download_upload_limit_define = [ //total uploaded + downloaded data limit
-//     [ 'Mikrotik','Mikrotik-Total-Limit']
-
-//     //Mikrotik-Total-Limit-Gigawords
-// ]
-
-
-
-
-//radius requesting device name
-// var nas_identifier = [
-//     {
-//         identifier_name : '',
-//         identifier_ip : '',
-//         allow : false,
-//         last_contact : {
-//             date : {
-//                 day : '',
-//                 month : '',
-//                 year : ''
-//             },
-//             time : {
-//                 hour : '',
-//                 minute : '',
-//                 second : '',
-//             }
-//         }
-
-//     }
-
-// ];
 
 
 
@@ -1678,6 +1708,15 @@ if(radius_in_message.code == 'Status-Server'){// return user account data
 //---- log requests of tcp incoming ----
 app.use(function(req, res,next){
     console.log(req.protocol + '://' + req.get('host') + req.originalUrl);//shor url of request
+    console.log('-- users -- : ',users);
+    console.log('-- login_in_account_limit_profile_groups -- : ',login_in_account_limit_profile_groups);
+    console.log('-- login_in_account_limit_profile_attributes -- : ',login_in_account_limit_profile_attributes);
+    console.log('-- time_limit_define -- : ',time_limit_define);
+    console.log('-- upload_limit_define -- : ',upload_limit_define);
+    console.log('-- upload_speed_limit_define -- : ',upload_speed_limit_define);
+    console.log('-- download_speed_limit_define -- : ',download_speed_limit_define);
+    console.log('-- total_download_upload_limit_define -- : ',total_download_upload_limit_define);
+    console.log('-- nas_identifier -- : ',nas_identifier);
     next()
 });
 
