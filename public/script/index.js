@@ -362,9 +362,12 @@ function attributes_profile_get(){
         var profiles_div = '<ol class="w3-margin-top">';
 
         data.forEach(function(data, index){
-            
-            profiles_div = profiles_div + `<li class='w3-margin-bottom'><a href='#'>${data[0]}</a></li>`;
 
+            if(data){//if data not null
+
+                profiles_div = profiles_div + `<li class='w3-margin-bottom'><a href='#'>${data.data[0]}</a></li>`;
+            }
+            
         });
 
         profiles_div = profiles_div + '</ol>';
@@ -406,7 +409,12 @@ function profiles_group_get(){
 
             data.forEach(function(data, index){
                 
-                profiles_group_div = profiles_group_div + `<li class='w3-margin-bottom'><a href='#'>${data[0]}</a></li>`;
+                if(data){//if data not null
+
+                    profiles_group_div = profiles_group_div + `<li class='w3-margin-bottom'><a href='#'>${data.data[0]}</a></li>`;
+                    
+                }
+                
 
             });
 
@@ -455,7 +463,13 @@ function profile_group_create(){
 
     //get retrived attribute from server
     attributes_profiles.forEach(function(data){
-        profile_group_select_options = profile_group_select_options + `<option>${data[0]}</option>`;
+
+        if(data){//if data not null
+
+            profile_group_select_options = profile_group_select_options + `<option>${data.data[0]}</option>`;
+            
+        }
+
     });
 
 
@@ -641,7 +655,7 @@ function get_user_accounts(){
 
             //append users to div
             add_by_append('data_main_choice_button_users_voucher_user_view', user_vouchers_div );
-            console.log(user_vouchers_div)
+            //console.log(user_vouchers_div)
             return;
         }
 
@@ -680,8 +694,11 @@ function user_create_menu(usertype){
         retrived_profile_groups.forEach(function(data){ //profiles group array contents
 
             //console.log(data);
-            normal_user_create_div_element = normal_user_create_div_element + '<option>' + data[0] + '</option>'; //add  [ profiles group ] as select options
+            if(data){//data is not null
 
+                normal_user_create_div_element = normal_user_create_div_element + '<option>' + data.data[0] + '</option>'; //add  [ profiles group ] as select options
+
+            }
         });
 
         // add batch account creation option plus cancel/save buttons
@@ -732,8 +749,10 @@ function user_create_menu(usertype){
         `
         retrived_profile_groups.forEach(function(data){ //profiles group array contents
 
-            //console.log(data);
-            voucher_user_create_div_element = voucher_user_create_div_element + '<option>' + data[0] + '</option>'; //add  [ profiles group ] as select options
+            if(data){//if not null
+
+                voucher_user_create_div_element = voucher_user_create_div_element + '<option>' + data.data[0] + '</option>'; //add  [ profiles group ] as select options
+            }
 
         });
 

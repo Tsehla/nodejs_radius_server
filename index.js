@@ -137,7 +137,7 @@ var nas_identifier = [];
 
 // ==================== mongo db first run ====================
 
-mongo_db.connect(db_url, async function(err, db_data){
+mongo_db.connect(db_url, function(err, db_data){
 
     if(err){
         console.log('db connection error : ', err);
@@ -181,7 +181,7 @@ mongo_db.connect(db_url, async function(err, db_data){
 
     //check if user collection if empty
 
-    await db_data.db('wifi_radius_db').collection('users').find().toArray(function(err, data){
+    db_data.db('wifi_radius_db').collection('users').find().toArray(function(err, data){
       
         if(data.length == 0){ //if empty
 
@@ -261,7 +261,7 @@ mongo_db.connect(db_url, async function(err, db_data){
       
 
             //add default users
-            db_data.db('wifi_radius_db').collection('users').insertOne(default_users, function(err, response){
+            db_data.db('wifi_radius_db').collection('users').insertOne(default_users, function(err){
 
                 if(err){
                     console.log('db error adding "users" : ',err);
@@ -275,13 +275,23 @@ mongo_db.connect(db_url, async function(err, db_data){
             })
         }
 
+        //update cross server user variable
+        db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
+
+            if(err){
+
+                console.log('first run "users" update error : ', err);
+                return;
+            }
+
+            users.push(data);
+
+            console.log('first run "users" updated');
+        });
+
     });
 
-    //update cross server user variable
-    await db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
 
-        users.push(data);
-    });
 
 
     // --- limit profiles group default
@@ -295,7 +305,7 @@ mongo_db.connect(db_url, async function(err, db_data){
 
 
             //add default login_in_account_limit_profile_groups
-            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').insertOne({data : default_login_in_account_limit_profile_groups}, function(err, response){
+            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').insertOne({data : default_login_in_account_limit_profile_groups}, function(err){
 
                 if(err){
                     console.log('db error adding " login_in_account_limit_profile_groups " : ',err);
@@ -309,12 +319,22 @@ mongo_db.connect(db_url, async function(err, db_data){
             })
         }
 
-    });
-    //update cross server login_in_account_limit_profile_groups variable
-    db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').find().each(function(err, data){
+        //update cross server login_in_account_limit_profile_groups variable
+        db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').find().each(function(err, data){
+            
+            if(err){
 
-        login_in_account_limit_profile_groups.push(data.data);
+                console.log('first run "login_in_account_limit_profile_groups" update error : ', err);
+                return;
+            }
+
+            login_in_account_limit_profile_groups.push(data);
+            console.log('first run "login_in_account_limit_profile_groups" updated');
+        
+        });
+
     });
+
 
 
     // --- profiles attributes
@@ -333,7 +353,7 @@ mongo_db.connect(db_url, async function(err, db_data){
 
 
             //add default login_in_account_limit_profile_attributes
-            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').insertOne({data : default_login_in_account_limit_profile_attributes}, function(err, response){
+            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').insertOne({data : default_login_in_account_limit_profile_attributes}, function(err){
 
                 if(err){
                     console.log('db error adding " login_in_account_limit_profile_attributes " : ',err);
@@ -347,13 +367,22 @@ mongo_db.connect(db_url, async function(err, db_data){
             })
         }
 
-    });
-    //update cross server login_in_account_limit_profile_groups variable
-    db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').find().each(function(err, data){
+        //update cross server login_in_account_limit_profile_groups variable
+        db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').find().each(function(err, data){
 
-        login_in_account_limit_profile_attributes.push(data.data);
+            if(err){
+
+                console.log('first run "login_in_account_limit_profile_attributes" update error : ', err);
+                return;
+            }
+
+            login_in_account_limit_profile_attributes.push(data);
+            console.log('first run "login_in_account_limit_profile_attributes" updated');
+
+        });
 
     });
+
 
 
     // --- defined uploads limits -----
@@ -384,7 +413,7 @@ mongo_db.connect(db_url, async function(err, db_data){
           
 
             //add default time_limit_define
-            db_data.db('wifi_radius_db').collection('time_limit_define').insertOne({data : default_time_limit_define}, function(err, response){
+            db_data.db('wifi_radius_db').collection('time_limit_define').insertOne({data : default_time_limit_define}, function(err){
 
                 if(err){
                     console.log('db error adding " time_limit_define " : ',err);
@@ -398,13 +427,23 @@ mongo_db.connect(db_url, async function(err, db_data){
             })
         }
 
+        //update cross server time_limit_define variable
+        db_data.db('wifi_radius_db').collection('time_limit_define').find().each(function(err, data){
+
+            if(err){
+
+                console.log('first run "time_limit_define" update error : ', err);
+                return;
+            }
+
+            time_limit_define.push(data);
+            console.log('first run "time_limit_define" updated');
+
+        });
+
     });
 
-    //update cross server time_limit_define variable
-    db_data.db('wifi_radius_db').collection('time_limit_define').find().each(function(err, data){
 
-        time_limit_define.push(data.data);
-    });
 
 
     // --- total upload data limits
@@ -416,7 +455,7 @@ mongo_db.connect(db_url, async function(err, db_data){
             var default_upload_limit_define = [ 'Mikrotik','Mikrotik-Total-Limit'];
             
             //add default upload_limit_define
-            db_data.db('wifi_radius_db').collection('upload_limit_define').insertOne({data : default_upload_limit_define}, function(err, response){
+            db_data.db('wifi_radius_db').collection('upload_limit_define').insertOne({data : default_upload_limit_define}, function(err){
 
                 if(err){
                     console.log('db error adding " upload_limit_define " : ',err);
@@ -430,13 +469,22 @@ mongo_db.connect(db_url, async function(err, db_data){
             })
         }
 
+        //update cross server upload_limit_define variable
+        db_data.db('wifi_radius_db').collection('upload_limit_define').find().each(function(err, data){
+
+            if(err){
+
+                console.log('first run "upload_limit_define" update error : ', err);
+                return;
+            }
+
+            upload_limit_define.push(data);
+            console.log('first run "upload_limit_define" updated');
+        });
+
     });
 
-    //update cross server upload_limit_define variable
-    db_data.db('wifi_radius_db').collection('upload_limit_define').find().each(function(err, data){
 
-        upload_limit_define.push(data.data);
-    });
 
     // --- create default upload speed limit 
     //check if upload speed limit collection if empty
@@ -450,7 +498,7 @@ mongo_db.connect(db_url, async function(err, db_data){
             
 
             //add default upload_speed_limit_define
-            db_data.db('wifi_radius_db').collection('upload_speed_limit_define').insertOne({data : default_upload_speed_limit_define}, function(err, response){
+            db_data.db('wifi_radius_db').collection('upload_speed_limit_define').insertOne({data : default_upload_speed_limit_define}, function(err){
 
                 if(err){
                     console.log('db error adding " upload_speed_limit_define " : ',err);
@@ -464,13 +512,21 @@ mongo_db.connect(db_url, async function(err, db_data){
             })
         }
 
+        //update cross server upload_speed_limit_define variable
+        db_data.db('wifi_radius_db').collection('dupload_speed_limit_define').find().each(function(err, data){
+            if(err){
+
+                console.log('first run "dupload_speed_limit_define" update error : ', err);
+                return;
+            }
+
+            upload_speed_limit_define.push(data);
+            console.log('first run "dupload_speed_limit_define" updated');
+        });
+
     });
     
-    //update cross server upload_speed_limit_define variable
-    db_data.db('wifi_radius_db').collection('dupload_speed_limit_define').find().each(function(err, data){
 
-        upload_speed_limit_define.push(data.data);
-    });
     
 
     // --- create default download speed limit 
@@ -483,7 +539,7 @@ mongo_db.connect(db_url, async function(err, db_data){
                 //Mikrotik-Xmit-Limit-Gigawords 
 
             //add default download speed limit
-            db_data.db('wifi_radius_db').collection('download_speed_limit_define').insertOne({data : default_download_speed_limit_define}, function(err, response){
+            db_data.db('wifi_radius_db').collection('download_speed_limit_define').insertOne({data : default_download_speed_limit_define}, function(err){
 
                 if(err){
                     console.log('db error adding " download_speed_limit_define " : ',err);
@@ -497,13 +553,22 @@ mongo_db.connect(db_url, async function(err, db_data){
             })
         }
 
+        //update cross server download_speed_limit_define variable
+        db_data.db('wifi_radius_db').collection('download_speed_limit_define').find().each(function(err, data){
+
+            if(err){
+
+                console.log('first run "download_speed_limit_define" update error : ', err);
+                return;
+            }
+
+            download_speed_limit_define.push(data);
+            console.log('first run "download_speed_limit_define" updated');
+        });
+
     });
 
-    //update cross server download_speed_limit_define variable
-    db_data.db('wifi_radius_db').collection('download_speed_limit_define').find().each(function(err, data){
 
-        download_speed_limit_define.push(data.data);
-    });
 
 
     // --- create default total uploaded + downloaded data limit
@@ -518,7 +583,7 @@ mongo_db.connect(db_url, async function(err, db_data){
            
 
             //add default total uploaded + downloaded data limit
-            db_data.db('wifi_radius_db').collection('total_download_upload_limit_define').insertOne({data : default_total_download_upload_limit_define}, function(err, response){
+            db_data.db('wifi_radius_db').collection('total_download_upload_limit_define').insertOne({data : default_total_download_upload_limit_define}, function(err){
 
                 if(err){
                     console.log('db error adding " total_download_upload_limit_define " : ',err);
@@ -531,13 +596,22 @@ mongo_db.connect(db_url, async function(err, db_data){
             })
         }
 
+        //update cross server total_download_upload_limit_define variable
+        db_data.db('wifi_radius_db').collection('total_download_upload_limit_define').find().each(function(err, data){
+
+            if(err){
+
+                console.log('first run "total_download_upload_limit_define" update error : ', err);
+                return;
+            }
+
+            total_download_upload_limit_define.push(data);
+            console.log('first run "total_download_upload_limit_define" updated');
+
+        });
+
     });
 
-    //update cross server total_download_upload_limit_define variable
-    db_data.db('wifi_radius_db').collection('total_download_upload_limit_define').find().each(function(err, data){
-
-        total_download_upload_limit_define.push(data.data);
-    });
 
 
     // --- create default radius requesting device (nas)
@@ -568,7 +642,7 @@ mongo_db.connect(db_url, async function(err, db_data){
 
 
             //add default nas_identifier
-            db_data.db('wifi_radius_db').collection('nas_identifier').insertOne(default_nas_identifier, function(err, response){
+            db_data.db('wifi_radius_db').collection('nas_identifier').insertOne(default_nas_identifier, function(err){
 
                 if(err){
                     console.log('db error adding " nas_identifier " : ',err);
@@ -582,21 +656,33 @@ mongo_db.connect(db_url, async function(err, db_data){
             })
         }
 
-    });
+        //update cross server nas_identifier variable
+        db_data.db('wifi_radius_db').collection('nas_identifier').find().each(function(err, data){
 
-    //update cross server nas_identifier variable
-    db_data.db('wifi_radius_db').collection('nas_identifier').find().each(function(err, data){
+            if(err){
 
-        nas_identifier.push(data);
+                console.log('first run "nas_identifier" update error : ', err);
+                return;
+            }
+                
+            nas_identifier.push(data);
+            console.log('first run "nas_identifier" updated');
 
-    });
+        });
    
+
+
+
+    });
+
+ 
    
     //close db connection
     db_data.close;
    
 
 });
+
 
 
 
@@ -785,7 +871,6 @@ socket.on('message', (msg, reply_info) => {
                 //console.log(authentification_profile_group_data);
 
                 // -- get profile attributes
-                var authentification_profile_attribute = [];//save account limits attributes
 
                 var authentification_request_rejected = false;//keep track if account didnt meet any requirements when checking
 
@@ -808,7 +893,6 @@ socket.on('message', (msg, reply_info) => {
                                 //catch [wifi-radius] library attributes
                                 if(data[1].toLowerCase() == 'wifi-radius'){
 
-                                    var date = new Date(); // get system date and time
 
                                     //console.log('wifi-radius',data[2][0][0]);
 
@@ -1221,7 +1305,7 @@ socket.on('message', (msg, reply_info) => {
 
         // ... send reply data
 
-        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err) {
            // console.log('reply sending')
             
             if (err) {
@@ -1289,7 +1373,7 @@ socket.on('message', (msg, reply_info) => {
 
 
         // ... send reply data
-        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err) {
             
             if (err) {
 
@@ -1374,7 +1458,7 @@ socket.on('message', (msg, reply_info) => {
 
 
         // ... send reply data
-        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err) {
             
             if (err) {
 
@@ -1457,7 +1541,7 @@ socket.on('message', (msg, reply_info) => {
 
 
         // ... send reply data
-        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err) {
             
             if (err) {
 
@@ -1524,7 +1608,7 @@ socket.on('message', (msg, reply_info) => {
 
 
         // ... send reply data
-        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err) {
             
             if (err) {
 
@@ -1574,7 +1658,7 @@ socket.on('message', (msg, reply_info) => {
 
 
         // ... send reply data
-        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err, bytes) {
+        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err) {
             
             if (err) {
 
@@ -1692,6 +1776,13 @@ if(radius_in_message.code == 'Status-Server'){// return user account data
 
 
 
+
+
+
+
+
+
+
 // ===================== non radius -=====================
 
 
@@ -1708,15 +1799,15 @@ if(radius_in_message.code == 'Status-Server'){// return user account data
 //---- log requests of tcp incoming ----
 app.use(function(req, res,next){
     console.log(req.protocol + '://' + req.get('host') + req.originalUrl);//shor url of request
-    console.log('-- users -- : ',users);
-    console.log('-- login_in_account_limit_profile_groups -- : ',login_in_account_limit_profile_groups);
-    console.log('-- login_in_account_limit_profile_attributes -- : ',login_in_account_limit_profile_attributes);
-    console.log('-- time_limit_define -- : ',time_limit_define);
-    console.log('-- upload_limit_define -- : ',upload_limit_define);
-    console.log('-- upload_speed_limit_define -- : ',upload_speed_limit_define);
-    console.log('-- download_speed_limit_define -- : ',download_speed_limit_define);
-    console.log('-- total_download_upload_limit_define -- : ',total_download_upload_limit_define);
-    console.log('-- nas_identifier -- : ',nas_identifier);
+    // console.log('-- users -- : ',users);
+    // console.log('-- login_in_account_limit_profile_groups -- : ',login_in_account_limit_profile_groups);
+    // console.log('-- login_in_account_limit_profile_attributes -- : ',login_in_account_limit_profile_attributes);
+    // console.log('-- time_limit_define -- : ',time_limit_define);
+    // console.log('-- upload_limit_define -- : ',upload_limit_define);
+    // console.log('-- upload_speed_limit_define -- : ',upload_speed_limit_define);
+    // console.log('-- download_speed_limit_define -- : ',download_speed_limit_define);
+    // console.log('-- total_download_upload_limit_define -- : ',total_download_upload_limit_define);
+    // console.log('-- nas_identifier -- : ',nas_identifier);
     next()
 });
 
@@ -1985,13 +2076,14 @@ app.get('/new_profiles_data', function(req, res){
 
         //console.log(req.query.new_profiles[0],data[0])
 
+        if(data){//if not null
 
-        //if duplicate found
-        if(req.query.new_profiles[0].toString().trim().toLowerCase() == data[0].toString().trim().toLowerCase()){
+            //if duplicate found
+            if(req.query.new_profiles[0].toString().trim().toLowerCase() == data.data[0].toString().trim().toLowerCase()){
 
-            duplicate_profile_name_found = true;//set duplicate found true  
+                duplicate_profile_name_found = true;//set duplicate found true  
+            }
         }
-
 
     });
 
@@ -2003,7 +2095,55 @@ app.get('/new_profiles_data', function(req, res){
     }
 
     // ---- save new profiles -----
-    login_in_account_limit_profile_attributes.push(req.query.new_profiles);
+    //login_in_account_limit_profile_attributes.push(req.query.new_profiles);
+
+    mongo_db.connect(db_url, function(err, db_data){
+
+        if(err){
+
+            console.log('db connection error : ', err);
+            return;
+        }
+    
+        //save new profile attribute to db
+        db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').insertOne({data : req.query.new_profiles}, function(err){
+
+            if(err){
+                console.log('db error adding " login_in_account_limit_profile_attributes " : ',err);
+
+                return;
+            }
+
+            //console.log('default "login_in_account_limit_profile_groups" added to db : ',response);
+            console.log('new "login_in_account_limit_profile_attributes" added to db');
+
+
+            //update cross server login_in_account_limit_profile_groups variable
+
+            login_in_account_limit_profile_attributes = []; //clear of old data
+
+            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').find().each(function(err, data){
+
+                if(err){
+
+                    console.log('in memory "login_in_account_limit_profile_attributes" update error : ', err);
+                    return;
+                }
+
+                
+
+                login_in_account_limit_profile_attributes.push(data);//add updated data
+                console.log('in memory "login_in_account_limit_profile_attributes" updated');
+
+            });
+    
+        })
+        
+        //close db connection
+        db_data.close;
+    });
+   
+
 
 
     //give success response back
@@ -2016,7 +2156,6 @@ app.get('/new_profiles_data', function(req, res){
 app.get('/get_profiles_data', function(req, res){
 
     //give response back
-    //console.log(login_in_account_limit_profile_attributes);
     res.jsonp(login_in_account_limit_profile_attributes);
 
 
@@ -2034,12 +2173,17 @@ app.get('/profile_group_save', function(req, res){
 
     login_in_account_limit_profile_groups.forEach(function(stored_profile_group_names){
         
-        //test each profile group name
-        req.query.new_profile_group_data.forEach(function(new_profile_group_names){
-            if(new_profile_group_names.toString().trim().toLowerCase() == stored_profile_group_names[0].toString().trim().toLowerCase()){ //if match found
-                is_duplicate_found = true;//select en set to true
-            }
-        })
+        if(stored_profile_group_names){//if not null
+    
+            //test each profile group name
+            req.query.new_profile_group_data.forEach(function(new_profile_group_names){
+
+                if(new_profile_group_names.toString().trim().toLowerCase() == stored_profile_group_names.data[0].toString().trim().toLowerCase()){ //if match found
+                    is_duplicate_found = true;//select en set to true
+                }
+
+            })
+        }
     });
 
     //check if duplicate was found
@@ -2052,8 +2196,56 @@ app.get('/profile_group_save', function(req, res){
     else{
 
         // save profile group
-        login_in_account_limit_profile_groups.push(req.query.new_profile_group_data);// save sent profile group array
-        res.jsonp('profile group saved');// give success response
+        
+        mongo_db.connect(db_url, function(err, db_data){
+
+            if(err){
+    
+                console.log('db connection error : ', err);
+                return;
+            }
+        
+            //save new profile attribute to db
+            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').insertOne({data : req.query.new_profile_group_data}, function(err){
+    
+                if(err){
+                    console.log('db error adding " login_in_account_limit_profile_groups " : ',err);
+    
+                    return;
+                }
+    
+                //console.log('default "login_in_account_limit_profile_groups" added to db : ',response);
+                console.log('new "login_in_account_limit_profile_groups" added to db');
+    
+    
+                //update cross server login_in_account_limit_profile_groups variable
+
+                login_in_account_limit_profile_groups = [];//clear old data
+
+                db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').find().each(function(err, data){
+    
+                    if(err){
+    
+                        console.log('in memory "login_in_account_limit_profile_groups" update error : ', err);
+                        return;
+                    }
+    
+                    login_in_account_limit_profile_groups.push(data);//add updated data
+                    console.log('in memory "login_in_account_limit_profile_groups" updated');
+    
+                });
+        
+            })
+            
+            //close db connection
+            db_data.close;
+        });
+
+
+        // give success response back
+        res.jsonp('profile group saved');
+
+
     }
 
 });
@@ -2071,15 +2263,19 @@ app.get('/user_accounts', function(req, res){
     var stored_users_accounts = [];//strores prepared user accounts
 
     users.forEach(function(data){//loop through stored users
+       
+        if(data){
             
-        stored_users_accounts.push({ //extract and store accounts details
-            account_username : data.name,
-            account_type : data.type_of_account,
-            account_depleted : data.account_depleted,
-            account_active : data.active,
-            account_batch_group_name : data.batch_group_name,
-            account_creation_date : data.creation_date,
-        });
+            stored_users_accounts.push({ //extract and store accounts details
+                db_account_id : data._id.toString(),
+                account_username : data.name,
+                account_type : data.type_of_account,
+                account_depleted : data.account_depleted,
+                account_active : data.active,
+                account_batch_group_name : data.batch_group_name,
+                account_creation_date : data.creation_date,
+            });
+        }
     });
 
     //give accounts details as response
@@ -2197,7 +2393,7 @@ app.get('/create_user', function(req, res){// create new users
 
     }
     
-    //if batch create unique usernames
+    //++++++ if batch create unique usernames ++++++
     if(parseInt(total_accounts) > 0 ){ //if total account specified
 
         //check if name list has names
@@ -2260,11 +2456,11 @@ app.get('/create_user', function(req, res){// create new users
             if(while_loops == names_list.length * 3){//IF YOUSER BASE GROW BIG, INCREASE THIS, MAXIMUM NUMBER SHOULD BE (names_list.length * names_list.length ), this are possible  username + password combinations
             //if(while_loops == 100){
 
-                console.log('in 1', names_list.length)
+                //console.log('in 1', names_list.length)
                 //check if names where not found at last second
                 if(found_unique_names != parseInt(total_accounts)){ //if not
                     are_names_fount = false;//set to false
-                    console.log('in 2', while_loops)
+                    //console.log('in 2', while_loops)
                 }
 
                 //set unique name tracker names equal requested account total batch number
@@ -2284,32 +2480,32 @@ app.get('/create_user', function(req, res){// create new users
        }
 
 
-    // -- create batch users accounts
-    new_user_usernames.forEach(function(data){
+        // -- create batch users accounts
+        new_user_usernames.forEach(function(data){
 
-        //console.log(new_user_usernames);
+            //console.log(new_user_usernames);
 
-        var username = data.new_account_name + voucher_username_suffix.trim().toLowerCase(); //set username with suffix
-        var password = data.new_account_password;//set password
+            var username = data.new_account_name + voucher_username_suffix.trim().toLowerCase(); //set username with suffix
+            var password = data.new_account_password;//set password
 
-        //if voucher
-        if(req.query.account_type == 'voucher'){
-            //combine username plus password to one 
-            username = data.new_account_name + data.new_account_password + voucher_username_suffix.trim().toLowerCase();//set password same as username
+            //if voucher
+            if(req.query.account_type == 'voucher'){
+                //combine username plus password to one 
+                username = data.new_account_name + data.new_account_password + voucher_username_suffix.trim().toLowerCase();//set password same as username
 
-            //set username as password
-            password = username ; //set password with suffix
-        }
+                //set username as password
+                password = username ; //set password with suffix
+            }
 
-        //call user create function
-        user_create_fn (username , password);
+            //call user create function
+            user_create_fn (username , password);
 
-       });
+        });
 
     }
 
 
-    // -- for non batch new accounts ----
+    // ++++++ for non batch new accounts +++++++
 
     //check for usernames duplicates against existing users
     var duplicates_usernames_exists_single_account = false;//track if duplicates where found
@@ -2322,12 +2518,15 @@ app.get('/create_user', function(req, res){// create new users
 
             users.forEach(function(data, index){ //loop through stored user accounts usernames
 
-                if(new_users.new_account_name.toLowerCase() == data.name){ //compare stored user account names with new user account names
+                if(data){//if not null
                     
-                    duplicates_usernames_exists_single_account = true; //if match set true
+                    if(new_users.new_account_name.toLowerCase() == data.name){ //compare stored user account names with new user account names
                         
+                        duplicates_usernames_exists_single_account = true; //if match set true
+                            
+                    }
                 }
-    
+
                 //if no match and main loop is on last run
                 if(index == users.length -1 && duplicates_usernames_exists_single_account == false){
                             
@@ -2419,12 +2618,55 @@ app.get('/create_user', function(req, res){// create new users
         
         }
         
-    //save user 
-    //console.log(new_user)
-    users.push(new_user);
+        //save user to db
+                    
+        mongo_db.connect(db_url, function(err, db_data){
+
+            if(err){
+
+                console.log('db connection error : ', err);
+                return;
+            }
+        
+            //save new profile attribute to db
+            db_data.db('wifi_radius_db').collection('users').insertOne(new_user, function(err){
+
+                if(err){
+                    console.log('db error adding " users " : ',err);
+
+                    return;
+                }
+
+                //console.log('default "users" added to db : ',response);
+                console.log('new "users" added to db');
+
+
+                //update cross server users variable
+
+                users = [];//clear old data
+
+                db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
+
+                    if(err){
+
+                        console.log('in memory "users" update error : ', err);
+                        return;
+                    }
+
+                    users.push(data);//add updated data
+
+                    console.log('in memory "users" updated');
+
+                });
+        
+            })
+            
+            //close db connection
+            db_data.close;
+        });
+
     }
 
-    //console.log(users)
     //send account created message
     res.jsonp('account created.');
 
