@@ -2287,46 +2287,46 @@ app.get('/user_accounts', function(req, res){
 // -- create user accounts ---
 
 // -- read names list and save to memory
-var names_list = []; //stores names list
+//var names_list = []; //stores names list
 
-function read_names_list (){
+// function read_names_list (){
     
-    //clear name list of old contents if any
-    names_list = [];
+//     //clear name list of old contents if any
+//     names_list = [];
 
-    //get directory files names
-    fs.readdir(__dirname + '/world_list/', function (err, files) {
+//     //get directory files names
+//     fs.readdir(__dirname + '/world_list/', function (err, files) {
         
         
-        if(err){//give error response back
+//         if(err){//give error response back
 
-            console.log('User create :: unable to scan names list directory: ' + err);
-            return;
-        } 
+//             console.log('User create :: unable to scan names list directory: ' + err);
+//             return;
+//         } 
         
 
-        //read contnets of each of the files
-        files.forEach(function(data){
+//         //read contnets of each of the files
+//         files.forEach(function(data){
 
-            fs.readFile(__dirname + '/world_list/' + data, function (err, files_data) {
+//             fs.readFile(__dirname + '/world_list/' + data, function (err, files_data) {
                 
-                if(err){//give error response back
+//                 if(err){//give error response back
         
-                    console.log('User create :: unable to read contents of file "' + data + '" : ' + err);
-                    return;
-                }
+//                     console.log('User create :: unable to read contents of file "' + data + '" : ' + err);
+//                     return;
+//                 }
 
-                //console.log(files_data.toString('utf-8').split(/\s/));
-                names_list = files_data.toString('utf-8').split(/\s/);//save files names array globally
-            });
+//                 //console.log(files_data.toString('utf-8').split(/\s/));
+//                 names_list = files_data.toString('utf-8').split(/\s/);//save files names array globally
+//             });
 
-        });
+//         });
 
-    });
+//     });
 
-}
+// }
 
-read_names_list ();//auto start on server run;
+//read_names_list ();//auto start on server run;
 
 
 
@@ -2351,8 +2351,10 @@ app.get('/create_user', function(req, res){// create new users
     var username_voucher_code = '';
     var user_pasword = '';
     
-    //holds usernames
+    //holds unique produced usernames
     var new_user_usernames = [];
+
+    var new_user_list = [];//temporary stores new users, to be transfered to database
 
     // ----- check if type of account to produce
 
@@ -2396,109 +2398,195 @@ app.get('/create_user', function(req, res){// create new users
     //++++++ if batch create unique usernames ++++++
     if(parseInt(total_accounts) > 0 ){ //if total account specified
 
-        //check if name list has names
-        if(names_list.length < 1000){//if names are less than thousand
+        //     //check if name list has names
+        //     if(names_list.length < 1000){//if names are less than thousand
 
-            read_names_list ();//attempt names storage lists re-read
-       }
-       
-       // --- find names
-       var found_unique_names = 0;//tracks unique names found
-       var while_loops = 0; //tracks each lop
-       var are_names_fount = 'not yet';//track if names have not been found
+        //         read_names_list ();//attempt names storage lists re-read
+        //    }
 
 
-       //find names and check 
-       while(found_unique_names != parseInt(total_accounts) ){//while names found total is not equal requested names batch total
 
-            //create random
-            var random_name = Math.floor(Math.random() * names_list.length);
-            var random_password = Math.floor(Math.random() * names_list.length);
+        // names_list = [];
 
-            //console.log('name : ',names_list[random_name], ' username : ',names_list[random_password] );
+        // //get directory files names
+        // fs.readdir(__dirname + '/world_list/', function (err, files) {
+            
+            
+        //     if(err){//give error response back
 
-            //check if random username is same as any already registered in the system
+        //         console.log('User create :: unable to scan names list directory: ' + err);
+        //         return;
+        //     } 
+            
 
-            for(var a = 0; a <= users.length - 1; a++){
+        //     //read contnets of each of the files
+        //     files.forEach(function(data){
 
-                //if username and passord
-                if(req.query.account_type == 'normal'){
+        //         fs.readFile(__dirname + '/world_list/' + data, function (err, files_data) {
                     
-                    //check if username is already used only + batch name
-                    if(users[a].name == names_list[random_name].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+        //             if(err){//give error response back
+            
+        //                 console.log('User create :: unable to read contents of file "' + data + '" : ' + err);
+        //                 return;
+        //             }
 
-                        break;//end loop
-                    }
-                }
+        //             //console.log(files_data.toString('utf-8').split(/\s/));
+        //             names_list = files_data.toString('utf-8').split(/\s/);//save files names array globally
+        //         });
 
-                //if voucher
-                if(req.query.account_type == 'voucher'){
+        //     });
 
-                    //check for combined user name and password + batch name
-                    if(users[a].name == names_list[random_name].trim().toLowerCase() + names_list[random_password].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+        // });
 
-                        break;//end loop
-                    }
-                }
 
-                //if loop managed to run till here then the name is unique
-                //save username and password
-                new_user_usernames.push({ 'new_account_name' : names_list[random_name].trim().toLowerCase(), 'new_account_password' : names_list[random_password].trim().toLowerCase() });
+        new Promise (function(resolve, reject){
 
-                //increment found names by one
-                found_unique_names = found_unique_names + 1;
-            }
+            //get directory files names
+            fs.readdir(__dirname + '/world_list/', function (err, files) {
+                
+                
+                if(err){//give error response back
+
+                    console.log('User create :: unable to scan names list directory: ' + err);
+                    return;
+                } 
+                
+
+                //read contnets of each of the files
+                files.forEach(function(data){
+
+                    fs.readFile(__dirname + '/world_list/' + data, function (err, files_data) {
+                        
+                        if(err){//give error response back
+                
+                            console.log('User create :: unable to read contents of file "' + data + '" : ' + err);
+                            return;
+                        }
+
+                        //console.log(files_data.toString('utf-8').split(/\s/));
+                        resolve(files_data.toString('utf-8').split(/\s/));//save files names array globally
+                    });
+
+                });
+
+            });
+            
+
+        })
+        .then(function(data){
         
-            //loop tracking
-            while_loops = while_loops + 1;
+            var names_list = data;
 
-            //check if loops number is 3 times total number of name list array length
-            if(while_loops == names_list.length * 3){//IF YOUSER BASE GROW BIG, INCREASE THIS, MAXIMUM NUMBER SHOULD BE (names_list.length * names_list.length ), this are possible  username + password combinations
-            //if(while_loops == 100){
+            // --- find names
+            var found_unique_names = 0;//tracks unique names found
+            var while_loops = 0; //tracks each lop
+            var are_names_fount = 'not yet';//track if names have not been found
 
-                //console.log('in 1', names_list.length)
-                //check if names where not found at last second
-                if(found_unique_names != parseInt(total_accounts)){ //if not
-                    are_names_fount = false;//set to false
-                    //console.log('in 2', while_loops)
+
+                //find names and check 
+                while(found_unique_names != parseInt(total_accounts) ){//while names found total is not equal requested names batch total
+
+                    //create random
+                    var random_name = Math.floor(Math.random() * names_list.length);
+                    var random_password = Math.floor(Math.random() * names_list.length);
+
+                    //console.log('name : ',names_list[random_name], ' username : ',names_list[random_password] );
+
+                    //check if random username is same as any already registered in the system
+                    for(var a = 0; a <= users.length - 1; a++){
+
+                        if(users[a] != null ){// if not null 
+
+                            //if username and passord
+                            if(req.query.account_type == 'normal'){
+                                
+                                //check if username is already used only + batch name
+                                if(users[a].name == names_list[random_name].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+
+                                    break;//end loop
+                                }
+                            }
+
+                            //if voucher
+                            if(req.query.account_type == 'voucher'){
+
+                                //check for combined user name and password + batch name
+                                if(users[a].name == names_list[random_name].trim().toLowerCase() + names_list[random_password].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+
+                                    break;//end loop
+                                }
+                            }
+
+                            //if loop managed to run till here then the name is unique
+                            //save username and password
+                            new_user_usernames.push({ 'new_account_name' : names_list[random_name].trim().toLowerCase(), 'new_account_password' : names_list[random_password].trim().toLowerCase() });
+
+                                //increment found names by one
+                                found_unique_names = found_unique_names + 1;
+
+                            }
+                        }
+                    
+                        //loop tracking
+                        while_loops = while_loops + 1;
+
+                        //check if loops number is 3 times total number of name list array length
+                        if(while_loops == names_list.length * 3){//IF YOUSER BASE GROW BIG, INCREASE THIS, MAXIMUM NUMBER SHOULD BE (names_list.length * names_list.length ), this are possible  username + password combinations
+                        //if(while_loops == 100){
+
+                        //console.log('in 1', names_list.length)
+                        //check if names where not found at last second
+                    if(found_unique_names != parseInt(total_accounts)){ //if not
+                            are_names_fount = false;//set to false
+                            //console.log('in 2', while_loops)
+                        }
+
+                        //set unique name tracker names equal requested account total batch number
+                        found_unique_names = parseInt(total_accounts);//cause loop to meet its requirements and end
+
+                    }
                 }
 
-                //set unique name tracker names equal requested account total batch number
-                found_unique_names = parseInt(total_accounts);//cause loop to meet its requirements and end
+                //check if names where not found
+                if(are_names_fount == false){
 
-            }
-       }
+                    res.jsonp('batch account create, unabled to create unique names, not already taken');//give response
 
-       //check if names where not found
-       if(are_names_fount == false){
+                    console.log('batch account create, unabled to create unique names, not already taken');
 
-            res.jsonp('batch account create, unabled to create unique names, not already taken');//give response
-
-            console.log('batch account create, unabled to create unique names, not already taken');
-
-            return;//end function //
-       }
+                    return;//end function //
+                }
 
 
-        // -- create batch users accounts
-        new_user_usernames.forEach(function(data){
+                // -- create batch users accounts
+                new_user_usernames.forEach(function(data, index){
 
-            //console.log(new_user_usernames);
+                    console.log(new_user_usernames);
 
-            var username = data.new_account_name + voucher_username_suffix.trim().toLowerCase(); //set username with suffix
-            var password = data.new_account_password;//set password
+                    var username = data.new_account_name + voucher_username_suffix.trim().toLowerCase(); //set username with suffix
+                    var password = data.new_account_password;//set password
 
-            //if voucher
-            if(req.query.account_type == 'voucher'){
-                //combine username plus password to one 
-                username = data.new_account_name + data.new_account_password + voucher_username_suffix.trim().toLowerCase();//set password same as username
+                    //if voucher
+                    if(req.query.account_type == 'voucher'){
+                        //combine username plus password to one 
+                        username = data.new_account_name + data.new_account_password + voucher_username_suffix.trim().toLowerCase();//set password same as username
 
-                //set username as password
-                password = username ; //set password with suffix
-            }
+                        //set username as password
+                        password = username ; //set password with suffix
+                    }
 
-            //call user create function
-            user_create_fn (username , password);
+                    //call user create function
+                    user_create_fn (username , password);
+
+
+                    //if loop at end
+                    if(index == new_user_usernames.length - 1){
+
+                        //save users to db
+                        save_to_db();
+                    }
+
+                });
 
         });
 
@@ -2535,6 +2623,14 @@ app.get('/create_user', function(req, res){// create new users
                          
                 }
 
+
+                //if loop at end
+                if(index == users.length - 1){
+
+                    //save users to db
+                    save_to_db();
+                }
+
             });
             
 
@@ -2551,13 +2647,14 @@ app.get('/create_user', function(req, res){// create new users
     }
 
     // ----- create user
-     
+    
+
     function user_create_fn (username, password){
 
         //time stamp
         var date = new Date();
 
-        var new_user = 
+        new_user_list.push( 
         {
             name : username, 
             password : password, 
@@ -2616,59 +2713,99 @@ app.get('/create_user', function(req, res){// create new users
             profile_used_download : 0,
     
         
-        }
+        });
         
+    }
+
+
+    
+
+
         //save user to db
+
+        function save_to_db(){
                     
-        mongo_db.connect(db_url, function(err, db_data){
-
-            if(err){
-
-                console.log('db connection error : ', err);
-                return;
-            }
-        
-            //save new profile attribute to db
-            db_data.db('wifi_radius_db').collection('users').insertOne(new_user, function(err){
+            mongo_db.connect(db_url, function(err, db_data){
 
                 if(err){
-                    console.log('db error adding " users " : ',err);
 
+                    console.log('db connection error : ', err);
                     return;
                 }
-
-                //console.log('default "users" added to db : ',response);
-                console.log('new "users" added to db');
-
-
-                //update cross server users variable
-
-                users = [];//clear old data
-
-                db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
+            
+                //save new profile attribute to db
+                db_data.db('wifi_radius_db').collection('users').insertMany(new_user_list, function(err){
 
                     if(err){
+                        console.log('db error adding " users " : ',err);
 
-                        console.log('in memory "users" update error : ', err);
                         return;
                     }
 
-                    users.push(data);//add updated data
+                    //console.log('default "users" added to db : ',response);
+                    console.log('new "users" added to db');
 
-                    console.log('in memory "users" updated');
+                    //get users rom db and update
+                    users = [];//clear users variable old data
 
-                });
+                    db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
         
-            })
+                        if(err){
+        
+                            console.log('in memory "users" update error : ', err);
+                            return;
+                        }
+        
+                        users.push(data);//add updated data
+                        //console.log('in memory "users" updated');
+
+
+                        //send account created message
+                        //res.jsonp('account created.');
+        
+                    });
+
+                    res.jsonp('account created.');
             
-            //close db connection
-            db_data.close;
-        });
+                })
+                
+                //close db connection
+                db_data.close;
+            });
+        }
 
-    }
+    
+    //update cross server users variable
 
-    //send account created message
-    res.jsonp('account created.');
+    // mongo_db.connect(db_url, function(err, db_data){
+
+    //     if(err){
+
+    //         console.log('db connection error : ', err);
+    //         return;
+    //     }
+    //         users = [];//clear users variable old data
+
+    //         db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
+
+    //             if(err){
+
+    //                 console.log('in memory "users" update error : ', err);
+    //                 return;
+    //             }
+
+    //             users.push(data);//add updated data
+
+    //             //console.log('in memory "users" updated');
+
+    //         });
+        
+    //     //close db connection
+    //     db_data.close;
+    // });
+
+
+
 
 });
 
