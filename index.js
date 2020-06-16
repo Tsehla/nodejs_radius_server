@@ -726,7 +726,7 @@ socket.on('message', (msg, reply_info) => {
   try {
 
     radius_in_message = radius_module.decode({packet: msg, secret:  radius_secret});
-    console.log(radius_in_message);
+    //console.log(radius_in_message);
 
   } catch(error){
 
@@ -890,6 +890,7 @@ socket.on('message', (msg, reply_info) => {
                         // console.log(login_in_account_limit_profile_attributes[a]);
                         // console.log(login_in_account_limit_profile_attributes[a][0])
 
+   
                         if(login_in_account_limit_profile_attributes[a] && login_in_account_limit_profile_attributes[a][0] == data){//if name match found
 
                             //loop through grouped attributes and extract attribute contained
@@ -976,19 +977,24 @@ socket.on('message', (msg, reply_info) => {
                                             //create radius reply 
                                             total_download_upload_limit_define.forEach(function(data){//loop  through max-data usade limit definitions
 
-                                                //remaining data
-                                                var remaining_data = to_bytes - parseInt(authenticated_user.profile_used_data); 
+                                                if(data){//if not null
 
-                                                //if remaining is creater than + 4GB in bytes, turn to words to gigs
-                                                //nodejs radius cant encode values creater than 32bit limit
-                                                if(remaining_data > 4294967295){
+                                                    //remaining data
+                                                    var remaining_data = to_bytes - parseInt(authenticated_user.profile_used_data); 
 
-                                                    // https://forum.mikrotik.com/viewtopic.php?t=9902
-                                                   // remaining_data
+                                                    //if remaining is creater than + 4GB in bytes, turn to words to gigs
+                                                    //nodejs radius cant encode values creater than 32bit limit
+                                                    if(remaining_data > 4294967295){
+
+                                                        // https://forum.mikrotik.com/viewtopic.php?t=9902
+                                                    // remaining_data
+                                                    }
+
+                                                    //create reply attribute format
+                                                    attribute_container.push(['Vendor-Specific',data[0], [[data[1],remaining_data ]]]);
+
+
                                                 }
-
-                                                //create reply attribute format
-                                                attribute_container.push(['Vendor-Specific',data[0], [[data[1],remaining_data ]]]);
 
                                             });
 
