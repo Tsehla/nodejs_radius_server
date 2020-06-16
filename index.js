@@ -858,11 +858,11 @@ socket.on('message', (msg, reply_info) => {
 
             for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
              
-                console.log(login_in_account_limit_profile_groups)
+               
 
-                if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups.data[a][0] == authenticated_user.profile_attribute_group ){ //if name match found
+                if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups[a].data[0] == authenticated_user.profile_attribute_group ){ //if name match found
 
-                    authentification_profile_group_data = login_in_account_limit_profile_groups.data[a];//save profile group data
+                    authentification_profile_group_data = login_in_account_limit_profile_groups[a].data;//save profile group data
                     break; //end loop
                 }
 
@@ -892,10 +892,10 @@ socket.on('message', (msg, reply_info) => {
                         
 
    
-                        if(login_in_account_limit_profile_attributes && login_in_account_limit_profile_attributes.data[a][0] == data){//if name match found
+                        if(login_in_account_limit_profile_attributes && login_in_account_limit_profile_attributes[a].data[0] == data){//if name match found
 
                             //loop through grouped attributes and extract attribute contained
-                            login_in_account_limit_profile_attributes.data[a][1].forEach(function(data){
+                            login_in_account_limit_profile_attributes[a].data[1].forEach(function(data){
 
                             
                                 //catch [wifi-radius] library attributes
