@@ -1700,7 +1700,7 @@ socket.on('message', (msg, reply_info) => {
 
         // }
 
-        console.log(update_data);
+        //console.log(update_data);
         
 
         //get user account and update
@@ -1767,7 +1767,7 @@ socket.on('message', (msg, reply_info) => {
                             //save new profile attribute to db
                             db_data.db('wifi_radius_db').collection('users').update(
                                     {
-                                        _id : users[a]._id.toString()
+                                        _id : ObjectId(users[a]._id.toString())
                                     },{
 
                                         $set:{   
