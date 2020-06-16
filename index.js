@@ -1716,7 +1716,7 @@ socket.on('message', (msg, reply_info) => {
                 //find account matching user name
                 if(users[a].name == update_data['account_username'] ){
 
-                    console.log(users[a]);
+                    //console.log(users[a]);
 
                     console.log('-------------------------------------------------------------');
                     console.log('acc name : ', users[a].name);
@@ -1769,7 +1769,7 @@ socket.on('message', (msg, reply_info) => {
                             //save new profile attribute to db
                             db_data.db('wifi_radius_db').collection('users').update(
                                     {
-                                        _id : users[a]._id
+                                        name : users[a].name
                                     },{
 
                                         $set:{   
