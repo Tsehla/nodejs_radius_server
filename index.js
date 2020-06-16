@@ -886,8 +886,12 @@ socket.on('message', (msg, reply_info) => {
                     //loop through profile attributes en find name matching attributes specified in [ profile group]
                     for(var a = 0; a <= login_in_account_limit_profile_attributes.length -1; a++ ){
                         
-                        console.log(login_in_account_limit_profile_attributes.data[a]);
-                        console.log(login_in_account_limit_profile_attributes.data[a][0])
+                        // console.log(login_in_account_limit_profile_attributes[a]);
+                        // console.log(login_in_account_limit_profile_attributes[a][0]);
+
+                        console.log(login_in_account_limit_profile_attributes)
+
+                        
 
    
                         if(login_in_account_limit_profile_attributes.data[a] && login_in_account_limit_profile_attributes.data[a][0] == data){//if name match found
