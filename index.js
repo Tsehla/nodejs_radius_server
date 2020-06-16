@@ -859,7 +859,7 @@ socket.on('message', (msg, reply_info) => {
             for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
              
 
-                if( login_in_account_limit_profile_groups.data[a] && login_in_account_limit_profile_groups.data[a][0] == authenticated_user.profile_attribute_group ){ //if name match found
+                if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups.data[a][0] == authenticated_user.profile_attribute_group ){ //if name match found
 
                     authentification_profile_group_data = login_in_account_limit_profile_groups.data[a];//save profile group data
                     break; //end loop
@@ -888,9 +888,6 @@ socket.on('message', (msg, reply_info) => {
                         
                         // console.log(login_in_account_limit_profile_attributes[a]);
                         // console.log(login_in_account_limit_profile_attributes[a][0]);
-
-                        console.log(login_in_account_limit_profile_attributes)
-
                         
 
    
