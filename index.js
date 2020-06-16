@@ -857,12 +857,11 @@ socket.on('message', (msg, reply_info) => {
             var authentification_profile_group_data = null;
 
             for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
+             
 
-                
+                if( login_in_account_limit_profile_groups[a] && login_in_account_limit_profile_groups.data[a][0] == authenticated_user.profile_attribute_group ){ //if name match found
 
-                if( login_in_account_limit_profile_groups[a] && login_in_account_limit_profile_groups[a][0] == authenticated_user.profile_attribute_group ){ //if name match found
-
-                    authentification_profile_group_data = login_in_account_limit_profile_groups[a];//save profile group data
+                    authentification_profile_group_data = login_in_account_limit_profile_groups.data[a];//save profile group data
                     break; //end loop
                 }
 
@@ -1707,51 +1706,118 @@ socket.on('message', (msg, reply_info) => {
         for(var a = 0; a <= users.length - 1; a++){
 
             
-
-            //find account matching user name
-            if(users[a].name == update_data['account_username'] ){
-
-                //console.log(users[a]);
-
-                console.log('-------------------------------------------------------------');
-                console.log('acc name : ', users[a].name);
-                console.log('upload bytes : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])))
-                console.log('download bytes : ', (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])));
-                console.log('total usage : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])))
-                console.log('session time : ',parseInt(update_data['usage_session_time']))
-
-                //if update reason [ start ], (account accounting start notification )
-                if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){
-
-                    //set account first use attribute to true or etc
-
-                }
-
-                //if update reason [ interim-update ] (regular status update) or account [ stop ] (account log out usage update)
-
-                //if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' || radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update'){
+            if(users[a] != null){//if not null
                 
-                if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){//do only on stop, usage over calculation on interim updates // ====================  TO FIX ====================
-                    //update profile usage data
+
+                //find account matching user name
+                if(users[a].name == update_data['account_username'] ){
+
+                    //console.log(users[a]);
+
+                    console.log('-------------------------------------------------------------');
+                    console.log('acc name : ', users[a].name);
+                    console.log('upload bytes : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])))
+                    console.log('download bytes : ', (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])));
+                    console.log('total usage : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])))
+                    console.log('session time : ',parseInt(update_data['usage_session_time']))
+
+                    //if update reason [ start ], (account accounting start notification )
+                    if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){
+
+                        //set account first use attribute to true or etc
+
+                    }
+
+                    //if update reason [ interim-update ] (regular status update) or account [ stop ] (account log out usage update)
+
+                    //if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' || radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update'){
                     
-                    //save time
-                    users[a].profile_used_time = parseInt(users[a].profile_used_time) + parseInt(update_data['usage_session_time']);
+                    if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){//do only on stop, usage over calculation on interim updates // ====================  TO FIX ====================
+                        //update profile usage data
+                        
+                        //save time
+                        var profile_used_time = parseInt(users[a].profile_used_time) + parseInt(update_data['usage_session_time']);
 
-                    //save upload
-                    //handle uploads / download gigaword / 64bit number / + 4GB 
-                    users[a].profile_used_upload = parseInt(users[a].profile_used_upload) + (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']));
+                        //save upload
+                        //handle uploads / download gigaword / 64bit number / + 4GB 
+                        var profile_used_upload = parseInt(users[a].profile_used_upload) + (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']));
 
-                    //handle download
-                    //handle uploads / download gigaword / 64bit number / + 4GB
-                    users[a].profile_used_download = parseInt(users[a].profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
+                        //handle download
+                        //handle uploads / download gigaword / 64bit number / + 4GB
+                        var profile_used_download = parseInt(users[a].profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
 
-                    //create total data usage
-                    users[a].profile_used_data = parseInt(users[a].profile_used_data) + users[a].profile_used_upload + users[a].profile_used_download;
+                        //create total data usage
+                        var profile_used_data = parseInt(users[a].profile_used_data) + users[a].profile_used_upload + users[a].profile_used_download;
 
+                        
+                        // ---- save new profiles -----
+                        
+                        //login_in_account_limit_profile_attributes.push(req.query.new_profiles);
+
+                        mongo_db.connect(db_url, function(err, db_data){
+
+                            if(err){
+
+                                console.log('db connection error : ', err);
+                                return;
+                            }
+                        
+                            //save new profile attribute to db
+                            db_data.db('wifi_radius_db').collection('users').update(
+                                    {
+                                        _id : users[a]._id.toString()
+                                    },{
+
+                                        $set:{   
+                                            profile_used_time : profile_used_time,
+                                            profile_used_upload : profile_used_upload,
+                                            profile_used_download : profile_used_download,
+                                            profile_used_data : profile_used_data,
+                                    }
+                                    },
+                            function(err){
+
+
+                                if(err){
+                                    console.log('error updating user account and saving to db: ',err);
+
+                                    return;
+                                }
+
+                                //console.log('default "login_in_account_limit_profile_groups" added to db : ',response);
+                                console.log('user account updated and saved to db');
+
+
+                                //update cross server login_in_account_limit_profile_groups variable
+
+                                users = []; //clear of old data
+
+                                db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
+
+                                    if(err){
+
+                                        console.log('in memory "users" update error : ', err);
+                                        return;
+                                    }
+
+                                    users.push(data);//add updated data
+                                    console.log('in memory "users" updated');
+
+                                });
+                        
+                            })
+                            
+                            //close db connection
+                            db_data.close;
+                        });
+
+                    }
                     
                 }
+
             }
         }
+
 
 
 
