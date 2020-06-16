@@ -1758,6 +1758,8 @@ socket.on('message', (msg, reply_info) => {
                         
                         //login_in_account_limit_profile_attributes.push(req.query.new_profiles);
 
+                        var x = users[a].name;
+
                         mongo_db.connect(db_url, function(err, db_data){
 
                             if(err){
@@ -1769,7 +1771,7 @@ socket.on('message', (msg, reply_info) => {
                             //save new profile attribute to db
                             db_data.db('wifi_radius_db').collection('users').update(
                                     {
-                                        'name' : users[a].name
+                                        'name' : x
                                     },{
 
                                         $set:{   
