@@ -1710,7 +1710,7 @@ socket.on('message', (msg, reply_info) => {
         for(var a = 0; a <= users.length - 1; a++){
 
             
-            if(users[a] != null){//if not null
+            if(users[a]){//if not null
                 
 
                 //find account matching user name
