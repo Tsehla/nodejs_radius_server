@@ -2557,7 +2557,8 @@ app.get('/create_user', function(req, res){// create new users
                 // }
 
 
-                while(found_unique_names != parseInt(total_accounts) ){
+                //find unique names to use as usernames 
+                while(found_unique_names != parseInt(total_accounts) ){//while names found total is not equal requested names batch total
 
                     //create random
                     var random_name = Math.floor(Math.random() * names_list.length);
