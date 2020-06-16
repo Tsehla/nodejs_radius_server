@@ -858,6 +858,7 @@ socket.on('message', (msg, reply_info) => {
 
             for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
              
+                console.log(login_in_account_limit_profile_groups)
 
                 if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups.data[a][0] == authenticated_user.profile_attribute_group ){ //if name match found
 
