@@ -1769,7 +1769,7 @@ socket.on('message', (msg, reply_info) => {
                             //save new profile attribute to db
                             db_data.db('wifi_radius_db').collection('users').update(
                                     {
-                                        _id : ObjectId(users[a]._id.toString())
+                                        _id :new ObjectId(users[a]._id.toString())
                                     },{
 
                                         $set:{   
