@@ -345,11 +345,11 @@ mongo_db.connect(db_url, function(err, db_data){
 
         //profiles group / allow grouping of attributes 
         var default_login_in_account_limit_profile_attributes = ['4.9Gb Max data',
-            [
-                ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
-                //['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]] 
-            ]
-         ];
+                [
+                    ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
+                    //['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]] 
+                ]
+            ];
 
 
             //add default login_in_account_limit_profile_attributes
@@ -2483,60 +2483,153 @@ app.get('/create_user', function(req, res){// create new users
             var are_names_fount = 'not yet';//track if names have not been found
 
 
-                //find names and check 
-                while(found_unique_names != parseInt(total_accounts) ){//while names found total is not equal requested names batch total
+                // //find names and check 
+                // while(found_unique_names != parseInt(total_accounts) ){//while names found total is not equal requested names batch total
+
+                //     //create random
+                //     var random_name = Math.floor(Math.random() * names_list.length);
+                //     var random_password = Math.floor(Math.random() * names_list.length);
+
+                //     console.log(random_name, random_password )
+                //     //console.log('name : ',names_list[random_name], ' username : ',names_list[random_password] );
+
+                //     //check if random username is same as any already registered in the system
+                //     for(var a = 0; a <= users.length - 1; a++){
+
+                //         if(users[a] != null ){// if not null 
+
+                //             //if username and passord
+                //             if(req.query.account_type == 'normal'){
+                                
+                //                 //check if username is already used only + batch name
+                //                 if(users[a].name == names_list[random_name].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+
+                //                     break;//end loop
+                //                 }
+                //             }
+
+                //             //if voucher
+                //             if(req.query.account_type == 'voucher'){
+
+                //                 //check for combined user name and password + batch name
+                //                 if(users[a].name == names_list[random_name].trim().toLowerCase() + names_list[random_password].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+
+                //                     break;//end loop
+                //                 }
+                //             }
+
+                //             //if loop managed to run till here then the name is unique
+                //             //save username and password
+                //             new_user_usernames.push({ 'new_account_name' : names_list[random_name].trim().toLowerCase(), 'new_account_password' : names_list[random_password].trim().toLowerCase() });
+                //             //console.log(new_user_usernames);
+
+                //             //increment found names by one
+                //             found_unique_names = found_unique_names + 1;
+
+                //             if(found_unique_names == parseInt(total_accounts)){
+                //                 console.log('Requirements met, names found ');
+                //                 found_unique_names = parseInt(total_accounts);
+                //                 break;
+
+
+                //             }
+
+                //         }
+                //     }
+                    
+                //     //loop tracking
+                //     while_loops = while_loops + 1;
+
+                //     //check if loops number is 3 times total number of name list array length
+                //     if(while_loops == names_list.length * 3){//IF YOUSER BASE GROW BIG, INCREASE THIS, MAXIMUM NUMBER SHOULD BE (names_list.length * names_list.length ), this are possible  username + password combination
+
+                       
+                //         //check if names where not found at last second
+                //         if(found_unique_names != parseInt(total_accounts)){ //if not
+                //             are_names_fount = false;//set to false
+                //             //console.log('in 2', while_loops)
+                //         }
+
+                //         //set unique name tracker names equal requested account total batch number
+                //         found_unique_names = parseInt(total_accounts);//cause loop to meet its requirements and end
+
+                //     }
+                // }
+
+
+                while(found_unique_names != parseInt(total_accounts) ){
 
                     //create random
                     var random_name = Math.floor(Math.random() * names_list.length);
                     var random_password = Math.floor(Math.random() * names_list.length);
 
-                    //console.log('name : ',names_list[random_name], ' username : ',names_list[random_password] );
 
-                    //check if random username is same as any already registered in the system
-                    for(var a = 0; a <= users.length - 1; a++){
+                    var unique_name_found = false;//track if unique name is found for each while loop
 
-                        if(users[a] != null ){// if not null 
 
-                            //if username and passord
-                            if(req.query.account_type == 'normal'){
-                                
-                                //check if username is already used only + batch name
-                                if(users[a].name == names_list[random_name].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+                    users.forEach(function(data){/* innefient, as it search and copares through all the dictionary words array even if a unique name is found. the "for()" loop is best, but im getting bugs */
 
-                                    break;//end loop
+                        
+
+                        if(data != null ){// if not null 
+
+                            if(unique_name_found == false){
+
+                                //if username and passord
+                                if(req.query.account_type == 'normal'){
+                                    
+                                    //check if username is already used only + batch name
+                                    if(data.name == names_list[random_name].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+
+                                        return; //end function
+
+                                    }
                                 }
-                            }
 
-                            //if voucher
-                            if(req.query.account_type == 'voucher'){
+                                //if voucher
+                                if(req.query.account_type == 'voucher'){
 
-                                //check for combined user name and password + batch name
-                                if(users[a].name == names_list[random_name].trim().toLowerCase() + names_list[random_password].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+                                    //check for combined user name and password + batch name
+                                    if(data.name == names_list[random_name].trim().toLowerCase() + names_list[random_password].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
 
-                                    break;//end loop
+                                        return;
+                                    }
                                 }
-                            }
 
-                            //if loop managed to run till here then the name is unique
-                            //save username and password
-                            new_user_usernames.push({ 'new_account_name' : names_list[random_name].trim().toLowerCase(), 'new_account_password' : names_list[random_password].trim().toLowerCase() });
+                                //save username and password
+                                new_user_usernames.push({ 'new_account_name' : names_list[random_name].trim().toLowerCase(), 'new_account_password' : names_list[random_password].trim().toLowerCase() });
 
                                 //increment found names by one
                                 found_unique_names = found_unique_names + 1;
 
+                                //set unique name found true, for this seach 
+                                unique_name_found = true;
+
+                                if(found_unique_names == parseInt(total_accounts)){
+                                    console.log('Requirements met, names found ');
+                                    found_unique_names = parseInt(total_accounts);
+                                   
+                                }
                             }
+
                         }
-                    
-                        //loop tracking
-                        while_loops = while_loops + 1;
+                    });
 
-                        //check if loops number is 3 times total number of name list array length
-                        if(while_loops == names_list.length * 3){//IF YOUSER BASE GROW BIG, INCREASE THIS, MAXIMUM NUMBER SHOULD BE (names_list.length * names_list.length ), this are possible  username + password combinations
-                        //if(while_loops == 100){
 
-                        //console.log('in 1', names_list.length)
+
+
+
+
+
+                    //loop tracking
+                    while_loops = while_loops + 1;
+
+                    //check if loops number is 3 times total number of name list array length
+                    if(while_loops == names_list.length * 3){//IF YOUSER USER BASE GROW BIG, INCREASE THIS, MAXIMUM NUMBER SHOULD BE (names_list.length * names_list.length ), this are possible  username + password combination
+
+                       
                         //check if names where not found at last second
-                    if(found_unique_names != parseInt(total_accounts)){ //if not
+                        if(found_unique_names != parseInt(total_accounts)){ //if not
                             are_names_fount = false;//set to false
                             //console.log('in 2', while_loops)
                         }
@@ -2545,7 +2638,9 @@ app.get('/create_user', function(req, res){// create new users
                         found_unique_names = parseInt(total_accounts);//cause loop to meet its requirements and end
 
                     }
-                }
+
+
+                };
 
                 //check if names where not found
                 if(are_names_fount == false){
@@ -2561,7 +2656,7 @@ app.get('/create_user', function(req, res){// create new users
                 // -- create batch users accounts
                 new_user_usernames.forEach(function(data, index){
 
-                    console.log(new_user_usernames);
+                   // console.log(new_user_usernames);
 
                     var username = data.new_account_name + voucher_username_suffix.trim().toLowerCase(); //set username with suffix
                     var password = data.new_account_password;//set password
