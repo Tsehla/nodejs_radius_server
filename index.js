@@ -2570,8 +2570,7 @@ app.get('/create_user', function(req, res){// create new users
 
                     users.forEach(function(data){/* innefient, as it search and copares through all the dictionary words array even if a unique name is found. the "for()" loop is best, but im getting bugs */
 
-                        
-
+                    
                         if(data != null ){// if not null 
 
                             if(unique_name_found == false){
@@ -2615,11 +2614,6 @@ app.get('/create_user', function(req, res){// create new users
 
                         }
                     });
-
-
-
-
-
 
 
                     //loop tracking
