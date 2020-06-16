@@ -859,7 +859,7 @@ socket.on('message', (msg, reply_info) => {
             for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
              
 
-                if( login_in_account_limit_profile_groups[a] && login_in_account_limit_profile_groups.data[a][0] == authenticated_user.profile_attribute_group ){ //if name match found
+                if( login_in_account_limit_profile_groups.data[a] && login_in_account_limit_profile_groups.data[a][0] == authenticated_user.profile_attribute_group ){ //if name match found
 
                     authentification_profile_group_data = login_in_account_limit_profile_groups.data[a];//save profile group data
                     break; //end loop
@@ -886,14 +886,14 @@ socket.on('message', (msg, reply_info) => {
                     //loop through profile attributes en find name matching attributes specified in [ profile group]
                     for(var a = 0; a <= login_in_account_limit_profile_attributes.length -1; a++ ){
                         
-                        // console.log(login_in_account_limit_profile_attributes[a]);
-                        // console.log(login_in_account_limit_profile_attributes[a][0])
+                        console.log(login_in_account_limit_profile_attributes.data[a]);
+                        console.log(login_in_account_limit_profile_attributes.data[a][0])
 
    
-                        if(login_in_account_limit_profile_attributes[a] && login_in_account_limit_profile_attributes[a][0] == data){//if name match found
+                        if(login_in_account_limit_profile_attributes.data[a] && login_in_account_limit_profile_attributes.data[a][0] == data){//if name match found
 
                             //loop through grouped attributes and extract attribute contained
-                            login_in_account_limit_profile_attributes[a][1].forEach(function(data){
+                            login_in_account_limit_profile_attributes.data[a][1].forEach(function(data){
 
                             
                                 //catch [wifi-radius] library attributes
@@ -990,7 +990,7 @@ socket.on('message', (msg, reply_info) => {
                                                     }
 
                                                     //create reply attribute format
-                                                    attribute_container.push(['Vendor-Specific',data[0], [[data[1],remaining_data ]]]);
+                                                    attribute_container.push(['Vendor-Specific',data.data[0], [[data.data[1],remaining_data ]]]);
 
 
                                                 }
