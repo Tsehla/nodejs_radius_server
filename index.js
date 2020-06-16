@@ -19,7 +19,7 @@ var dgram = require('dgram');
 
 // ======= radius module
 var radius_module = require('radius');//decode upd authentification requests from router
-radius_module.add_dictionary(__dirname + '/vendor_dictionary/wifi_radius'); //vendor specific router dictionary folder
+radius_module.add_dictionary(__dirname + '/vendor_dictionary'); //vendor specific router dictionary folder
 
 
 // ==== handle tcp requets (get/post/delete/etc)
@@ -726,7 +726,7 @@ socket.on('message', (msg, reply_info) => {
   try {
 
     radius_in_message = radius_module.decode({packet: msg, secret:  radius_secret});
-    //console.log(radius_in_message);
+    console.log(radius_in_message);
 
   } catch(error){
 
@@ -824,15 +824,21 @@ socket.on('message', (msg, reply_info) => {
         
         for(var a = 0; a <= users.length -1; a++){
 
-           //check usrename exist in database 
-           if(users[a].name == authentication_username && users[a].password == authentication_password ){//if match 
+            
 
-                reply_code = 'Access-Accept';//give accept response
+            if(users[a] != null || users[a] != undefined){//if not null
 
-                authenticated_user = users[a];//save users details
+                //check usrename exist in database 
+                if(users[a].name == authentication_username && users[a].password == authentication_password ){//if match 
 
-                break;//end loop
-           }
+                    reply_code = 'Access-Accept';//give accept response
+
+                    authenticated_user = users[a];//save users details
+
+                    break;//end loop
+                }
+
+            }
 
            if(a == users.length -1){ //if loop is at it ends/no match found
 
@@ -2570,7 +2576,7 @@ app.get('/create_user', function(req, res){// create new users
 
                     users.forEach(function(data){/* innefient, as it search and copares through all the dictionary words array even if a unique name is found. the "for()" loop is best, but im getting bugs */
 
-                    
+
                         if(data != null ){// if not null 
 
                             if(unique_name_found == false){
