@@ -1700,7 +1700,7 @@ socket.on('message', (msg, reply_info) => {
 
         // }
 
-        //console.log(update_data);
+        console.log(update_data);
         
 
         //get user account and update
