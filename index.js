@@ -204,6 +204,7 @@ mongo_db.connect(db_url, function(err, db_data){
                 reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
                 reset_time : { 'hour' : '', 'minute': '', 'second' : '' },
                 active : false, //is voucher active
+                account_logged_in : false,//track if account is in use
                 creation_date : { 'day_of_week': 2, 'day_of_month': 2, 'month': 4, 'year': 2020 }, //date account created
                 first_used_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
                 first_used_time : { 'hour' : '', 'minute': '', 'second' : '' },
@@ -228,6 +229,7 @@ mongo_db.connect(db_url, function(err, db_data){
                         reset : false,
                         //reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
                         //reset_time : { 'hour' : '', 'minute': '', 'second' : '' }
+                        account_logged_in : false,//track if account is in use
           
                         usage : {
                             profile_used_data : 0,
@@ -851,12 +853,14 @@ socket.on('message', (msg, reply_info) => {
         }
       
 
-         //--------------------- Authenticated user account limits
+        //--------------------- Authenticated user account limits
 
         if(authenticated_user && authenticated_user.profile_attribute_group.length > 0 ){ //if authentification limits specified
 
             //-- check if profile group exists
             var authentification_profile_group_data = null;
+
+            var users_account_array_index = undefined; //temp save position of account in 'users' array
 
             for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
              
@@ -865,6 +869,8 @@ socket.on('message', (msg, reply_info) => {
                 if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups[a].data[0] == authenticated_user.profile_attribute_group ){ //if name match found
 
                     authentification_profile_group_data = login_in_account_limit_profile_groups[a].data;//save profile group data
+
+                    users_account_array_index = a;//users acount index
                     break; //end loop
                 }
 
@@ -1067,14 +1073,46 @@ socket.on('message', (msg, reply_info) => {
 
 
                 
-
+                //save 
 
 
 
             }
+            
+
+            // ++++++++ set/save account changes to profile ++++++
+
+            //set in memory user logged in to true
+            users[users_account_array_index].account_logged_in = true;
+
+            //save to db
+            var user_db_account_id = new ObjectId(authenticated_user._id);//set account id
+
+            db_data.db('wifi_radius_db').collection('users').update(
+                {
+                    '_id' : user_db_account_id
+                },{
+
+                    $set:{   
+                        account_logged_in : true
+                    }
+                },
+                function(err){
 
 
-            //attribute_container.push(login_in_account_limit);
+                if(err){
+                    console.log('error updating "account logged in " to true, on user authentication and saving to db: ',err);
+
+                    return;
+                }
+
+
+
+            });
+
+
+
+
 
         }
         
@@ -1713,8 +1751,8 @@ socket.on('message', (msg, reply_info) => {
             if(users[a]){//if not null
                 
 
-                //find account matching user name
-                if(users[a].name == update_data['account_username'] ){
+                //find account matching user name //if account is logged in
+                if(users[a].name == update_data['account_username'] && users[a].account_logged_in == true){
 
                     //console.log(users[a]);
 
@@ -1753,16 +1791,17 @@ socket.on('message', (msg, reply_info) => {
                         //create total data usage
                         var profile_used_data = parseInt(users[a].profile_used_data) + profile_used_upload + profile_used_download;
 
-                        console.log('====================================================');
-                        console.log(users[a]);
-                        console.log('====================================================');
+                        // console.log('====================================================');
+                        // console.log(users[a]);
+                        // console.log('====================================================');
 
                         
                         // ---- save new profiles -----
                         
-                        //login_in_account_limit_profile_attributes.push(req.query.new_profiles);
+                        //set in memory account logged out to true
+                        users[a].account_logged_in  = false;
 
-                        var x = users[a].name;
+                        var user_db_account_id = new ObjectId(users[a]._id);//set account id
 
                         mongo_db.connect(db_url, function(err, db_data){
 
@@ -1775,7 +1814,7 @@ socket.on('message', (msg, reply_info) => {
                             //save new profile attribute to db
                             db_data.db('wifi_radius_db').collection('users').update(
                                     {
-                                        'name' : x
+                                        '_id' : user_db_account_id
                                     },{
 
                                         $set:{   
@@ -1783,7 +1822,8 @@ socket.on('message', (msg, reply_info) => {
                                             profile_used_upload : profile_used_upload,
                                             profile_used_download : profile_used_download,
                                             profile_used_data : profile_used_data,
-                                    }
+                                            account_logged_in : false,
+                                        }
                                     },
                             function(err){
 
@@ -2849,6 +2889,7 @@ app.get('/create_user', function(req, res){// create new users
             reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
             reset_time : { 'hour' : '', 'minute': '', 'second' : '' },
             active : false, //is voucher active
+            account_logged_in : false,//track if account is in use
             creation_date : { 'day_of_week' : date.getDay(), 'day_of_month' : date.getDay(), 'month': date.getMonth(), 'year' : date.getFullYear() }, //date account created
             creation_time : { 'hour' : date.getHours(), 'minute': date.getMinutes(), 'second' : date.getSeconds() },
             first_used_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
@@ -2871,7 +2912,7 @@ app.get('/create_user', function(req, res){// create new users
                     reset : false,
                     //reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
                     //reset_time : { 'hour' : '', 'minute': '', 'second' : '' }
-
+                    account_logged_in : false,//track if account is in use
                     usage : {
                         profile_used_data : 0,
                         profile_used_time : 0,
