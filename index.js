@@ -958,12 +958,18 @@ socket.on('message', (msg, reply_info) => {
                                                 //covert GB to bytes
                                                 to_bytes = parseInt(to_bytes) * 1000000000;
 
+                                                //CONVERT THIS TO MB, EN HAVE AYNTHING OVER 3GIG USE [GIGAWORDS]
+
                                             }
                                             //check if value is in megabyte
                                             else if(to_bytes.search('mb') > -1  || to_bytes.search('mib') > -1  || to_bytes.search('megabyte') > -1 ){
 
                                                 //covert MB to bytes
-                                                to_bytes = parseInt(to_bytes) * 1000000;
+
+                                                //--base 10
+                                                //to_bytes = parseInt(to_bytes) * 1000000;
+                                                //--base 2 / binary
+                                                to_bytes = parseInt(to_bytes) * 1048576;
 
 
                                             }
@@ -971,7 +977,12 @@ socket.on('message', (msg, reply_info) => {
                                             else if(to_bytes.search('kb') > -1  || to_bytes.search('kib') > -1  || to_bytes.search('kilobyte') > -1 ){
 
                                                 //covert KB to bytes
-                                                to_bytes = parseInt(to_bytes) * 1000;
+
+                                                //--base 10
+                                                //to_bytes = parseInt(to_bytes) * 1000;
+                                                //--base 2 / binary
+                                                to_bytes = parseInt(to_bytes) *1024;
+
 
                                             }
                                         }
