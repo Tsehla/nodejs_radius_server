@@ -775,23 +775,12 @@ socket.on('message', (msg, reply_info) => {
         */
 
         // ... retrive passwords from requests
-        console.log('Authentification Access-Request message : ',radius_in_message);
+       // console.log('Authentification Access-Request message : ',radius_in_message);
 
 
         var authentication_username = radius_in_message.attributes['User-Name'];
         var authentication_password =radius_in_message.attributes['User-Password'];
         
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1342,7 +1331,7 @@ socket.on('message', (msg, reply_info) => {
         //console.log(reply_contents.attributes)
 
         try{ //encode reply to radius formate
-            console.log('reply message not encoded : ',reply_contents);
+            //console.log('reply message not encoded : ',reply_contents);
             var reply = radius_module.encode(reply_contents);
         }
         catch(err){ //if encoding error
@@ -1375,7 +1364,7 @@ socket.on('message', (msg, reply_info) => {
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){ // start accounting data for user
 
-        console.log('Accounting start for user, requested : ', radius_in_message);
+       // console.log('Accounting start for user, requested : ', radius_in_message);
 
        /* accounting start request from mikrotik after user login  [ console.log(radius_in_message) ]
             {
@@ -1450,7 +1439,7 @@ socket.on('message', (msg, reply_info) => {
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){ // stop accounting data  for user
 
            
-        console.log('Accounting stop for user, requested : ', radius_in_message);
+       // console.log('Accounting stop for user, requested : ', radius_in_message);
 
         /* -- accounting stop request from mikrotik after user logout  [ console.log(radius_in_message) ]
                      
@@ -1748,7 +1737,7 @@ socket.on('message', (msg, reply_info) => {
                 
 
                 //find account matching user name //if account is logged in
-                if(users[a].name == update_data['account_username'] && users[a].account_logged_in == true){
+                if(users[a].name == update_data['account_username']){
 
                     //console.log(users[a]);
 
@@ -1771,6 +1760,14 @@ socket.on('message', (msg, reply_info) => {
                     //if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' || radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update'){
                     
                     if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){//do only on stop, usage over calculation on interim updates // ====================  TO FIX ====================
+
+                        //if user is not currently logged ( handle duplicate account stop requests )
+                        if(users[a].account_logged_in){
+
+                            console.log('User currently not logged in, duplicate account update usage rejected');
+                            return;
+                        }
+
                         //update profile usage data
                         
                         //save time
