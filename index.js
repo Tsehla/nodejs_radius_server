@@ -1753,6 +1753,10 @@ socket.on('message', (msg, reply_info) => {
                         //create total data usage
                         var profile_used_data = parseInt(users[a].profile_used_data) + profile_used_upload + profile_used_download;
 
+                        console.log('====================================================');
+                        console.log(users[a]);
+                        console.log('====================================================');
+
                         
                         // ---- save new profiles -----
                         
