@@ -1751,7 +1751,7 @@ socket.on('message', (msg, reply_info) => {
                         var profile_used_download = parseInt(users[a].profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
 
                         //create total data usage
-                        var profile_used_data = parseInt(users[a].profile_used_data) + users[a].profile_used_upload + users[a].profile_used_download;
+                        var profile_used_data = parseInt(users[a].profile_used_data) + profile_used_upload + profile_used_download;
 
                         
                         // ---- save new profiles -----
