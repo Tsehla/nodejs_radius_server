@@ -1762,7 +1762,7 @@ socket.on('message', (msg, reply_info) => {
                     if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){//do only on stop, usage over calculation on interim updates // ====================  TO FIX ====================
 
                         //if user is not currently logged ( handle duplicate account stop requests )
-                        if(users[a].account_logged_in){
+                        if(users[a].account_logged_in == false){
 
                             console.log('User currently not logged in, duplicate account update usage rejected');
                             return;
