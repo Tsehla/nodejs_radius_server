@@ -1088,59 +1088,43 @@ socket.on('message', (msg, reply_info) => {
             //save to db
             var user_db_account_id = new ObjectId(authenticated_user._id);//set account id
 
-            db_data.db('wifi_radius_db').collection('users').update(
-                {
-                    '_id' : user_db_account_id
-                },{
-
-                    $set:{   
-                        account_logged_in : true
-                    }
-                },
-                function(err){
-
+            //connect to db
+            mongo_db.connect(db_url, function(err, db_data){
 
                 if(err){
-                    console.log('error updating "account logged in " to true, on user authentication and saving to db: ',err);
 
+                    console.log('db connection error : ', err);
                     return;
                 }
+            
+
+                db_data.db('wifi_radius_db').collection('users').update(
+                    {
+                        '_id' : user_db_account_id
+                    },{
+
+                        $set:{   
+                            account_logged_in : true
+                        }
+                    },
+                    function(err){
 
 
+                    if(err){
+                        console.log('error updating "account logged in " to true, on user authentication and saving to db: ',err);
+
+                        return;
+                    }
+
+
+
+                });
 
             });
 
 
-
-
-
         }
         
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         
