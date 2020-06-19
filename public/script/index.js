@@ -600,8 +600,9 @@ function get_user_accounts(){
                 if(data.account_type == 'voucher'){//if data belong to voucher account
                     voucher_element = voucher_element + `
                     <tr onclick="alert('Username : ${data.account_username}, View, Edit/Delete menu coming later.')">
-                        <th>${data.account_batch_group_name}</th>
+                        <th>${data.account_username}</th>
                         <th>${data.account_profile}</th>
+                        <th>${data.account_batch_group_name}</th>
                         <th>${week_day[data.account_creation_date.day_of_week] +' '+ data.account_creation_date.day_of_month +'/'+ data.account_creation_date.month +'/'+ data.account_creation_date.year }</th>
                         <th>${data.account_active}</th>
                         <th>${data.account_depleted}</th>
