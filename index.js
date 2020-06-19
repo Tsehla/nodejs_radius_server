@@ -1771,99 +1771,100 @@ socket.on('message', (msg, reply_info) => {
                     if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){//do only on stop, usage over calculation on interim updates // ====================  TO FIX ====================
 
                         //if user is not currently logged ( handle duplicate account stop requests )
-                        console.log(users[a])
-                        if(users[a].account_logged_in == false){
-
-                            console.log('User currently not logged in, duplicate account update usage rejected');
-                            return;
-                        }
-
-                        //update profile usage data
                         
-                        //save time
-                        var profile_used_time = parseInt(users[a].profile_used_time) + parseInt(update_data['usage_session_time']);
+                        if(users[a].account_logged_in ){
 
-                        //save upload
-                        //handle uploads / download gigaword / 64bit number / + 4GB 
-                        var profile_used_upload = parseInt(users[a].profile_used_upload) + (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']));
-
-                        //handle download
-                        //handle uploads / download gigaword / 64bit number / + 4GB
-                        var profile_used_download = parseInt(users[a].profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
-
-                        //create total data usage
-                        var profile_used_data = parseInt(users[a].profile_used_data) + profile_used_upload + profile_used_download;
-
-                        // console.log('====================================================');
-                        // console.log(users[a]);
-                        // console.log('====================================================');
-
+                            //console.log('User currently not logged in, duplicate account update usage rejected');
+                            //return;
                         
-                        // ---- save new profiles -----
-                        
-                        //set in memory account logged out to true
-                        users[a].account_logged_in  = false;
 
-                        var user_db_account_id = new ObjectId(users[a]._id);//set account id
+                            //update profile usage data
+                            
+                            //save time
+                            var profile_used_time = parseInt(users[a].profile_used_time) + parseInt(update_data['usage_session_time']);
 
-                        mongo_db.connect(db_url, function(err, db_data){
+                            //save upload
+                            //handle uploads / download gigaword / 64bit number / + 4GB 
+                            var profile_used_upload = parseInt(users[a].profile_used_upload) + (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']));
 
-                            if(err){
+                            //handle download
+                            //handle uploads / download gigaword / 64bit number / + 4GB
+                            var profile_used_download = parseInt(users[a].profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
 
-                                console.log('db connection error : ', err);
-                                return;
-                            }
-                        
-                            //save new profile attribute to db
-                            db_data.db('wifi_radius_db').collection('users').update(
-                                    {
-                                        '_id' : user_db_account_id
-                                    },{
+                            //create total data usage
+                            var profile_used_data = parseInt(users[a].profile_used_data) + profile_used_upload + profile_used_download;
 
-                                        $set:{   
-                                            profile_used_time : profile_used_time,
-                                            profile_used_upload : profile_used_upload,
-                                            profile_used_download : profile_used_download,
-                                            profile_used_data : profile_used_data,
-                                            account_logged_in : false,
-                                        }
-                                    },
-                            function(err){
+                            // console.log('====================================================');
+                            // console.log(users[a]);
+                            // console.log('====================================================');
 
+                            
+                            // ---- save new profiles -----
+                            
+                            //set in memory account logged out to true
+                            users[a].account_logged_in  = false;
+
+                            var user_db_account_id = new ObjectId(users[a]._id);//set account id
+
+                            mongo_db.connect(db_url, function(err, db_data){
 
                                 if(err){
-                                    console.log('error updating user account and saving to db: ',err);
 
+                                    console.log('db connection error : ', err);
                                     return;
                                 }
+                            
+                                //save new profile attribute to db
+                                db_data.db('wifi_radius_db').collection('users').update(
+                                        {
+                                            '_id' : user_db_account_id
+                                        },{
 
-                                //console.log('default "login_in_account_limit_profile_groups" added to db : ',response);
-                                console.log('user account updated and saved to db');
+                                            $set:{  
+                                                account_logged_in : false, 
+                                                profile_used_time : profile_used_time,
+                                                profile_used_upload : profile_used_upload,
+                                                profile_used_download : profile_used_download,
+                                                profile_used_data : profile_used_data
+                                                
+                                            }
+                                        },
+                                function(err){
 
-
-                                //update cross server login_in_account_limit_profile_groups variable
-
-                                users = []; //clear of old data
-
-                                db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
 
                                     if(err){
+                                        console.log('error updating user account and saving to db: ',err);
 
-                                        console.log('in memory "users" update error : ', err);
                                         return;
                                     }
 
-                                    users.push(data);//add updated data
-                                    console.log('in memory "users" updated');
+                                    //console.log('default "login_in_account_limit_profile_groups" added to db : ',response);
+                                    console.log('user account updated and saved to db');
 
-                                });
-                        
-                            })
+
+                                    //update cross server login_in_account_limit_profile_groups variable
+
+                                    users = []; //clear of old data
+
+                                    db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
+
+                                        if(err){
+
+                                            console.log('in memory "users" update error : ', err);
+                                            return;
+                                        }
+
+                                        users.push(data);//add updated data
+                                        console.log('in memory "users" updated');
+
+                                    });
                             
-                            //close db connection
-                            db_data.close;
-                        });
-
+                                })
+                                
+                                //close db connection
+                                db_data.close;
+                            });
+                        }
                     }
                     
                 }
