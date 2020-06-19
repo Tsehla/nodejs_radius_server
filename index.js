@@ -945,7 +945,13 @@ socket.on('message', (msg, reply_info) => {
                                             if( to_bytes.search('gb') > -1 || to_bytes.search('gib') > -1 || to_bytes.search('gigabyte') > -1 ){
 
                                                 //covert GB to bytes
-                                                to_bytes = parseInt(to_bytes) * 1000000000;
+
+                                                //--base 10
+                                                //to_bytes = parseInt(to_bytes) * 1000000000;
+
+                                                //--base 2 / binary
+                                                to_bytes = parseInt(to_bytes) * 1073741824;
+                                                
 
                                                 //CONVERT THIS TO MB, EN HAVE AYNTHING OVER 3GIG USE [GIGAWORDS]
 
@@ -961,8 +967,6 @@ socket.on('message', (msg, reply_info) => {
                                                 //--base 2 / binary
                                                 to_bytes = parseInt(to_bytes) * 1048576;
 
-                                                //-- adjusted {1000000 - 48576}
-                                                //to_bytes = parseInt(to_bytes) * 951424;
 
 
 
@@ -977,9 +981,6 @@ socket.on('message', (msg, reply_info) => {
 
                                                 //--base 2 / binary
                                                 to_bytes = parseInt(to_bytes) *1024;
-
-                                                //-- adjusted {1000- 24}
-                                                //to_bytes = parseInt(to_bytes) * 976;
 
 
                                             }
@@ -2406,6 +2407,7 @@ app.get('/user_accounts', function(req, res){
                 account_active : data.active,
                 account_batch_group_name : data.batch_group_name,
                 account_creation_date : data.creation_date,
+                account_profile : data.profile_attribute_group,
             });
         }
     });
