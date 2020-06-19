@@ -1757,6 +1757,16 @@ socket.on('message', (msg, reply_info) => {
                     console.log('total usage : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])))
                     console.log('session time : ',parseInt(update_data['usage_session_time']))
 
+                    //call account data update function
+                    update_account_usage(a)
+                    
+                }
+
+            }
+        }
+
+        function update_account_usage(a){//updates account usages
+
                     //if update reason [ start ], (account accounting start notification )
                     if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){
 
@@ -1866,12 +1876,11 @@ socket.on('message', (msg, reply_info) => {
                             });
                         }
                     }
-                    
-                }
 
-            }
+
+
+            
         }
-
 
 
 
