@@ -959,10 +959,7 @@ socket.on('message', (msg, reply_info) => {
                                                 //to_bytes = parseInt(to_bytes) * 1000000;
 
                                                 //--base 2 / binary
-                                                //to_bytes = parseInt(to_bytes) * 1048576;
-
-                                                //-- adjusted {1000000 - 48576}
-                                                to_bytes = parseInt(to_bytes) * 900000;
+                                                to_bytes = parseInt(to_bytes) * 1048576;
 
 
 
@@ -976,10 +973,7 @@ socket.on('message', (msg, reply_info) => {
                                                 //to_bytes = parseInt(to_bytes) * 1000;
 
                                                 //--base 2 / binary
-                                                //to_bytes = parseInt(to_bytes) *1024;
-
-                                                //-- adjusted {1000- 24}
-                                                to_bytes = parseInt(to_bytes) * 900;
+                                                to_bytes = parseInt(to_bytes) *1024;
 
 
                                             }
