@@ -696,11 +696,9 @@ mongo_db.connect(db_url, function(err, db_data){
 const socket = dgram.createSocket('udp4');// udp socket
 
 // .... radius server secret from .env file or use default
-
 var radius_secret = process.env.RADIUS_SECRET || 'testing123'; //radius secret
 
 // .... listen for udp socket conection requests
-
 socket.on('listening', () => {
   let addr = socket.address();
   console.log(`===========================================\nListening for UDP packets at ${addr.address}:${addr.port}\n===========================================`);
@@ -710,7 +708,6 @@ socket.on('listening', () => {
 
 
 // .... if error listening
-
 socket.on('error', (err) => {
   console.error(`UDP error: ${err.stack}`);
 });
@@ -718,8 +715,8 @@ socket.on('error', (err) => {
 
 
 // .... if client connected and message recieved
-
 socket.on('message', (msg, reply_info) => {
+
   console.log('Recieved UDP message');
  // console.log('msg',msg)
   //console.log('rinfo',rinfo)
@@ -744,7 +741,7 @@ socket.on('message', (msg, reply_info) => {
   // radius in message types
 
   //  --------------- access requesting authentification request  ---------------
-    if (radius_in_message.code == 'Access-Request') {
+    if (radius_in_message.code == 'Access-Request'){
 
 
         /* user authentification request from mikrotik  [ console.log(radius_in_message) ]
@@ -795,7 +792,6 @@ socket.on('message', (msg, reply_info) => {
 
 
         // ----- check if authenticating device is allowed to use system
-
             /**
              * 
              *      Nas identifir allowed check here
@@ -805,11 +801,10 @@ socket.on('message', (msg, reply_info) => {
              */
 
 
-            var authenticated_user; //keep track of authenticated user data
+        var authenticated_user; //keep track of authenticated user data
 
 
         //find user account from db
-        
         mongo_db.connect(db_url, function(err, db_data){ //connect to db
 
             if(err){
@@ -854,14 +849,9 @@ socket.on('message', (msg, reply_info) => {
         
         });
 
-        // ---- check if user with password is registered
-
-      
-        
-
-        
-      
-        function user_account_limits_set(){ //user account properties check
+          
+        //user account properties check
+        function user_account_limits_set(){ 
 
 
             //--------------------- Authenticated user account limits
@@ -870,7 +860,7 @@ socket.on('message', (msg, reply_info) => {
                 //-- check if profile group exists
                 var authentification_profile_group_data = null;
 
-                var users_account_array_index = undefined; //temp save position of account in 'users' array
+                //var users_account_array_index = undefined; //temp save position of account in 'users' array
 
                 for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
                 
@@ -880,7 +870,7 @@ socket.on('message', (msg, reply_info) => {
 
                         authentification_profile_group_data = login_in_account_limit_profile_groups[a].data;//save profile group data
 
-                        users_account_array_index = a;//users acount index
+                        //users_account_array_index = a;//users acount index
                         break; //end loop
                     }
 
@@ -926,19 +916,25 @@ socket.on('message', (msg, reply_info) => {
 
                                         //check if voucher expired
                                         if(authenticated_user.expire && authenticated_user.active == true &&authentification_request_rejected == false){
+                                            
+                                            // if account expired, reject login
 
-                                            //reset usage to 0
                                             
                                         }
+
+
                                         //check if accounts should be reset
                                         // authenticated_user
                                         if(authenticated_user.reset == true && authentification_request_rejected == false ){
 
+                                            //if account expired and due to reset//reset account and accept login
 
                                         }
                                     
                                         //check max users limit is reached
                                         if(authenticated_user.user_device_mac.length >= parseInt(authenticated_user.max_users) &&authentification_request_rejected == false){
+
+                                            //if user already active, reject new connection if connection quota for account reached
 
                                             //reply_code = 'Access-Accept';//give accept response
                                             //authentification_request_rejected == true;//set rejected true
@@ -961,73 +957,87 @@ socket.on('message', (msg, reply_info) => {
                                             var to_bytes = data[2][0][1] //hold converted data to bytes
                                             //check if value is in gigabytes
 
-                                            if(typeof(to_bytes) == 'string'){
+                                           
+                                            //check if data is in terabytes
+                                            /*
+                                            if( to_bytes.search('tb') > -1 || to_bytes.search('tib') > -1 || to_bytes.search('terabyte') > -1 ){
 
-                                                if( to_bytes.search('gb') > -1 || to_bytes.search('gib') > -1 || to_bytes.search('gigabyte') > -1 ){
+                                                //HANDLE TERABYTES
+                                                  
+                                            }
+                                            */
 
-                                                    //covert GB to bytes
+                                            //check if data is in gigabtes
+                                            if( to_bytes.search('gb') > -1 || to_bytes.search('gib') > -1 || to_bytes.search('gigabyte') > -1 ){
 
-                                                    //--base 10
-                                                    //to_bytes = parseInt(to_bytes) * 1000000000;
+                                                // covert GB to bytes
 
-                                                    //--base 2 / binary
-                                                    to_bytes = parseInt(to_bytes) * 1073741824;
+                                                //--base 10
+                                                //to_bytes = parseInt(to_bytes) * 1000000000;
+
+                                                //--base 2 / binary
+                                                to_bytes = parseInt(to_bytes) * 1073741824;
                                                     
 
-                                                    //CONVERT THIS TO MB, EN HAVE AYNTHING OVER 3GIG USE [GIGAWORDS]
 
-                                                }
-                                                //check if value is in megabyte
-                                                else if(to_bytes.search('mb') > -1  || to_bytes.search('mib') > -1  || to_bytes.search('megabyte') > -1 ){
+                                            }
+                                            
+                                            //check if value is in megabyte
+                                            if(to_bytes.search('mb') > -1  || to_bytes.search('mib') > -1  || to_bytes.search('megabyte') > -1 ){
 
-                                                    //covert MB to bytes
+                                                //covert MB to bytes
 
-                                                    //--base 10
-                                                    //to_bytes = parseInt(to_bytes) * 1000000;
+                                                //--base 10
+                                                //to_bytes = parseInt(to_bytes) * 1000000;
 
-                                                    //--base 2 / binary
-                                                    to_bytes = parseInt(to_bytes) * 1048576;
-
-
+                                                //--base 2 / binary
+                                                to_bytes = parseInt(to_bytes) * 1048576;
 
 
-                                                }
-                                                //check if value is in kilobyte
-                                                else if(to_bytes.search('kb') > -1  || to_bytes.search('kib') > -1  || to_bytes.search('kilobyte') > -1 ){
-
-                                                    //covert KB to bytes
-
-                                                    //--base 10
-                                                    //to_bytes = parseInt(to_bytes) * 1000;
-
-                                                    //--base 2 / binary
-                                                    to_bytes = parseInt(to_bytes) *1024;
-
-
-                                                }
                                             }
 
-                                            //if data come a byte in string format turn to number
+                                            //check if value is in kilobyte
+                                            if(to_bytes.search('kb') > -1  || to_bytes.search('kib') > -1  || to_bytes.search('kilobyte') > -1 ){
+
+                                                //covert KB to bytes
+
+                                                //--base 10
+                                                //to_bytes = parseInt(to_bytes) * 1000;
+
+                                                //--base 2 / binary
+                                                to_bytes = parseInt(to_bytes) *1024;
+
+                                            }
+
+
+
+                                            //if data come in as a byte in string format turn to number
                                             to_bytes = parseInt(to_bytes);
                                             
 
                                             //check if usage data if less available data //this will allow profile attributes data value changes that affect all accounts data limit changes without havng to update accounts 
-                                            if(authenticated_user.profile_used_data < to_bytes){
+                                            if(parseInt(authenticated_user.profile_used_data) < to_bytes){
 
                                                 //create radius reply 
                                                 total_download_upload_limit_define.forEach(function(data){//loop  through max-data usade limit definitions
 
                                                     if(data){//if not null
 
-                                                        //remaining data
-                                                        var remaining_data = to_bytes - parseInt(authenticated_user.profile_used_data); 
+                                                        //remaining data in megabytes
+                                                        var remaining_data = (to_bytes/1048576) - (parseInt(authenticated_user.profile_used_data)/1048576); 
 
-                                                        //if remaining is creater than + 4GB in bytes, turn to words to gigs
-                                                        //nodejs radius cant encode values creater than 32bit limit
-                                                        if(remaining_data > 4294967295){
+                                                        //convert to bytes
+                                                        remaining_data =  Maths.round(remaining_data *  1048576);
+
+
+                                                        //if remaining is creater than + 3GB in bytes, turn to words to gigs
+                                                        //nodejs radius cant encode values creater than 32bit limit/3+gig
+                                                        if((remaining_data/1073741824) > (3294967295/1073741824)){ //if remain data in gigs, is greather 3gig
 
                                                             // https://forum.mikrotik.com/viewtopic.php?t=9902
-                                                        // remaining_data
+                                                            // remaining_data is over 3gigabyte, dictionary property
+
+
                                                         }
 
                                                         //create reply attribute format
@@ -1453,12 +1463,12 @@ socket.on('message', (msg, reply_info) => {
             }
 
              //do status update
-             user_account_usage_updates({ 
-                update_status_type : radius_in_message.attributes['Acct-Status-Type'],
-                user_device_mac_id : radius_in_message.attributes['Calling-Station-Id'],
-                account_username : radius_in_message.attributes['User-Name'],
-                nas_identifier_name : radius_in_message.attributes['NAS-Identifier']
-            });
+            //  user_account_usage_updates({ 
+            //     update_status_type : radius_in_message.attributes['Acct-Status-Type'],
+            //     user_device_mac_id : radius_in_message.attributes['Calling-Station-Id'],
+            //     account_username : radius_in_message.attributes['User-Name'],
+            //     nas_identifier_name : radius_in_message.attributes['NAS-Identifier']
+            // });
 
         });
         
@@ -1537,8 +1547,8 @@ socket.on('message', (msg, reply_info) => {
             return;
             }
 
-             //do status update
-             user_account_usage_updates({ 
+            //do status update on user logout
+            user_account_usage_updates({ 
                 update_status_type : radius_in_message.attributes['Acct-Status-Type'],
                 user_device_mac_id : radius_in_message.attributes['Calling-Station-Id'],
                 account_username : radius_in_message.attributes['User-Name'],
@@ -1620,17 +1630,17 @@ socket.on('message', (msg, reply_info) => {
             }
 
             //do status update
-            user_account_usage_updates({ 
-                update_status_type : radius_in_message.attributes['Acct-Status-Type'],
-                user_device_mac_id : radius_in_message.attributes['Calling-Station-Id'],
-                account_username : radius_in_message.attributes['User-Name'],
-                account_upload_use : radius_in_message.attributes['Acct-Input-Octets'],
-                account_download_use : radius_in_message.attributes['Acct-Output-Octets'],
-                account_upload_use_gig_words : radius_in_message.attributes['Acct-Output-Gigawords'],
-                account_download_use_gig_words : radius_in_message.attributes['Acct-Input-Gigawords'],
-                usage_session_time : radius_in_message.attributes['Acct-Session-Time'],
-                nas_identifier_name : radius_in_message.attributes['NAS-Identifier']
-            });
+            // user_account_usage_updates({ 
+            //     update_status_type : radius_in_message.attributes['Acct-Status-Type'],
+            //     user_device_mac_id : radius_in_message.attributes['Calling-Station-Id'],
+            //     account_username : radius_in_message.attributes['User-Name'],
+            //     account_upload_use : radius_in_message.attributes['Acct-Input-Octets'],
+            //     account_download_use : radius_in_message.attributes['Acct-Output-Octets'],
+            //     account_upload_use_gig_words : radius_in_message.attributes['Acct-Output-Gigawords'],
+            //     account_download_use_gig_words : radius_in_message.attributes['Acct-Input-Gigawords'],
+            //     usage_session_time : radius_in_message.attributes['Acct-Session-Time'],
+            //     nas_identifier_name : radius_in_message.attributes['NAS-Identifier']
+            // });
 
 
         });
@@ -1744,24 +1754,22 @@ socket.on('message', (msg, reply_info) => {
 
     function user_account_usage_updates(update_data){
 
-        // { //coolected update data
-        //     update_status_type : '',
-        //     user_device_mac_id : '',
-        //     account_username : '',
-        //     account_download_use : '',
-        //     account_upload_use : '',
-        //     account_upload_use_gig_words : '',
-        //     account_download_use_gig_words : '',
-        //     usage_session_time : '',
-        //     nas_identifier_name : '',
+        /* update data log :
+        {   coolected update data
+            update_status_type : '',
+            user_device_mac_id : '',
+            account_username : '',
+            account_download_use : '',
+            account_upload_use : '',
+            account_upload_use_gig_words : '',
+            account_download_use_gig_words : '',
+            usage_session_time : '',
+            nas_identifier_name : '',
 
-        // }
-
-        //console.log(update_data);
-        
+        }
+        */
 
         //get user account and update
-
         for(var a = 0; a <= users.length - 1; a++){
 
             
@@ -1787,48 +1795,29 @@ socket.on('message', (msg, reply_info) => {
 
                     }
 
-                    //if update reason [ interim-update ] (regular status update) or account [ stop ] (account log out usage update)
+                                        
+                    if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){//when account stop, save account usage s
 
-                    //if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' || radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update'){
-                    
-                    if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){//do only on stop, usage over calculation on interim updates // ====================  TO FIX ====================
 
-                        //if user is not currently logged ( handle duplicate account stop requests )
+
+                        // ------- update profile usage data ------
                         
-                        // if(users[a].account_logged_in == false){
-
-                        //     console.log('User currently not logged in, duplicate account update usage rejected');
-                        //     return;
-                        // }
-
-                        //update profile usage data
-                        
-                        //save time
+                        //-- save time
                         var profile_used_time = parseInt(users[a].profile_used_time) + parseInt(update_data['usage_session_time']);
 
-                        //save upload
+                        //-- save upload
                         //handle uploads / download gigaword / 64bit number / + 4GB 
                         var profile_used_upload = parseInt(users[a].profile_used_upload) + (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']));
 
-                        //handle download
+                        //-- save download
                         //handle uploads / download gigaword / 64bit number / + 4GB
                         var profile_used_download = parseInt(users[a].profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
 
-                        //create total data usage
+                        //-- save total data usage
                         var profile_used_data = parseInt(users[a].profile_used_data) + profile_used_upload + profile_used_download;
 
-                        // console.log('====================================================');
-                        // console.log(users[a]);
-                        // console.log('====================================================');
-
-                        
-                        // ---- save new profiles -----
-                        
-                        //set in memory account logged out to true
-                        users[a].account_logged_in  = false;
-
-                        var user_db_account_id = new ObjectId(users[a]._id);//set account id
-
+               
+                        // ---- save new profiles -----                        
                         mongo_db.connect(db_url, function(err, db_data){
 
                             if(err){
@@ -1836,56 +1825,63 @@ socket.on('message', (msg, reply_info) => {
                                 console.log('db connection error : ', err);
                                 return;
                             }
-                        
-                            //save new profile attribute to db
-                            db_data.db('wifi_radius_db').collection('users').update(
-                                    {
-                                        '_id' : user_db_account_id,
-                                        'account_logged_in' : true
-                                    },{
-
-                                        $set:{   
-                                            profile_used_time : profile_used_time,
-                                            profile_used_upload : profile_used_upload,
-                                            profile_used_download : profile_used_download,
-                                            profile_used_data : profile_used_data,
-                                            account_logged_in : false,
-                                        }
-                                    },
-                            function(err){
 
 
-                                if(err){
-                                    console.log('error updating user account and saving to db: ',err);
+                            //find user from db
+                            db_data.db('wifi_radius_db').collection('users').findOne({name : update_data['account_username']}, function(error, results){
 
-                                    return;
+                                if(error){//user search error
+                                    console.log('Error finding logged out users account, on db ');
                                 }
-
-                                //console.log('default "login_in_account_limit_profile_groups" added to db : ',response);
-                                console.log('user account updated and saved to db');
-
-
-                                //update cross server login_in_account_limit_profile_groups variable
-
-                                users = []; //clear of old data
-
-                                db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
-
-                                    if(err){
-
-                                        console.log('in memory "users" update error : ', err);
-                                        return;
-                                    }
-
-                                    users.push(data);//add updated data
-                                    console.log('in memory "users" updated');
-
-                                });
-                        
-                            })
+                
+                               if(!results){//if result == null or undefined or falsey
+                                    console.log('Error logged out user not found on db ');
+                               };
+                
+                               if(results){//if user account found
                             
+                                    //  ---- save result on db  ---
+
+                                    //set database user account id
+                                    var user_db_account_id = new ObjectId(results._id);
+                                    
+                                    //save new profile attribute to db
+                                    db_data.db('wifi_radius_db').collection('users').update(
+                                        {
+                                        '_id' : user_db_account_id,
+                                            'account_logged_in' : true
+                                        },{
+
+                                            $set:{   
+                                                profile_used_time : profile_used_time,
+                                                profile_used_upload : profile_used_upload,
+                                                profile_used_download : profile_used_download,
+                                                profile_used_data : profile_used_data,
+                                                account_logged_in : false,
+                                            }
+                                        },
+                                    function(err){
+
+                                        if(err){
+                                            console.log('error updating user account and saving to db: ',err);
+
+                                        }
+
+                                        //console.log('default "login_in_account_limit_profile_groups" added to db : ',response);
+                                        //console.log('user account updated and saved to db');
+
+                                    })
+                        
+
+                                }
+                
+                
+                            });
+
+            
                             //close db connection
                             db_data.close;
+
                         });
 
                     }
@@ -1895,13 +1891,8 @@ socket.on('message', (msg, reply_info) => {
             }
         }
 
-
-
-
     }
 
-   
-   
 }
 
 
@@ -1938,42 +1929,31 @@ if(radius_in_message.code == 'Status-Server'){// return user account data
 
 
 
-// ===================== non radius -=====================
+// ===================== ++++++++++++++++ non radius +++++++++++++++++++ =====================
 
 
 // ----- front page serving -----
 
-//serve index html
-// app.get('/', function(req,res){
-
-//     res.sendFile(path.resolve('./html/index.html'));
-  
-// });
-
-
+//---------------------------------------
 //---- log requests of tcp incoming ----
+//---------------------------------------
 app.use(function(req, res,next){
     console.log(req.protocol + '://' + req.get('host') + req.originalUrl);//shor url of request
-    // console.log('-- users -- : ',users);
-    // console.log('-- login_in_account_limit_profile_groups -- : ',login_in_account_limit_profile_groups);
-    // console.log('-- login_in_account_limit_profile_attributes -- : ',login_in_account_limit_profile_attributes);
-    // console.log('-- time_limit_define -- : ',time_limit_define);
-    // console.log('-- upload_limit_define -- : ',upload_limit_define);
-    // console.log('-- upload_speed_limit_define -- : ',upload_speed_limit_define);
-    // console.log('-- download_speed_limit_define -- : ',download_speed_limit_define);
-    // console.log('-- total_download_upload_limit_define -- : ',total_download_upload_limit_define);
-    // console.log('-- nas_identifier -- : ',nas_identifier);
+    
     next()
 });
 
+//---------------------------
 // serve images/scripts/etc
+//----------------------------
 app.use(express.static('public'));
 
 
-
+//---------------------------------
 /* ---- radius dictionary ----- */
-// --- read dictioanry foder contents
+//--------------------------------
 
+// --- read dictioanry foder contents
 app.get('/dictionary_files', function(req, res){
 
   
@@ -1998,8 +1978,9 @@ app.get('/dictionary_files', function(req, res){
 
 });
 
-
+//-------------------------------------------
 // --- read vendor dictioanary file contents
+//-------------------------------------------
 app.get('/dictionary_files_content', function(req, res){
 
   
@@ -2218,18 +2199,16 @@ app.get('/dictionary_files_content', function(req, res){
 
     };
 
-
-// --- save new profile
+//---------------------------------------
+// --- save new profile attributes ------
+//---------------------------------------
 app.get('/new_profiles_data', function(req, res){
-
-    //console.log(JSON.stringify(req.query.new_profiles));
     
     // check if profiles name duplicate
     var duplicate_profile_name_found = false;//track if duplicate name found
 
    login_in_account_limit_profile_attributes.forEach(function(data){
 
-        //console.log(req.query.new_profiles[0],data[0])
 
         if(data){//if not null
 
@@ -2249,9 +2228,8 @@ app.get('/new_profiles_data', function(req, res){
         return;
     }
 
-    // ---- save new profiles -----
-    //login_in_account_limit_profile_attributes.push(req.query.new_profiles);
 
+    // ---- save new profiles -----
     mongo_db.connect(db_url, function(err, db_data){
 
         if(err){
@@ -2265,30 +2243,28 @@ app.get('/new_profiles_data', function(req, res){
 
             if(err){
                 console.log('db error adding " login_in_account_limit_profile_attributes " : ',err);
-
                 return;
             }
 
             //console.log('default "login_in_account_limit_profile_groups" added to db : ',response);
-            console.log('new "login_in_account_limit_profile_attributes" added to db');
+            //console.log('new "login_in_account_limit_profile_attributes" added to db');
 
 
-            //update cross server login_in_account_limit_profile_groups variable
+            //--- update cross server login_in_account_limit_profile_groups variable
 
             login_in_account_limit_profile_attributes = []; //clear of old data
 
             db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').find().each(function(err, data){
 
                 if(err){
-
                     console.log('in memory "login_in_account_limit_profile_attributes" update error : ', err);
                     return;
                 }
 
+                //add updated data
+                login_in_account_limit_profile_attributes.push(data);
                 
-
-                login_in_account_limit_profile_attributes.push(data);//add updated data
-                console.log('in memory "login_in_account_limit_profile_attributes" updated');
+                //console.log('in memory "login_in_account_limit_profile_attributes" updated');
 
             });
     
@@ -2299,15 +2275,15 @@ app.get('/new_profiles_data', function(req, res){
     });
    
 
-
-
     //give success response back
     res.jsonp('data recived');
 
 
 });
 
-// -- get available profiles
+//--------------------------------------
+// -- get available profiles attributes
+//--------------------------------------
 app.get('/get_profiles_data', function(req, res){
 
     //give response back
@@ -2317,11 +2293,10 @@ app.get('/get_profiles_data', function(req, res){
 });
 
 
-
+//---------------------------------
 // -- save recieved profile group
+//----------------------------------
 app.get('/profile_group_save', function(req, res){
-
-    //console.log(req.query);
 
     // check names duplicates
     var is_duplicate_found = false; //tracks if duplicate was found
@@ -2343,7 +2318,6 @@ app.get('/profile_group_save', function(req, res){
 
     //check if duplicate was found
     if(is_duplicate_found == true){
-
         res.jsonp('error, profile group name already saved');//send error response message
     }
 
@@ -2355,7 +2329,6 @@ app.get('/profile_group_save', function(req, res){
         mongo_db.connect(db_url, function(err, db_data){
 
             if(err){
-    
                 console.log('db connection error : ', err);
                 return;
             }
@@ -2365,28 +2338,25 @@ app.get('/profile_group_save', function(req, res){
     
                 if(err){
                     console.log('db error adding " login_in_account_limit_profile_groups " : ',err);
-    
                     return;
                 }
     
                 //console.log('default "login_in_account_limit_profile_groups" added to db : ',response);
-                console.log('new "login_in_account_limit_profile_groups" added to db');
+                //console.log('new "login_in_account_limit_profile_groups" added to db');
     
     
                 //update cross server login_in_account_limit_profile_groups variable
-
                 login_in_account_limit_profile_groups = [];//clear old data
 
                 db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').find().each(function(err, data){
     
                     if(err){
-    
                         console.log('in memory "login_in_account_limit_profile_groups" update error : ', err);
                         return;
                     }
     
                     login_in_account_limit_profile_groups.push(data);//add updated data
-                    console.log('in memory "login_in_account_limit_profile_groups" updated');
+                    //console.log('in memory "login_in_account_limit_profile_groups" updated');
     
                 });
         
@@ -2396,31 +2366,49 @@ app.get('/profile_group_save', function(req, res){
             db_data.close;
         });
 
-
         // give success response back
         res.jsonp('profile group saved');
-
 
     }
 
 });
 
+//----------------------------------
 // -- get available profile groups
+//-----------------------------------
 app.get('/saved_profiles', function(req, res){
 
     res.jsonp(login_in_account_limit_profile_groups);// give stored profile groups
 
 })
 
+//----------------------------------
 // -- get available users accounts
+//----------------------------------
 app.get('/user_accounts', function(req, res){
 
     var stored_users_accounts = [];//strores prepared user accounts
 
-    users.forEach(function(data){//loop through stored users
-       
-        if(data){
-            
+    //connect to db
+    mongo_db.connect(db_url, function(err, db_data){ 
+
+        if(err){
+
+            console.log('db connection error : ', err);
+
+            reply_code = 'Access-Reject';//give reject response reply to router
+            return;
+        }
+
+
+        db_data.db('wifi_radius_db').collection('users').find()
+        .each(function(error, data){
+
+            if(error){
+                console.log('Error, cant find users on db');
+                return;
+            }
+
             stored_users_accounts.push({ //extract and store accounts details
                 db_account_id : data._id.toString(),
                 account_username : data.name,
@@ -2431,8 +2419,14 @@ app.get('/user_accounts', function(req, res){
                 account_creation_date : data.creation_date,
                 account_profile : data.profile_attribute_group,
             });
-        }
+
+
+        });
+
+        db_data.close; //close db
+
     });
+
 
     //give accounts details as response
     res.jsonp(stored_users_accounts);
@@ -2512,465 +2506,508 @@ app.get('/create_user', function(req, res){// create new users
 
     var new_user_list = [];//temporary stores new users, to be transfered to database
 
-    // ----- check if type of account to produce
+   // var users = [];//containts retrived db users
 
-    //if normal accont
-    if(req.query.account_type == 'normal'){ 
+    //get users from db
+    new Promise(function(resolve, reject){
 
-        //check if more than one account to produce
-        if(total_accounts == ''){ //if total account not specified
-            
-            //set unsername + suffix
-            username_voucher_code = req.query.user_id['user_name'] + voucher_username_suffix.trim();
+        //connect to db
+        mongo_db.connect(db_url, function(err, db_data){
 
-            //set password
-            user_pasword  = req.query.user_id['get_normal_password'];
+            if(err){
+                console.log('db connection error : ', err);
+                return;
+            }
 
-            //save usernames to be checked for duplicate
-            new_user_usernames.push({'new_account_name' : username_voucher_code, 'new_account_password' : user_pasword});
+            //find stored users
+            db_data.db('wifi_radius_db').collection('users').find().toArray(function(err, data){
 
-        }        
+                if(err){//if search error
+                    console.log('error, attempting to retrieve users from db, when creating new users account');
+                    reject('error');
+                }
+      
 
-    }
+                if(data.length == 0){ //if array empty
+                    resolve([]);//give empty users array as response 
+                }
 
-    //if voucher account
-    if(req.query.account_type == 'voucher'){ 
+                if(data.length > 0){ //if array not empty
+                    resolve(data);//give users array as response
+                }
 
-        //check if more than one account to produce
-        if(total_accounts == ''){ //if total account not specified
-            
-            //set unsername + suffix
-            username_voucher_code = req.query.user_id['user_name'] + voucher_username_suffix.trim();
-
-            //set password as username + suffix
-            user_pasword  =  req.query.user_id['user_name'] + voucher_username_suffix.trim();
-
-            //save usernames to be checked for duplicate
-            new_user_usernames.push({'new_account_name' : username_voucher_code, 'new_account_password' : user_pasword});
-        }        
-
-    }
-    
-    //++++++ if batch create unique usernames ++++++
-    if(parseInt(total_accounts) > 0 ){ //if total account specified
-
-        //     //check if name list has names
-        //     if(names_list.length < 1000){//if names are less than thousand
-
-        //         read_names_list ();//attempt names storage lists re-read
-        //    }
+                //close db connection
+                db_data.close;
+            })
 
 
+        });
 
-        // names_list = [];
-
-        // //get directory files names
-        // fs.readdir(__dirname + '/world_list/', function (err, files) {
-            
-            
-        //     if(err){//give error response back
-
-        //         console.log('User create :: unable to scan names list directory: ' + err);
-        //         return;
-        //     } 
-            
-
-        //     //read contnets of each of the files
-        //     files.forEach(function(data){
-
-        //         fs.readFile(__dirname + '/world_list/' + data, function (err, files_data) {
-                    
-        //             if(err){//give error response back
-            
-        //                 console.log('User create :: unable to read contents of file "' + data + '" : ' + err);
-        //                 return;
-        //             }
-
-        //             //console.log(files_data.toString('utf-8').split(/\s/));
-        //             names_list = files_data.toString('utf-8').split(/\s/);//save files names array globally
-        //         });
-
-        //     });
-
-        // });
+    }).then(function(users){
 
 
-        new Promise (function(resolve, reject){
+        // ----- check if type of account to produce
 
-            //get directory files names
-            fs.readdir(__dirname + '/world_list/', function (err, files) {
+        //if normal accont
+        if(req.query.account_type == 'normal'){ 
+
+            //check if more than one account to produce
+            if(total_accounts == ''){ //if total account not specified
+                
+                //set unsername + suffix
+                username_voucher_code = req.query.user_id['user_name'] + voucher_username_suffix.trim();
+
+                //set password
+                user_pasword  = req.query.user_id['get_normal_password'];
+
+                //save usernames to be checked for duplicate
+                new_user_usernames.push({'new_account_name' : username_voucher_code, 'new_account_password' : user_pasword});
+
+            }        
+
+        }
+
+        //if voucher account
+        if(req.query.account_type == 'voucher'){ 
+
+            //check if more than one account to produce
+            if(total_accounts == ''){ //if total account not specified
+                
+                //set unsername + suffix
+                username_voucher_code = req.query.user_id['user_name'] + voucher_username_suffix.trim();
+
+                //set password as username + suffix
+                user_pasword  =  req.query.user_id['user_name'] + voucher_username_suffix.trim();
+
+                //save usernames to be checked for duplicate
+                new_user_usernames.push({'new_account_name' : username_voucher_code, 'new_account_password' : user_pasword});
+            }        
+
+        }
+        
+        //++++++ if batch create unique usernames ++++++
+        if(parseInt(total_accounts) > 0 ){ //if total account specified
+
+            //     //check if name list has names
+            //     if(names_list.length < 1000){//if names are less than thousand
+
+            //         read_names_list ();//attempt names storage lists re-read
+            //    }
+
+
+
+            // names_list = [];
+
+            // //get directory files names
+            // fs.readdir(__dirname + '/world_list/', function (err, files) {
                 
                 
-                if(err){//give error response back
+            //     if(err){//give error response back
 
-                    console.log('User create :: unable to scan names list directory: ' + err);
-                    return;
-                } 
+            //         console.log('User create :: unable to scan names list directory: ' + err);
+            //         return;
+            //     } 
                 
 
-                //read contnets of each of the files
-                files.forEach(function(data){
+            //     //read contnets of each of the files
+            //     files.forEach(function(data){
 
-                    fs.readFile(__dirname + '/world_list/' + data, function (err, files_data) {
+            //         fs.readFile(__dirname + '/world_list/' + data, function (err, files_data) {
                         
-                        if(err){//give error response back
+            //             if(err){//give error response back
                 
-                            console.log('User create :: unable to read contents of file "' + data + '" : ' + err);
-                            return;
-                        }
+            //                 console.log('User create :: unable to read contents of file "' + data + '" : ' + err);
+            //                 return;
+            //             }
 
-                        //console.log(files_data.toString('utf-8').split(/\s/));
-                        resolve(files_data.toString('utf-8').split(/\s/));//save files names array globally
+            //             //console.log(files_data.toString('utf-8').split(/\s/));
+            //             names_list = files_data.toString('utf-8').split(/\s/);//save files names array globally
+            //         });
+
+            //     });
+
+            // });
+
+
+            new Promise (function(resolve, reject){
+
+                //get directory files names
+                fs.readdir(__dirname + '/world_list/', function (err, files) {
+                    
+                    
+                    if(err){//give error response back
+
+                        console.log('User create :: unable to scan names list directory: ' + err);
+                        return;
+                    } 
+                    
+
+                    //read contnets of each of the files
+                    files.forEach(function(data){
+
+                        fs.readFile(__dirname + '/world_list/' + data, function (err, files_data) {
+                            
+                            if(err){//give error response back
+                    
+                                console.log('User create :: unable to read contents of file "' + data + '" : ' + err);
+                                return;
+                            }
+
+                            //console.log(files_data.toString('utf-8').split(/\s/));
+                            resolve(files_data.toString('utf-8').split(/\s/));//save files names array globally
+                        });
+
                     });
 
                 });
+                
 
-            });
+            })
+            .then(function(data){
             
+                var names_list = data;
 
-        })
-        .then(function(data){
-        
-            var names_list = data;
-
-            // --- find names
-            var found_unique_names = 0;//tracks unique names found
-            var while_loops = 0; //tracks each lop
-            var are_names_fount = 'not yet';//track if names have not been found
+                // --- find names
+                var found_unique_names = 0;//tracks unique names found
+                var while_loops = 0; //tracks each lop
+                var are_names_fount = 'not yet';//track if names have not been found
 
 
-                // //find names and check 
-                // while(found_unique_names != parseInt(total_accounts) ){//while names found total is not equal requested names batch total
+                    // //find names and check 
+                    // while(found_unique_names != parseInt(total_accounts) ){//while names found total is not equal requested names batch total
 
-                //     //create random
-                //     var random_name = Math.floor(Math.random() * names_list.length);
-                //     var random_password = Math.floor(Math.random() * names_list.length);
+                    //     //create random
+                    //     var random_name = Math.floor(Math.random() * names_list.length);
+                    //     var random_password = Math.floor(Math.random() * names_list.length);
 
-                //     console.log(random_name, random_password )
-                //     //console.log('name : ',names_list[random_name], ' username : ',names_list[random_password] );
+                    //     console.log(random_name, random_password )
+                    //     //console.log('name : ',names_list[random_name], ' username : ',names_list[random_password] );
 
-                //     //check if random username is same as any already registered in the system
-                //     for(var a = 0; a <= users.length - 1; a++){
+                    //     //check if random username is same as any already registered in the system
+                    //     for(var a = 0; a <= users.length - 1; a++){
 
-                //         if(users[a] != null ){// if not null 
+                    //         if(users[a] != null ){// if not null 
 
-                //             //if username and passord
-                //             if(req.query.account_type == 'normal'){
-                                
-                //                 //check if username is already used only + batch name
-                //                 if(users[a].name == names_list[random_name].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
-
-                //                     break;//end loop
-                //                 }
-                //             }
-
-                //             //if voucher
-                //             if(req.query.account_type == 'voucher'){
-
-                //                 //check for combined user name and password + batch name
-                //                 if(users[a].name == names_list[random_name].trim().toLowerCase() + names_list[random_password].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
-
-                //                     break;//end loop
-                //                 }
-                //             }
-
-                //             //if loop managed to run till here then the name is unique
-                //             //save username and password
-                //             new_user_usernames.push({ 'new_account_name' : names_list[random_name].trim().toLowerCase(), 'new_account_password' : names_list[random_password].trim().toLowerCase() });
-                //             //console.log(new_user_usernames);
-
-                //             //increment found names by one
-                //             found_unique_names = found_unique_names + 1;
-
-                //             if(found_unique_names == parseInt(total_accounts)){
-                //                 console.log('Requirements met, names found ');
-                //                 found_unique_names = parseInt(total_accounts);
-                //                 break;
-
-
-                //             }
-
-                //         }
-                //     }
-                    
-                //     //loop tracking
-                //     while_loops = while_loops + 1;
-
-                //     //check if loops number is 3 times total number of name list array length
-                //     if(while_loops == names_list.length * 3){//IF YOUSER BASE GROW BIG, INCREASE THIS, MAXIMUM NUMBER SHOULD BE (names_list.length * names_list.length ), this are possible  username + password combination
-
-                       
-                //         //check if names where not found at last second
-                //         if(found_unique_names != parseInt(total_accounts)){ //if not
-                //             are_names_fount = false;//set to false
-                //             //console.log('in 2', while_loops)
-                //         }
-
-                //         //set unique name tracker names equal requested account total batch number
-                //         found_unique_names = parseInt(total_accounts);//cause loop to meet its requirements and end
-
-                //     }
-                // }
-
-
-                //find unique names to use as usernames 
-                while(found_unique_names != parseInt(total_accounts) ){//while names found total is not equal requested names batch total
-
-                    //create random
-                    var random_name = Math.floor(Math.random() * names_list.length);
-                    var random_password = Math.floor(Math.random() * names_list.length);
-
-
-                    var unique_name_found = false;//track if unique name is found for each while loop
-
-
-                    users.forEach(function(data){/* innefient, as it search and copares through all the dictionary words array even if a unique name is found. the "for()" loop is best, but im getting bugs */
-
-
-                        if(data != null ){// if not null 
-
-                            if(unique_name_found == false){
-
-                                //if username and passord
-                                if(req.query.account_type == 'normal'){
+                    //             //if username and passord
+                    //             if(req.query.account_type == 'normal'){
                                     
-                                    //check if username is already used only + batch name
-                                    if(data.name == names_list[random_name].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+                    //                 //check if username is already used only + batch name
+                    //                 if(users[a].name == names_list[random_name].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
 
-                                        return; //end function
+                    //                     break;//end loop
+                    //                 }
+                    //             }
 
+                    //             //if voucher
+                    //             if(req.query.account_type == 'voucher'){
+
+                    //                 //check for combined user name and password + batch name
+                    //                 if(users[a].name == names_list[random_name].trim().toLowerCase() + names_list[random_password].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+
+                    //                     break;//end loop
+                    //                 }
+                    //             }
+
+                    //             //if loop managed to run till here then the name is unique
+                    //             //save username and password
+                    //             new_user_usernames.push({ 'new_account_name' : names_list[random_name].trim().toLowerCase(), 'new_account_password' : names_list[random_password].trim().toLowerCase() });
+                    //             //console.log(new_user_usernames);
+
+                    //             //increment found names by one
+                    //             found_unique_names = found_unique_names + 1;
+
+                    //             if(found_unique_names == parseInt(total_accounts)){
+                    //                 console.log('Requirements met, names found ');
+                    //                 found_unique_names = parseInt(total_accounts);
+                    //                 break;
+
+
+                    //             }
+
+                    //         }
+                    //     }
+                        
+                    //     //loop tracking
+                    //     while_loops = while_loops + 1;
+
+                    //     //check if loops number is 3 times total number of name list array length
+                    //     if(while_loops == names_list.length * 3){//IF YOUSER BASE GROW BIG, INCREASE THIS, MAXIMUM NUMBER SHOULD BE (names_list.length * names_list.length ), this are possible  username + password combination
+
+                        
+                    //         //check if names where not found at last second
+                    //         if(found_unique_names != parseInt(total_accounts)){ //if not
+                    //             are_names_fount = false;//set to false
+                    //             //console.log('in 2', while_loops)
+                    //         }
+
+                    //         //set unique name tracker names equal requested account total batch number
+                    //         found_unique_names = parseInt(total_accounts);//cause loop to meet its requirements and end
+
+                    //     }
+                    // }
+
+
+                    //find unique names to use as usernames 
+                    while(found_unique_names != parseInt(total_accounts) ){//while names found total is not equal requested names batch total
+
+                        //create random
+                        var random_name = Math.floor(Math.random() * names_list.length);
+                        var random_password = Math.floor(Math.random() * names_list.length);
+
+
+                        var unique_name_found = false;//track if unique name is found for each while loop
+
+
+                        users.forEach(function(data){/* innefient, as it search and copares through all the dictionary words array even if a unique name is found. the "for()" loop is best, but im getting bugs */
+
+
+                            if(data != null ){// if not null 
+
+                                if(unique_name_found == false){
+
+                                    //if username and passord
+                                    if(req.query.account_type == 'normal'){
+                                        
+                                        //check if username is already used only + batch name
+                                        if(data.name == names_list[random_name].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+
+                                            return; //end function
+
+                                        }
+                                    }
+
+                                    //if voucher
+                                    if(req.query.account_type == 'voucher'){
+
+                                        //check for combined user name and password + batch name
+                                        if(data.name == names_list[random_name].trim().toLowerCase() + names_list[random_password].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
+
+                                            return;
+                                        }
+                                    }
+
+                                    //save username and password
+                                    new_user_usernames.push({ 'new_account_name' : names_list[random_name].trim().toLowerCase(), 'new_account_password' : names_list[random_password].trim().toLowerCase() });
+
+                                    //increment found names by one
+                                    found_unique_names = found_unique_names + 1;
+
+                                    //set unique name found true, for this seach 
+                                    unique_name_found = true;
+
+                                    if(found_unique_names == parseInt(total_accounts)){
+                                        console.log('Requirements met, names found ');
+                                        found_unique_names = parseInt(total_accounts);
+                                    
                                     }
                                 }
 
-                                //if voucher
-                                if(req.query.account_type == 'voucher'){
+                            }
+                        });
 
-                                    //check for combined user name and password + batch name
-                                    if(data.name == names_list[random_name].trim().toLowerCase() + names_list[random_password].trim().toLowerCase() + voucher_username_suffix.trim().toLowerCase()){//if match found
 
-                                        return;
-                                    }
-                                }
+                        //loop tracking
+                        while_loops = while_loops + 1;
 
-                                //save username and password
-                                new_user_usernames.push({ 'new_account_name' : names_list[random_name].trim().toLowerCase(), 'new_account_password' : names_list[random_password].trim().toLowerCase() });
+                        //check if loops number is 3 times total number of name list array length
+                        if(while_loops == names_list.length * 3){//IF YOUSER USER BASE GROW BIG, INCREASE THIS, MAXIMUM NUMBER SHOULD BE (names_list.length * names_list.length ), this are possible  username + password combination
 
-                                //increment found names by one
-                                found_unique_names = found_unique_names + 1;
-
-                                //set unique name found true, for this seach 
-                                unique_name_found = true;
-
-                                if(found_unique_names == parseInt(total_accounts)){
-                                    console.log('Requirements met, names found ');
-                                    found_unique_names = parseInt(total_accounts);
-                                   
-                                }
+                        
+                            //check if names where not found at last second
+                            if(found_unique_names != parseInt(total_accounts)){ //if not
+                                are_names_fount = false;//set to false
+                                //console.log('in 2', while_loops)
                             }
 
+                            //set unique name tracker names equal requested account total batch number
+                            found_unique_names = parseInt(total_accounts);//cause loop to meet its requirements and end
+
                         }
+
+
+                    };
+
+                    //check if names where not found
+                    if(are_names_fount == false){
+
+                        res.jsonp('batch account create, unabled to create unique names, not already taken');//give response
+
+                        console.log('batch account create, unabled to create unique names, not already taken');
+
+                        return;//end function //
+                    }
+
+
+                    // -- create batch users accounts
+                    new_user_usernames.forEach(function(data, index){
+
+                    // console.log(new_user_usernames);
+
+                        var username = data.new_account_name + voucher_username_suffix.trim().toLowerCase(); //set username with suffix
+                        var password = data.new_account_password;//set password
+
+                        //if voucher
+                        if(req.query.account_type == 'voucher'){
+                            //combine username plus password to one 
+                            username = data.new_account_name + data.new_account_password + voucher_username_suffix.trim().toLowerCase();//set password same as username
+
+                            //set username as password
+                            password = username ; //set password with suffix
+                        }
+
+                        //call user create function
+                        user_create_fn (username , password);
+
+
+                        //if loop at end
+                        if(index == new_user_usernames.length - 1){
+
+                            //save users to db
+                            save_to_db();
+                        }
+
                     });
 
+            });
 
-                    //loop tracking
-                    while_loops = while_loops + 1;
+        }
 
-                    //check if loops number is 3 times total number of name list array length
-                    if(while_loops == names_list.length * 3){//IF YOUSER USER BASE GROW BIG, INCREASE THIS, MAXIMUM NUMBER SHOULD BE (names_list.length * names_list.length ), this are possible  username + password combination
 
-                       
-                        //check if names where not found at last second
-                        if(found_unique_names != parseInt(total_accounts)){ //if not
-                            are_names_fount = false;//set to false
-                            //console.log('in 2', while_loops)
+        // ++++++ for non batch new accounts +++++++
+
+        //check for usernames duplicates against existing users
+        var duplicates_usernames_exists_single_account = false;//track if duplicates where found
+
+        if(total_accounts == ''){ 
+        
+            //loop through stored user accounts usernames
+    
+            new_user_usernames.forEach(function(new_users){ //loop through provided username array
+
+                users.forEach(function(data, index){ //loop through stored user accounts usernames
+
+                    if(data){//if not null
+                        
+                        if(new_users.new_account_name.toLowerCase() == data.name){ //compare stored user account names with new user account names
+                            
+                            duplicates_usernames_exists_single_account = true; //if match set true
+                                
                         }
-
-                        //set unique name tracker names equal requested account total batch number
-                        found_unique_names = parseInt(total_accounts);//cause loop to meet its requirements and end
-
                     }
 
-
-                };
-
-                //check if names where not found
-                if(are_names_fount == false){
-
-                    res.jsonp('batch account create, unabled to create unique names, not already taken');//give response
-
-                    console.log('batch account create, unabled to create unique names, not already taken');
-
-                    return;//end function //
-                }
-
-
-                // -- create batch users accounts
-                new_user_usernames.forEach(function(data, index){
-
-                   // console.log(new_user_usernames);
-
-                    var username = data.new_account_name + voucher_username_suffix.trim().toLowerCase(); //set username with suffix
-                    var password = data.new_account_password;//set password
-
-                    //if voucher
-                    if(req.query.account_type == 'voucher'){
-                        //combine username plus password to one 
-                        username = data.new_account_name + data.new_account_password + voucher_username_suffix.trim().toLowerCase();//set password same as username
-
-                        //set username as password
-                        password = username ; //set password with suffix
+                    //if no match and main loop is on last run
+                    if(index == users.length -1 && duplicates_usernames_exists_single_account == false){
+                                
+                        // call user create function
+                        user_create_fn (new_users.new_account_name, new_users.new_account_password);
+                            
                     }
-
-                    //call user create function
-                    user_create_fn (username , password);
 
 
                     //if loop at end
-                    if(index == new_user_usernames.length - 1){
+                    if(index == users.length - 1){
 
                         //save users to db
                         save_to_db();
                     }
 
                 });
-
-        });
-
-    }
-
-
-    // ++++++ for non batch new accounts +++++++
-
-    //check for usernames duplicates against existing users
-    var duplicates_usernames_exists_single_account = false;//track if duplicates where found
-
-    if(total_accounts == ''){ 
-       
-        //loop through stored user accounts usernames
-   
-        new_user_usernames.forEach(function(new_users){ //loop through provided username array
-
-            users.forEach(function(data, index){ //loop through stored user accounts usernames
-
-                if(data){//if not null
-                    
-                    if(new_users.new_account_name.toLowerCase() == data.name){ //compare stored user account names with new user account names
-                        
-                        duplicates_usernames_exists_single_account = true; //if match set true
-                            
-                    }
-                }
-
-                //if no match and main loop is on last run
-                if(index == users.length -1 && duplicates_usernames_exists_single_account == false){
-                            
-                    // call user create function
-                    user_create_fn (new_users.new_account_name, new_users.new_account_password);
-                         
-                }
-
-
-                //if loop at end
-                if(index == users.length - 1){
-
-                    //save users to db
-                    save_to_db();
-                }
+                
 
             });
-            
-
-        });
-    }
+        }
 
 
 
-    //if duplicate found end processing, send message
-    if(duplicates_usernames_exists_single_account == true){//if true
+        //if duplicate found end processing, send message
+        if(duplicates_usernames_exists_single_account == true){//if true
 
-        res.jsonp('Error, username or voucher code duplicate'); //send message
-        return; //end function
-    }
+            res.jsonp('Error, username or voucher code duplicate'); //send message
+            return; //end function
+        }
 
-    // ----- create user
-    
+        // ----- create user
+        
 
-    function user_create_fn (username, password){
+        function user_create_fn (username, password){
 
-        //time stamp
-        var date = new Date();
+            //time stamp
+            var date = new Date();
 
-        new_user_list.push( 
-        {
-            name : username, 
-            password : password, 
-            bind_mac : false, //restrict usage of this account to binded mac
-            binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
-            max_users : 1, //number of users who can use this voucher at same time
-            user_device_mac : [], //keep track of mac of users using the vouchers, //mac are removed when user log out
-            type_of_account : req.query.account_type, //keep record of account being normal or voucher
-            batch_group_name : batch_group_name, //used to keep track if account is part of batch // usefull for grouping
-            last_contact_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, //used to keep track of reset
-            last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' }, //used to keep track of reset
-            account_depleted : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
-            reset : false, // is account reset-able
-            reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-            reset_time : { 'hour' : '', 'minute': '', 'second' : '' },
-            active : false, //is voucher active
-            account_logged_in : false,//track if account is in use
-            creation_date : { 'day_of_week' : date.getDay(), 'day_of_month' : date.getDay(), 'month': date.getMonth(), 'year' : date.getFullYear() }, //date account created
-            creation_time : { 'hour' : date.getHours(), 'minute': date.getMinutes(), 'second' : date.getSeconds() },
-            first_used_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-            first_used_time : { 'hour' : '', 'minute': '', 'second' : '' },
-            expire : true, //is voucher expire
-            expire_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-            expire_time : { 'hour' : '', 'minute': '', 'second' : '' },
-    
-            profile_attribute_group : data_ptofile,//keep track of profile attriute, changable
-    
-            nas_identifier_id : '', // tracks name of device used to contact radius server
+            new_user_list.push( 
+            {
+                name : username, 
+                password : password, 
+                bind_mac : false, //restrict usage of this account to binded mac
+                binded_mac : [],//keep track of binded mac, adheres to [ max_users ] limit
+                max_users : 1, //number of users who can use this voucher at same time
+                user_device_mac : [], //keep track of mac of users using the vouchers, //mac are removed when user log out
+                type_of_account : req.query.account_type, //keep record of account being normal or voucher
+                batch_group_name : batch_group_name, //used to keep track if account is part of batch // usefull for grouping
+                last_contact_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, //used to keep track of reset
+                last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' }, //used to keep track of reset
+                account_depleted : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
+                reset : false, // is account reset-able
+                reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+                reset_time : { 'hour' : '', 'minute': '', 'second' : '' },
+                active : false, //is voucher active
+                account_logged_in : false,//track if account is in use
+                creation_date : { 'day_of_week' : date.getDay(), 'day_of_month' : date.getDay(), 'month': date.getMonth(), 'year' : date.getFullYear() }, //date account created
+                creation_time : { 'hour' : date.getHours(), 'minute': date.getMinutes(), 'second' : date.getSeconds() },
+                first_used_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, //used to allow reset calculation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+                first_used_time : { 'hour' : '', 'minute': '', 'second' : '' },
+                expire : true, //is voucher expire
+                expire_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, //expires after first activation//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+                expire_time : { 'hour' : '', 'minute': '', 'second' : '' },
+        
+                profile_attribute_group : data_ptofile,//keep track of profile attriute, changable
+        
+                nas_identifier_id : '', // tracks name of device used to contact radius server
 
-            multi_share : false, //allow single profile to attributes to be used by diffrent divice, and specific device usage tracking
+                multi_share : false, //allow single profile to attributes to be used by diffrent divice, and specific device usage tracking
 
-            multi_share_mac : [ //keep track of devices [mac] sharing profile
-                {
-                    'device_mac_id' : '',
-                    last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
-                    last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' },
-                    reset : false,
-                    //reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
-                    //reset_time : { 'hour' : '', 'minute': '', 'second' : '' }
-                    account_logged_in : false,//track if account is in use
-                    usage : {
-                        profile_used_data : 0,
-                        profile_used_time : 0,
-                        profile_used_upload : 0,
-                        profile_used_download : 0,
+                multi_share_mac : [ //keep track of devices [mac] sharing profile
+                    {
+                        'device_mac_id' : '',
+                        last_contact_date :  { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
+                        last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' },
+                        reset : false,
+                        //reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
+                        //reset_time : { 'hour' : '', 'minute': '', 'second' : '' }
+                        account_logged_in : false,//track if account is in use
+                        usage : {
+                            profile_used_data : 0,
+                            profile_used_time : 0,
+                            profile_used_upload : 0,
+                            profile_used_download : 0,
+                        }
                     }
-                }
-            ],
+                ],
+                
+                //account usage track
+                profile_used_data : 0, 
+
+                profile_used_time : 0,
+
+                profile_used_upload : 0,
+
+                profile_used_download : 0,
+        
             
-            //account usage track
-            profile_used_data : 0, 
-
-            profile_used_time : 0,
-
-            profile_used_upload : 0,
-
-            profile_used_download : 0,
-    
-        
-        });
-        
-    }
+            });
+            
+        }
 
 
-    
+     }).catch(function(err){//if error connecting to db
 
+        res.jsonp('Error');
+        console.log('Error, connecting to db and retrieving users.')
+    });
 
-        //save user to db
+    //save user to db
 
-        function save_to_db(){
+    function save_to_db(){
                     
             mongo_db.connect(db_url, function(err, db_data){
 
