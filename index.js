@@ -805,563 +805,585 @@ socket.on('message', (msg, reply_info) => {
              */
 
 
+            var authenticated_user; //keep track of authenticated user data
 
 
-
-
-
+        //find user account from db
         
+        mongo_db.connect(db_url, function(err, db_data){ //connect to db
+
+            if(err){
+
+                console.log('db connection error : ', err);
+
+                reply_code = 'Access-Reject';//give reject response reply to router
+                return;
+            }
+
+
+            db_data.db('wifi_radius_db').collection('users').findOne({name : authentication_username, password : authentication_password}, function(error, results){
+
+                if(error){
+
+                    console.log('Error finding users account, for router authentification');
+
+                    reply_code = 'Access-Reject';//give reject response reply to router
+                }
+
+               if(!results){//if result == null or undefined or falsey
+
+                    console.log('Error user account not found, for router authentification');
+
+                    reply_code = 'Access-Reject';//give reject response reply to router
+               };
+
+               if(results){//if user account found
+                    
+                    authenticated_user = results;//save users data temporarly
+
+                    reply_code = 'Access-Accept';//give accept response;
+
+                    user_account_limits_set();//apply user account limit
+
+               }
+
+
+            });
+
+            db_data.close; //close db
+        
+        });
+
         // ---- check if user with password is registered
 
-        var authenticated_user; //keep track of authenticated user data
-        
-        for(var a = 0; a <= users.length -1; a++){
-
-            
-
-            if(users[a] != null || users[a] != undefined){//if not null
-
-                //check usrename exist in database 
-                if(users[a].name == authentication_username && users[a].password == authentication_password ){//if match 
-
-                    reply_code = 'Access-Accept';//give accept response
-
-                    authenticated_user = users[a];//save users details
-
-                    break;//end loop
-                }
-
-            }
-
-           if(a == users.length -1){ //if loop is at it ends/no match found
-
-                reply_code = 'Access-Reject';//give reject response
-
-           }
-
-        }
       
+        
 
-        //--------------------- Authenticated user account limits
+        
+      
+        function user_account_limits_set(){ //user account properties check
 
-        if(authenticated_user && authenticated_user.profile_attribute_group.length > 0 ){ //if authentification limits specified
 
-            //-- check if profile group exists
-            var authentification_profile_group_data = null;
+            //--------------------- Authenticated user account limits
+            if(authenticated_user.profile_attribute_group.length > 0 ){ //if authentification limits specified
 
-            var users_account_array_index = undefined; //temp save position of account in 'users' array
+                //-- check if profile group exists
+                var authentification_profile_group_data = null;
 
-            for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
-             
-               
+                var users_account_array_index = undefined; //temp save position of account in 'users' array
 
-                if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups[a].data[0] == authenticated_user.profile_attribute_group ){ //if name match found
+                for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
+                
+                
 
-                    authentification_profile_group_data = login_in_account_limit_profile_groups[a].data;//save profile group data
+                    if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups[a].data[0] == authenticated_user.profile_attribute_group ){ //if name match found
 
-                    users_account_array_index = a;//users acount index
-                    break; //end loop
+                        authentification_profile_group_data = login_in_account_limit_profile_groups[a].data;//save profile group data
+
+                        users_account_array_index = a;//users acount index
+                        break; //end loop
+                    }
+
+
+
+
                 }
 
+                // -- if profile group was found
+                if(authentification_profile_group_data != null){
 
+                    //console.log(authentification_profile_group_data);
 
+                    // -- get profile attributes
 
-            }
+                    var authentification_request_rejected = false;//keep track if account didnt meet any requirements when checking
 
-            // -- if profile group was found
-            if(authentification_profile_group_data != null){
+                    // login_in_account_limit_profile_attributes 
+                    authentification_profile_group_data[1].forEach(function(data){ //loop through [profiles group], grouped attributes
+                        //console.log(data);
 
-                //console.log(authentification_profile_group_data);
-
-                // -- get profile attributes
-
-                var authentification_request_rejected = false;//keep track if account didnt meet any requirements when checking
-
-                // login_in_account_limit_profile_attributes 
-                 authentification_profile_group_data[1].forEach(function(data){ //loop through [profiles group], grouped attributes
-                    //console.log(data);
-
-                    //loop through profile attributes en find name matching attributes specified in [ profile group]
-                    for(var a = 0; a <= login_in_account_limit_profile_attributes.length -1; a++ ){
-                        
-                        // console.log(login_in_account_limit_profile_attributes[a]);
-                        // console.log(login_in_account_limit_profile_attributes[a][0]);
-                        
-
-   
-                        if(login_in_account_limit_profile_attributes && login_in_account_limit_profile_attributes[a].data[0] == data){//if name match found
-
-                            //loop through grouped attributes and extract attribute contained
-                            login_in_account_limit_profile_attributes[a].data[1].forEach(function(data){
-
+                        //loop through profile attributes en find name matching attributes specified in [ profile group]
+                        for(var a = 0; a <= login_in_account_limit_profile_attributes.length -1; a++ ){
                             
-                                //catch [wifi-radius] library attributes
-                                if(data[1].toLowerCase() == 'wifi-radius'){
+                            // console.log(login_in_account_limit_profile_attributes[a]);
+                            // console.log(login_in_account_limit_profile_attributes[a][0]);
+                            
+
+    
+                            if(login_in_account_limit_profile_attributes && login_in_account_limit_profile_attributes[a].data[0] == data){//if name match found
+
+                                //loop through grouped attributes and extract attribute contained
+                                login_in_account_limit_profile_attributes[a].data[1].forEach(function(data){
+
+                                
+                                    //catch [wifi-radius] library attributes
+                                    if(data[1].toLowerCase() == 'wifi-radius'){
 
 
-                                    //console.log('wifi-radius',data[2][0][0]);
+                                        //console.log('wifi-radius',data[2][0][0]);
 
-                                    // --- check accounts limits details and process
+                                        // --- check accounts limits details and process
 
-                                     //check if voucher expired
-                                     if(authenticated_user.expire && authenticated_user.active == true &&authentification_request_rejected == false){
+                                        //check if voucher expired
+                                        if(authenticated_user.expire && authenticated_user.active == true &&authentification_request_rejected == false){
 
-                                        //reset usage to 0
-                                        
-                                    }
-                                    //check if accounts should be reset
-                                    // authenticated_user
-                                    if(authenticated_user.reset == true && authentification_request_rejected == false ){
-
-
-                                    }
-                                   
-                                    //check max users limit is reached
-                                    if(authenticated_user.user_device_mac.length >= parseInt(authenticated_user.max_users) &&authentification_request_rejected == false){
-
-                                        //reply_code = 'Access-Accept';//give accept response
-                                        //authentification_request_rejected == true;//set rejected true
-                                    }
-
-                                    //check if mac is binded
-                                    if(authenticated_user.bind_mac == true && authentification_request_rejected == false){
-
-                                        //check if mack is binded
-                                        // -- loop [authenticated_user.binded_mac ]
-
-                                        //if not, bind current device mac
-                                    }
-
-                                    if(data[2][0][0] == 'Max-data-total-limit' && authentification_request_rejected == false){
-
-                                        //check if data is still available
-                                        
-
-                                        var to_bytes = data[2][0][1] //hold converted data to bytes
-                                        //check if value is in gigabytes
-
-                                        if(typeof(to_bytes) == 'string'){
-
-                                            if( to_bytes.search('gb') > -1 || to_bytes.search('gib') > -1 || to_bytes.search('gigabyte') > -1 ){
-
-                                                //covert GB to bytes
-
-                                                //--base 10
-                                                //to_bytes = parseInt(to_bytes) * 1000000000;
-
-                                                //--base 2 / binary
-                                                to_bytes = parseInt(to_bytes) * 1073741824;
-                                                
-
-                                                //CONVERT THIS TO MB, EN HAVE AYNTHING OVER 3GIG USE [GIGAWORDS]
-
-                                            }
-                                            //check if value is in megabyte
-                                            else if(to_bytes.search('mb') > -1  || to_bytes.search('mib') > -1  || to_bytes.search('megabyte') > -1 ){
-
-                                                //covert MB to bytes
-
-                                                //--base 10
-                                                //to_bytes = parseInt(to_bytes) * 1000000;
-
-                                                //--base 2 / binary
-                                                to_bytes = parseInt(to_bytes) * 1048576;
+                                            //reset usage to 0
+                                            
+                                        }
+                                        //check if accounts should be reset
+                                        // authenticated_user
+                                        if(authenticated_user.reset == true && authentification_request_rejected == false ){
 
 
+                                        }
+                                    
+                                        //check max users limit is reached
+                                        if(authenticated_user.user_device_mac.length >= parseInt(authenticated_user.max_users) &&authentification_request_rejected == false){
 
-
-                                            }
-                                            //check if value is in kilobyte
-                                            else if(to_bytes.search('kb') > -1  || to_bytes.search('kib') > -1  || to_bytes.search('kilobyte') > -1 ){
-
-                                                //covert KB to bytes
-
-                                                //--base 10
-                                                //to_bytes = parseInt(to_bytes) * 1000;
-
-                                                //--base 2 / binary
-                                                to_bytes = parseInt(to_bytes) *1024;
-
-
-                                            }
+                                            //reply_code = 'Access-Accept';//give accept response
+                                            //authentification_request_rejected == true;//set rejected true
                                         }
 
-                                        //if data come a byte in string format turn to number
-                                        to_bytes = parseInt(to_bytes);
-                                        
+                                        //check if mac is binded
+                                        if(authenticated_user.bind_mac == true && authentification_request_rejected == false){
 
-                                        //check if usage data if less available data //this will allow profile attributes data value changes that affect all accounts data limit changes without havng to update accounts 
-                                        if(authenticated_user.profile_used_data < to_bytes){
+                                            //check if mack is binded
+                                            // -- loop [authenticated_user.binded_mac ]
 
-                                            //create radius reply 
-                                            total_download_upload_limit_define.forEach(function(data){//loop  through max-data usade limit definitions
+                                            //if not, bind current device mac
+                                        }
 
-                                                if(data){//if not null
+                                        if(data[2][0][0] == 'Max-data-total-limit' && authentification_request_rejected == false){
 
-                                                    //remaining data
-                                                    var remaining_data = to_bytes - parseInt(authenticated_user.profile_used_data); 
+                                            //check if data is still available
+                                            
 
-                                                    //if remaining is creater than + 4GB in bytes, turn to words to gigs
-                                                    //nodejs radius cant encode values creater than 32bit limit
-                                                    if(remaining_data > 4294967295){
+                                            var to_bytes = data[2][0][1] //hold converted data to bytes
+                                            //check if value is in gigabytes
 
-                                                        // https://forum.mikrotik.com/viewtopic.php?t=9902
-                                                    // remaining_data
-                                                    }
+                                            if(typeof(to_bytes) == 'string'){
 
-                                                    //create reply attribute format
-                                                    attribute_container.push(['Vendor-Specific',data.data[0], [[data.data[1],remaining_data ]]]);
+                                                if( to_bytes.search('gb') > -1 || to_bytes.search('gib') > -1 || to_bytes.search('gigabyte') > -1 ){
+
+                                                    //covert GB to bytes
+
+                                                    //--base 10
+                                                    //to_bytes = parseInt(to_bytes) * 1000000000;
+
+                                                    //--base 2 / binary
+                                                    to_bytes = parseInt(to_bytes) * 1073741824;
+                                                    
+
+                                                    //CONVERT THIS TO MB, EN HAVE AYNTHING OVER 3GIG USE [GIGAWORDS]
+
+                                                }
+                                                //check if value is in megabyte
+                                                else if(to_bytes.search('mb') > -1  || to_bytes.search('mib') > -1  || to_bytes.search('megabyte') > -1 ){
+
+                                                    //covert MB to bytes
+
+                                                    //--base 10
+                                                    //to_bytes = parseInt(to_bytes) * 1000000;
+
+                                                    //--base 2 / binary
+                                                    to_bytes = parseInt(to_bytes) * 1048576;
+
+
 
 
                                                 }
+                                                //check if value is in kilobyte
+                                                else if(to_bytes.search('kb') > -1  || to_bytes.search('kib') > -1  || to_bytes.search('kilobyte') > -1 ){
 
-                                            });
+                                                    //covert KB to bytes
+
+                                                    //--base 10
+                                                    //to_bytes = parseInt(to_bytes) * 1000;
+
+                                                    //--base 2 / binary
+                                                    to_bytes = parseInt(to_bytes) *1024;
+
+
+                                                }
+                                            }
+
+                                            //if data come a byte in string format turn to number
+                                            to_bytes = parseInt(to_bytes);
+                                            
+
+                                            //check if usage data if less available data //this will allow profile attributes data value changes that affect all accounts data limit changes without havng to update accounts 
+                                            if(authenticated_user.profile_used_data < to_bytes){
+
+                                                //create radius reply 
+                                                total_download_upload_limit_define.forEach(function(data){//loop  through max-data usade limit definitions
+
+                                                    if(data){//if not null
+
+                                                        //remaining data
+                                                        var remaining_data = to_bytes - parseInt(authenticated_user.profile_used_data); 
+
+                                                        //if remaining is creater than + 4GB in bytes, turn to words to gigs
+                                                        //nodejs radius cant encode values creater than 32bit limit
+                                                        if(remaining_data > 4294967295){
+
+                                                            // https://forum.mikrotik.com/viewtopic.php?t=9902
+                                                        // remaining_data
+                                                        }
+
+                                                        //create reply attribute format
+                                                        attribute_container.push(['Vendor-Specific',data.data[0], [[data.data[1],remaining_data ]]]);
+
+
+                                                    }
+
+                                                });
+
+                                            }
+
+                                            //if usage is higher than available limit
+                                            if(authenticated_user.profile_used_data >= to_bytes ){
+
+                                                //give response reject
+                                                authentification_request_rejected == true;
+
+                                                //deny account authentification request
+                                                reply_code = 'Access-Reject';//give accept response
+
+                                            }
 
                                         }
 
-                                        //if usage is higher than available limit
-                                        if(authenticated_user.profile_used_data >= to_bytes ){
+                                        if(data[2][0][0] ==  'Max-time-limit' && authentification_request_rejected == false){
 
-                                            //give response reject
-                                            authentification_request_rejected == true;
-
-                                            //deny account authentification request
-                                            reply_code = 'Access-Reject';//give accept response
 
                                         }
 
-                                    }
-
-                                    if(data[2][0][0] ==  'Max-time-limit' && authentification_request_rejected == false){
+                                        if(data[2][0][0] ==  'Max-upload-limit' && authentification_request_rejected == false){
 
 
-                                    }
+                                        }
 
-                                    if(data[2][0][0] ==  'Max-upload-limit' && authentification_request_rejected == false){
+                                        if(data[2][0][0] ==  'Max-download-limit' && authentification_request_rejected == false){
 
 
-                                    }
-
-                                    if(data[2][0][0] ==  'Max-download-limit' && authentification_request_rejected == false){
-
+                                        }
+                                    
 
                                     }
-                                   
 
-                                }
+                                    //for non vendor specific attributes or radius default or attributes of libraries flagged with none
+                                    if(data[1].toLowerCase() == 'none'){
 
-                                //for non vendor specific attributes or radius default or attributes of libraries flagged with none
-                                if(data[1].toLowerCase() == 'none'){
+                                        //console.log('none', data[1])
+                                        //strip [vendor-specific] and library name
+                                        attribute_container.push(data[2][0]);
 
-                                    //console.log('none', data[1])
-                                    //strip [vendor-specific] and library name
-                                    attribute_container.push(data[2][0]);
-
-                                }
+                                    }
 
 
-                                //push none [wifi-radius] vendor specific attribute to be sent back to router with no further processing
-                                if(data[1].toLowerCase() != 'wifi-radius' && data[1] != 'none'){
+                                    //push none [wifi-radius] vendor specific attribute to be sent back to router with no further processing
+                                    if(data[1].toLowerCase() != 'wifi-radius' && data[1] != 'none'){
 
-                                    //console.log('other',data[1])
-                                    //save attribute
-                                    attribute_container.push(data);
-                                }
+                                        //console.log('other',data[1])
+                                        //save attribute
+                                        attribute_container.push(data);
+                                    }
 
 
 
 
-                            });
+                                });
 
-                            break;
+                                break;
+                            }
                         }
-                    }
 
-                   // console.log(authentification_profile_attribute);
+                    // console.log(authentification_profile_attribute);
 
-                });
+                    });
 
-
+                }
                 
-                //save 
-
 
 
             }
-            
+
 
             // ++++++++ set/save account changes to profile ++++++
 
-            //set in memory user logged in to true
-            users[users_account_array_index].account_logged_in = true;
+            if( reply_code == 'Access-Reject'){//if accont login is accepted
 
-            //save to db
-            var user_db_account_id = new ObjectId(authenticated_user._id);//set account id
-
-            //connect to db
-            mongo_db.connect(db_url, function(err, db_data){
-
-                if(err){
-
-                    console.log('db connection error : ', err);
-                    return;
-                }
             
+                //set in memory user logged in to true
+                //users[users_account_array_index].account_logged_in = true;
 
-                db_data.db('wifi_radius_db').collection('users').update(
-                    {
-                        '_id' : user_db_account_id
-                    },{
+                //save to db
+                var user_db_account_id = new ObjectId(authenticated_user._id);//set account id
 
-                        $set:{   
-                            account_logged_in : true
-                        }
-                    },
+                //connect to db
+                mongo_db.connect(db_url, function(err, db_data){
+
+                    if(err){
+
+                        console.log('db connection error : ', err);
+                        return;
+                    }
+                    
+                    db_data.db('wifi_radius_db').collection('users').update(
+                        {
+                            '_id' : user_db_account_id
+                        },{
+
+                            $set:{   
+                                account_logged_in : true
+                            }
+                        },
                     function(err){
 
 
-                    if(err){
-                        console.log('error updating "account logged in " to true, on user authentication and saving to db: ',err);
-                        
+                        if(err){
+                            console.log('error updating "account logged in " to true, on user authentication and saving to db: ',err);
+                                
 
-                        return;
+                            return;
+                        }
+
+
+                        db_data.close; //close db
+                    });
+
+                });        
+            
+            }
+
+            
+        
+            // ---------------------- radius authentification attributes
+            
+            //check attributes, en add to be encoded if they have values // you may need to add more for other routers //tested on mikrotik
+        
+        
+            if(radius_in_message.attributes['NAS-Port-Type']){ //if provided // add to  reply data attributes
+                attribute_container.push(['NAS-Port-Type', radius_in_message.attributes['NAS-Port-Type']]);
+            }
+            if(radius_in_message.attributes['Calling-Station-Id']){ //if provided // add to  reply data attributes
+                attribute_container.push(['Calling-Station-Id',radius_in_message.attributes['Calling-Station-Id']]);
+            }
+            if(radius_in_message.attributes['Called-Station-Id']){ //if provided // add to  reply data attributes
+                attribute_container.push(['Called-Station-Id', radius_in_message.attributes['Called-Station-Id']]);
+            }
+            if(radius_in_message.attributes['NAS-Port-Id']){ //if provided // add to  reply data attributes
+                attribute_container.push(['NAS-Port-Id', radius_in_message.attributes['NAS-Port-Id']]);
+            }
+            if(radius_in_message.attributes['User-Name']){ //if provided // add to  reply data attributes
+                attribute_container.push(['User-Name', radius_in_message.attributes['User-Name']]);
+            }
+            if(radius_in_message.attributes['NAS-Port']){ //if provided // add to  reply data attributes
+                attribute_container.push(['NAS-Port', radius_in_message.attributes['NAS-Port']]);
+            }
+            if(radius_in_message.attributes['Acct-Session-Id']){ //if provided // add to  reply data attributes
+                attribute_container.push(['Acct-Session-Id', radius_in_message.attributes['Acct-Session-Id']]);
+            }
+            if(radius_in_message.attributes['Framed-IP-Address']){ //if provided // add to  reply data attributes
+                attribute_container.push( ['Framed-IP-Address', radius_in_message.attributes['Framed-IP-Address']]);
+            }
+
+
+            /* --- This give vendor library name if vendor specific Object has content. [ development was done using mikrotik   router for testing : hence vendor is Mikrotik ] ---
+                    IF YOU USING NON MIKROTIK ROUTER AND GETTING SOME AUTHENTIFICATION PROBLEM
+                    1) CHANGE attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]), "MIKROTIK" TO YOU VENDOR RADIUS LIBRARY ID OR NAME, ASK MANUFACTURE FOR THAT
+                    2) MAKE SURE 'library' FOLDER CONTAINS YOU VENDOR SPECIFIC RADIUS LIBRARY ATTRIBUTES, IF NOT FIND AND ADD THEM
+                    3) ENABLE THIS
+                    4) TRY BELOW SOLUTION FIRST, BEFORE THIS
+
+            if(radius_in_message.attributes['Vendor-Specific']){ //if provided 
+
+                var vendor_specific_attributes_to_array = [];
+                var vendor_provided_attributes_object_array = radius_in_message.attributes['Vendor-Specific'];
+
+                if(Object.keys(vendor_provided_attributes_object_array).length > 0){ //if vendor attributes has object data
+
+                    Object.keys(vendor_provided_attributes_object_array).forEach(function(object_property){ //turn object pair to array // required by encode to properly encode data using vendor dictionary // [ https://github.com/retailnext/node-radius ]
+                        vendor_specific_attributes_to_array.push([object_property, vendor_provided_attributes_object_array[object_property]]);
+                    })
+                }
+                attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]);// include vendor dictionary name en add to  reply data attributes
+            }
+
+            */
+
+
+
+
+            //--- attempt to circumvent the above by replacing with raw attribute that present the vendor line ---  */
+
+
+            /* IF YOU USING NON MIKROTIK ROUTER AND GETTING SOME ISSUSUE DOING AUTHENTIFICATION ENABLE THIS,
+                DO NOT ENABLE THE ABOVE, 
+
+
+
+            if(radius_in_message.attributes['Vendor-Specific']){
+
+                var vendor_raw_attribute_id = ''; //vendor atribute name default id is 26
+                var vendor_raw_attribute_value = ''; // its value is an object
+
+                radius_in_message.raw_attributes.forEach(function(raw_attribute){
+    
+                    if(raw_attribute[1].toString().indexOf(':') != -1 && Number(raw_attribute[0]) == 26){ //find attributes that has id of 26 [ its a non vendor specific code for [ vendor-specic ] attribute ]
+                        
+                        
+                        /* *
+                        
+                                ----------------------------------------------------
+                                on mikrotik two attribute passes the filter    ;
+                                ----------------------------------------------------
+
+                                // Attribute one, when converted from buffer to string give nonsense results, its likely whant im looking for
+
+                                26,  :���X�
+
+                                // attribute two that also passes the filter, its certainly not what im looking for 
+                                26,  7*http://192.168.88.1/logout
+
+
+                                ----------------------------------------------------------------------------------
+                                        console log of request from Mikrotik router after being decoded
+                                -----------------------------------------------------------------------------------
+
+                                { 
+                                    code: 'Access-Request',
+                                    identifier: 56,
+                                    length: 209,
+                                    authenticator: <Buffer 2d f6 d6 48 46 b7 d4 47 4a 2a c3 15 39 ee 01 5c>,
+                                    attributes:
+                                    { 'NAS-Port-Type': 'Wireless-802.11',
+                                        'Calling-Station-Id': '90:2E:1C:69:B3:BA',
+                                        'Called-Station-Id': 'hotspot1',
+                                        'NAS-Port-Id': 'bridge',
+                                        'User-Name': 'usbwalt',
+                                        'NAS-Port': 2159018029,
+                                        'Acct-Session-Id': '80b0002d',
+                                        'Framed-IP-Address': '192.168.88.252',
+                                        'Vendor-Specific': { 'Mikrotik-Host-IP': '192.168.88.252' },
+                                        'User-Password': 'usbwalt',
+                                        'Service-Type': 'Login-User',
+                                        'NAS-Identifier': 'MikroTik-OrangeFarm_Extension_9_iCafe',
+                                        'NAS-IP-Address': '192.168.88.1' },
+                                    raw_attributes:
+                                    [ [ 61, <Buffer 00 00 00 13> ],
+                                        [ 31,
+                                        <Buffer 39 30 3a 32 45 3a 31 43 3a 36 39 3a 42 33 3a 42 41> ],
+                                        [ 30, <Buffer 68 6f 74 73 70 6f 74 31> ],
+                                        [ 87, <Buffer 62 72 69 64 67 65> ],
+                                        [ 1, <Buffer 75 73 62 77 61 6c 74> ],
+                                        [ 5, <Buffer 80 b0 00 2d> ],
+                                        [ 44, <Buffer 38 30 62 30 30 30 32 64> ],
+                                        [ 8, <Buffer c0 a8 58 fc> ],
+                                        [ 26, <Buffer 00 00 3a 8c 0a 06 c0 a8 58 fc> ],
+                                        [ 2, <Buffer 79 89 59 bc 2f 98 2f 33 98 11 59 ed 38 28 ac 3e> ],
+                                        [ 6, <Buffer 00 00 00 01> ],
+                                        [ 26,
+                                        <Buffer 00 00 37 2a 03 1c 68 74 74 70 3a 2f 2f 31 39 32 2e 31 36 38 2e 38 38 2e 31 2f 6c 6f 67 6f 75 74> ],
+                                        [ 32,
+                                        <Buffer 4d 69 6b 72 6f 54 69 6b 2d 4f 72 61 6e 67 65 46 61 72 6d 5f 45 78 74 65 6e 73 69 6f 6e 5f 39 5f 69 43 61 66 65> ],
+                                        [ 4, <Buffer c0 a8 58 01> ] ] 
+                                    
+                                    }
+
+
+                                    -----------------------------------------------------------------------------
+
+                                    attempt was to get a raw value presentation of : 'Vendor-Specific': { 'Mikrotik-Host-IP': '192.168.88.252' },
+
+                                    doing that will remove the need to specifiy which vendor library to use to find [ Mikrotik-Host-IP ] id code, 
+                                    when encoding the message to be sent router that did request, 
+                        
+                        *//*
+
+
+                        if(raw_attribute[1].toString().indexOf(':') < 4){//return attribute thas has ':' closer to position 1, 
+
+                        // console.log(raw_attribute);
+                            attribute_container.push(raw_attribute);// included un decoded vendor library name, this way no need to define libary specific to vendor
+
+                        }    
+
                     }
 
-
-                    db_data.close; //close db
                 });
 
-            });
-
-
-        }
-        
-
-
-        
-       
-        // ---------------------- radius authentification attributes
-        
-        //check attributes, en add to be encoded if they have values // you may need to add more for other routers //tested on mikrotik
-       
-       
-        if(radius_in_message.attributes['NAS-Port-Type']){ //if provided // add to  reply data attributes
-            attribute_container.push(['NAS-Port-Type', radius_in_message.attributes['NAS-Port-Type']]);
-        }
-        if(radius_in_message.attributes['Calling-Station-Id']){ //if provided // add to  reply data attributes
-            attribute_container.push(['Calling-Station-Id',radius_in_message.attributes['Calling-Station-Id']]);
-        }
-        if(radius_in_message.attributes['Called-Station-Id']){ //if provided // add to  reply data attributes
-            attribute_container.push(['Called-Station-Id', radius_in_message.attributes['Called-Station-Id']]);
-        }
-        if(radius_in_message.attributes['NAS-Port-Id']){ //if provided // add to  reply data attributes
-            attribute_container.push(['NAS-Port-Id', radius_in_message.attributes['NAS-Port-Id']]);
-        }
-        if(radius_in_message.attributes['User-Name']){ //if provided // add to  reply data attributes
-            attribute_container.push(['User-Name', radius_in_message.attributes['User-Name']]);
-        }
-        if(radius_in_message.attributes['NAS-Port']){ //if provided // add to  reply data attributes
-            attribute_container.push(['NAS-Port', radius_in_message.attributes['NAS-Port']]);
-        }
-        if(radius_in_message.attributes['Acct-Session-Id']){ //if provided // add to  reply data attributes
-            attribute_container.push(['Acct-Session-Id', radius_in_message.attributes['Acct-Session-Id']]);
-        }
-        if(radius_in_message.attributes['Framed-IP-Address']){ //if provided // add to  reply data attributes
-            attribute_container.push( ['Framed-IP-Address', radius_in_message.attributes['Framed-IP-Address']]);
-        }
-
-
-    /* --- This give vendor library name if vendor specific Object has content. [ development was done using mikrotik router for testing : hence vendor is Mikrotik ] ---
-                IF YOU USING NON MIKROTIK ROUTER AND GETTING SOME AUTHENTIFICATION PROBLEM
-                1) CHANGE attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]), "MIKROTIK" TO YOU VENDOR RADIUS LIBRARY ID OR NAME, ASK MANUFACTURE FOR THAT
-                2) MAKE SURE 'library' FOLDER CONTAINS YOU VENDOR SPECIFIC RADIUS LIBRARY ATTRIBUTES, IF NOT FIND AND ADD THEM
-                3) ENABLE THIS
-                4) TRY BELOW SOLUTION FIRST, BEFORE THIS
-
-        if(radius_in_message.attributes['Vendor-Specific']){ //if provided 
-
-            var vendor_specific_attributes_to_array = [];
-            var vendor_provided_attributes_object_array = radius_in_message.attributes['Vendor-Specific'];
-
-            if(Object.keys(vendor_provided_attributes_object_array).length > 0){ //if vendor attributes has object data
-
-                Object.keys(vendor_provided_attributes_object_array).forEach(function(object_property){ //turn object pair to array // required by encode to properly encode data using vendor dictionary // [ https://github.com/retailnext/node-radius ]
-                    vendor_specific_attributes_to_array.push([object_property, vendor_provided_attributes_object_array[object_property]]);
-                })
             }
-            attribute_container.push(['Vendor-Specific', 'Mikrotik', vendor_specific_attributes_to_array]);// include vendor dictionary name en add to  reply data attributes
-        }
 
-    */
+            */
 
+            if(radius_in_message.attributes['User-Password']){ //if vendor attributes has object data
+                attribute_container.push(['User-Password', radius_in_message.attributes['User-Password']]);
+            }
+            if( radius_in_message.attributes['Service-Type']){ //if vendor attributes has object data
+                attribute_container.push(['Service-Type', radius_in_message.attributes['Service-Type']]); 
+            } 
+            if(radius_in_message.attributes['NAS-Identifier']){ //if vendor attributes has object data
+                attribute_container.push(['NAS-Identifier', radius_in_message.attributes['NAS-Identifier']]);
+            }
+            if(radius_in_message.attributes['NAS-IP-Address']){ //if vendor attributes has object data
+                attribute_container.push(['NAS-IP-Address', radius_in_message.attributes['NAS-IP-Address']]);
+            }
 
+            // chap authentification password 
+            if(radius_in_message.attributes['CHAP-Password']){ //if vendor attributes has object data
+                attribute_container.push(['CHAP-Password', radius_in_message.attributes['CHAP-Password']]);
+            }
 
-
-     //--- attempt to circumvent the above by replacing with raw attribute that present the vendor line ---  */
-
-
-    /*              IF YOU USING NON MIKROTIK ROUTER AND GETTING SOME ISSUSUE DOING AUTHENTIFICATION ENABLE THIS,
-                        DO NOT ENABLE THE ABOVE, 
-
-
-
-        if(radius_in_message.attributes['Vendor-Specific']){
-
-            var vendor_raw_attribute_id = ''; //vendor atribute name default id is 26
-            var vendor_raw_attribute_value = ''; // its value is an object
-
-            radius_in_message.raw_attributes.forEach(function(raw_attribute){
-  
-                 if(raw_attribute[1].toString().indexOf(':') != -1 && Number(raw_attribute[0]) == 26){ //find attributes that has id of 26 [ its a non vendor specific code for [ vendor-specic ] attribute ]
-                    
-                    
-                    /* *
-                    
-                            ----------------------------------------------------
-                             on mikrotik two attribute passes the filter    ;
-                            ----------------------------------------------------
-
-                            // Attribute one, when converted from buffer to string give nonsense results, its likely whant im looking for
-
-                            26,  :���X�
-
-                            // attribute two that also passes the filter, its certainly not what im looking for 
-                            26,  7*http://192.168.88.1/logout
+            // console.log('code', reply_code);
+            // console.log('secret', radius_secret);
+            // console.log(attribute_container);
 
 
-                            ----------------------------------------------------------------------------------
-                                    console log of request from Mikrotik router after being decoded
-                            -----------------------------------------------------------------------------------
+            // ---------------------- authetification reply components
 
-                            { 
-                                code: 'Access-Request',
-                                identifier: 56,
-                                length: 209,
-                                authenticator: <Buffer 2d f6 d6 48 46 b7 d4 47 4a 2a c3 15 39 ee 01 5c>,
-                                attributes:
-                                { 'NAS-Port-Type': 'Wireless-802.11',
-                                    'Calling-Station-Id': '90:2E:1C:69:B3:BA',
-                                    'Called-Station-Id': 'hotspot1',
-                                    'NAS-Port-Id': 'bridge',
-                                    'User-Name': 'usbwalt',
-                                    'NAS-Port': 2159018029,
-                                    'Acct-Session-Id': '80b0002d',
-                                    'Framed-IP-Address': '192.168.88.252',
-                                    'Vendor-Specific': { 'Mikrotik-Host-IP': '192.168.88.252' },
-                                    'User-Password': 'usbwalt',
-                                    'Service-Type': 'Login-User',
-                                    'NAS-Identifier': 'MikroTik-OrangeFarm_Extension_9_iCafe',
-                                    'NAS-IP-Address': '192.168.88.1' },
-                                raw_attributes:
-                                [ [ 61, <Buffer 00 00 00 13> ],
-                                    [ 31,
-                                    <Buffer 39 30 3a 32 45 3a 31 43 3a 36 39 3a 42 33 3a 42 41> ],
-                                    [ 30, <Buffer 68 6f 74 73 70 6f 74 31> ],
-                                    [ 87, <Buffer 62 72 69 64 67 65> ],
-                                    [ 1, <Buffer 75 73 62 77 61 6c 74> ],
-                                    [ 5, <Buffer 80 b0 00 2d> ],
-                                    [ 44, <Buffer 38 30 62 30 30 30 32 64> ],
-                                    [ 8, <Buffer c0 a8 58 fc> ],
-                                    [ 26, <Buffer 00 00 3a 8c 0a 06 c0 a8 58 fc> ],
-                                    [ 2, <Buffer 79 89 59 bc 2f 98 2f 33 98 11 59 ed 38 28 ac 3e> ],
-                                    [ 6, <Buffer 00 00 00 01> ],
-                                    [ 26,
-                                    <Buffer 00 00 37 2a 03 1c 68 74 74 70 3a 2f 2f 31 39 32 2e 31 36 38 2e 38 38 2e 31 2f 6c 6f 67 6f 75 74> ],
-                                    [ 32,
-                                    <Buffer 4d 69 6b 72 6f 54 69 6b 2d 4f 72 61 6e 67 65 46 61 72 6d 5f 45 78 74 65 6e 73 69 6f 6e 5f 39 5f 69 43 61 66 65> ],
-                                    [ 4, <Buffer c0 a8 58 01> ] ] 
-                                
-                                }
+            if(radius_in_message.identifier){ //if identifier provided // add to reply data
+                reply_contents.identifier = radius_in_message.identifier;
+            }
+            if(radius_in_message.authenticator){ //if authentificator provided // add to reply data
+                reply_contents.authenticator = radius_in_message.authenticator;
+            }
+
+        
+
+            //reply data
+            reply_contents.code = reply_code;
+            reply_contents.secret = radius_secret;
+            reply_contents.attributes = attribute_container;
+        
+            //console.log(reply_contents.attributes)
+
+            try{ //encode reply to radius formate
+                //console.log('reply message not encoded : ',reply_contents);
+                var reply = radius_module.encode(reply_contents);
+            }
+            catch(err){ //if encoding error
+                
+                console.log('error attempting to encode, reply data : ', err);
+                return;
+            };
 
 
-                                -----------------------------------------------------------------------------
+            // ... send reply data
 
-                                attempt was to get a raw value presentation of : 'Vendor-Specific': { 'Mikrotik-Host-IP': '192.168.88.252' },
+            socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err) {
+            // console.log('reply sending')
+                
+                if (err) {
 
-                                doing that will remove the need to specifiy which vendor library to use to find [ Mikrotik-Host-IP ] id code, 
-                                when encoding the message to be sent router that did request, 
-                    
-                    *//*
-
-
-                    if(raw_attribute[1].toString().indexOf(':') < 4){//return attribute thas has ':' closer to position 1, 
-
-                       // console.log(raw_attribute);
-                        attribute_container.push(raw_attribute);// included un decoded vendor library name, this way no need to define libary specific to vendor
-
-                    }    
-
-                 }
+                console.log('Error sending response to ', reply_info);
+                }
 
             });
 
-        }
-
-        */
-
-        if(radius_in_message.attributes['User-Password']){ //if vendor attributes has object data
-            attribute_container.push(['User-Password', radius_in_message.attributes['User-Password']]);
-        }
-        if( radius_in_message.attributes['Service-Type']){ //if vendor attributes has object data
-            attribute_container.push(['Service-Type', radius_in_message.attributes['Service-Type']]); 
-        } 
-        if(radius_in_message.attributes['NAS-Identifier']){ //if vendor attributes has object data
-            attribute_container.push(['NAS-Identifier', radius_in_message.attributes['NAS-Identifier']]);
-        }
-        if(radius_in_message.attributes['NAS-IP-Address']){ //if vendor attributes has object data
-            attribute_container.push(['NAS-IP-Address', radius_in_message.attributes['NAS-IP-Address']]);
-        }
-
-        // chap authentification password 
-        if(radius_in_message.attributes['CHAP-Password']){ //if vendor attributes has object data
-            attribute_container.push(['CHAP-Password', radius_in_message.attributes['CHAP-Password']]);
-        }
-
-        // console.log('code', reply_code);
-        // console.log('secret', radius_secret);
-        // console.log(attribute_container);
-
-
-        // ---------------------- authetification reply components
-
-        if(radius_in_message.identifier){ //if identifier provided // add to reply data
-            reply_contents.identifier = radius_in_message.identifier;
-        }
-        if(radius_in_message.authenticator){ //if authentificator provided // add to reply data
-            reply_contents.authenticator = radius_in_message.authenticator;
-        }
-
-      
-
-        //reply data
-        reply_contents.code = reply_code;
-        reply_contents.secret = radius_secret;
-        reply_contents.attributes = attribute_container;
+            
        
-        //console.log(reply_contents.attributes)
-
-        try{ //encode reply to radius formate
-            //console.log('reply message not encoded : ',reply_contents);
-            var reply = radius_module.encode(reply_contents);
         }
-        catch(err){ //if encoding error
-            
-            console.log('error attempting to encode, reply data : ', err);
-            return;
-         };
-
-
-        // ... send reply data
-
-        socket.send(reply, 0, reply.length, reply_info.port, reply_info.address, function(err) {
-           // console.log('reply sending')
-            
-            if (err) {
-
-              console.log('Error sending response to ', reply_info);
-            }
-
-        });
 
         return;
    
