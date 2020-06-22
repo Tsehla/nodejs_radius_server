@@ -279,19 +279,19 @@ mongo_db.connect(db_url, function(err, db_data){
             })
         }
 
-        //update cross server user variable
-        db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
+        // //update cross server user variable
+        // db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
 
-            if(err){
+        //     if(err){
 
-                console.log('first run "users" update error : ', err);
-                return;
-            }
+        //         console.log('first run "users" update error : ', err);
+        //         return;
+        //     }
 
-            users.push(data);
+        //     users.push(data);
 
-            console.log('first run "users" updated');
-        });
+        //     console.log('first run "users" updated');
+        // });
 
     });
 
@@ -332,8 +332,10 @@ mongo_db.connect(db_url, function(err, db_data){
                 return;
             }
 
-            login_in_account_limit_profile_groups.push(data);
-            console.log('first run "login_in_account_limit_profile_groups" updated');
+            if(data){//if not null
+                login_in_account_limit_profile_groups.push(data);
+                console.log('first run "login_in_account_limit_profile_groups" updated');
+            }
         
         });
 
@@ -380,8 +382,10 @@ mongo_db.connect(db_url, function(err, db_data){
                 return;
             }
 
-            login_in_account_limit_profile_attributes.push(data);
-            console.log('first run "login_in_account_limit_profile_attributes" updated');
+            if(data){//if not null
+                login_in_account_limit_profile_attributes.push(data);
+                console.log('first run "login_in_account_limit_profile_attributes" updated');
+            }
 
         });
 
@@ -440,8 +444,10 @@ mongo_db.connect(db_url, function(err, db_data){
                 return;
             }
 
-            time_limit_define.push(data);
-            console.log('first run "time_limit_define" updated');
+            if(data){//if not null
+                time_limit_define.push(data);
+                console.log('first run "time_limit_define" updated');
+            }
 
         });
 
@@ -481,9 +487,10 @@ mongo_db.connect(db_url, function(err, db_data){
                 console.log('first run "upload_limit_define" update error : ', err);
                 return;
             }
-
-            upload_limit_define.push(data);
-            console.log('first run "upload_limit_define" updated');
+            if(data){//if not null
+                upload_limit_define.push(data);
+                console.log('first run "upload_limit_define" updated');
+            }
         });
 
     });
@@ -523,9 +530,10 @@ mongo_db.connect(db_url, function(err, db_data){
                 console.log('first run "dupload_speed_limit_define" update error : ', err);
                 return;
             }
-
-            upload_speed_limit_define.push(data);
-            console.log('first run "dupload_speed_limit_define" updated');
+            if(data){//if not null
+                upload_speed_limit_define.push(data);
+                console.log('first run "dupload_speed_limit_define" updated');
+            }
         });
 
     });
@@ -565,9 +573,11 @@ mongo_db.connect(db_url, function(err, db_data){
                 console.log('first run "download_speed_limit_define" update error : ', err);
                 return;
             }
+            if(data){//if not null
 
-            download_speed_limit_define.push(data);
-            console.log('first run "download_speed_limit_define" updated');
+                download_speed_limit_define.push(data);
+                console.log('first run "download_speed_limit_define" updated');
+            }
         });
 
     });
@@ -608,9 +618,11 @@ mongo_db.connect(db_url, function(err, db_data){
                 console.log('first run "total_download_upload_limit_define" update error : ', err);
                 return;
             }
+            if(data){//if not null
 
-            total_download_upload_limit_define.push(data);
-            console.log('first run "total_download_upload_limit_define" updated');
+                total_download_upload_limit_define.push(data);
+                console.log('first run "total_download_upload_limit_define" updated');
+            }
 
         });
 
@@ -669,8 +681,10 @@ mongo_db.connect(db_url, function(err, db_data){
                 return;
             }
                 
-            nas_identifier.push(data);
-            console.log('first run "nas_identifier" updated');
+            if(data){//if not null
+                nas_identifier.push(data);
+                console.log('first run "nas_identifier" updated');
+            }
 
         });
    
@@ -2260,9 +2274,11 @@ app.get('/new_profiles_data', function(req, res){
                     console.log('in memory "login_in_account_limit_profile_attributes" update error : ', err);
                     return;
                 }
+                    if(data){//if not null
 
-                //add updated data
-                login_in_account_limit_profile_attributes.push(data);
+                        //add updated data
+                        login_in_account_limit_profile_attributes.push(data);
+                    }
                 
                 //console.log('in memory "login_in_account_limit_profile_attributes" updated');
 
@@ -2354,9 +2370,11 @@ app.get('/profile_group_save', function(req, res){
                         console.log('in memory "login_in_account_limit_profile_groups" update error : ', err);
                         return;
                     }
-    
-                    login_in_account_limit_profile_groups.push(data);//add updated data
-                    //console.log('in memory "login_in_account_limit_profile_groups" updated');
+                    if(data){//if not null
+
+                        login_in_account_limit_profile_groups.push(data);//add updated data
+                        //console.log('in memory "login_in_account_limit_profile_groups" updated');
+                    }
     
                 });
         
@@ -2408,17 +2426,18 @@ app.get('/user_accounts', function(req, res){
                 console.log('Error, cant find users on db');
                 return;
             }
-
-            stored_users_accounts.push({ //extract and store accounts details
-                db_account_id : data._id.toString(),
-                account_username : data.name,
-                account_type : data.type_of_account,
-                account_depleted : data.account_depleted,
-                account_active : data.active,
-                account_batch_group_name : data.batch_group_name,
-                account_creation_date : data.creation_date,
-                account_profile : data.profile_attribute_group,
-            });
+            if(data){//if not nul
+                stored_users_accounts.push({ //extract and store accounts details
+                    db_account_id : data._id.toString(),
+                    account_username : data.name,
+                    account_type : data.type_of_account,
+                    account_depleted : data.account_depleted,
+                    account_active : data.active,
+                    account_batch_group_name : data.batch_group_name,
+                    account_creation_date : data.creation_date,
+                    account_profile : data.profile_attribute_group,
+                });
+            }
 
 
         });
@@ -2632,7 +2651,7 @@ app.get('/create_user', function(req, res){// create new users
             new Promise (function(resolve, reject){
 
                 //get directory files names
-                fs.readdir(__dirname + '/world_list/', function (err, files) {
+                fs.readdir(__dirname + '/world_list/', function (err, files){
                     
                     
                     if(err){//give error response back
@@ -3017,7 +3036,7 @@ app.get('/create_user', function(req, res){// create new users
                     return;
                 }
             
-                //save new profile attribute to db
+                //save new users profile/s attribute to db
                 db_data.db('wifi_radius_db').collection('users').insertMany(new_user_list, function(err){
 
                     if(err){
@@ -3029,25 +3048,25 @@ app.get('/create_user', function(req, res){// create new users
                     //console.log('default "users" added to db : ',response);
                     console.log('new "users" added to db');
 
-                    //get users rom db and update
-                    users = [];//clear users variable old data
+                    // //get users rom db and update
+                    // users = [];//clear users variable old data
 
-                    db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
+                    // db_data.db('wifi_radius_db').collection('users').find().each(function(err, data){
         
-                        if(err){
+                    //     if(err){
         
-                            console.log('in memory "users" update error : ', err);
-                            return;
-                        }
+                    //         console.log('in memory "users" update error : ', err);
+                    //         return;
+                    //     }
         
-                        users.push(data);//add updated data
-                        //console.log('in memory "users" updated');
+                    //     users.push(data);//add updated data
+                    //     //console.log('in memory "users" updated');
 
 
-                        //send account created message
-                        //res.jsonp('account created.');
+                    //     //send account created message
+                    //     //res.jsonp('account created.');
         
-                    });
+                    // });
 
                     res.jsonp('account created.');
             
