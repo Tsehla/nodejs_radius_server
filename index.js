@@ -1783,19 +1783,10 @@ socket.on('message', (msg, reply_info) => {
         }
         */
 
-        //get user account and update
-        for(var a = 0; a <= users.length - 1; a++){
 
             
-            if(users[a]){//if not null
+            if(update_data){//if not null
                 
-
-                //find account matching user name //if account is logged in
-                if(users[a].name == update_data['account_username']){
-
-               
-
-                    
 
                     //if update reason [ start ], (account accounting start notification )
                     if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){
@@ -1809,23 +1800,6 @@ socket.on('message', (msg, reply_info) => {
 
 
 
-                        // ------- update profile usage data ------
-                        
-                        //-- save time
-                        var profile_used_time = parseInt(users[a].profile_used_time) + parseInt(update_data['usage_session_time']);
-
-                        //-- save upload
-                        //handle uploads / download gigaword / 64bit number / + 4GB 
-                        var profile_used_upload = parseInt(users[a].profile_used_upload) + (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']));
-
-                        //-- save download
-                        //handle uploads / download gigaword / 64bit number / + 4GB
-                        var profile_used_download = parseInt(users[a].profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
-
-                        //-- save total data usage
-                        var profile_used_data = parseInt(users[a].profile_used_data) + profile_used_upload + profile_used_download;
-
-               
                         // ---- save new profiles -----                        
                         mongo_db.connect(db_url, function(err, db_data){
 
@@ -1848,17 +1822,30 @@ socket.on('message', (msg, reply_info) => {
                                };
                 
                                if(results){//if user account found
-                            
 
-                                console.log('-------------------------------------------------------------');
-                                console.log('acc name : ', results.name);
-                                console.log('upload bytes : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])))
-                                console.log('download bytes : ', (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])));
-                                console.log('total usage : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])))
-                                console.log('session time : ',parseInt(update_data['usage_session_time']))
-
+                                    console.log('-------------------------------------------------------------');
+                                    console.log('acc name : ', results.name);
+                                    console.log('upload bytes : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])))
+                                    console.log('download bytes : ', (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])));
+                                    console.log('total usage : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])))
+                                    console.log('session time : ',parseInt(update_data['usage_session_time']))
 
 
+                                    // ------- update profile usage data ------
+                                    
+                                    //-- save time
+                                    var profile_used_time = parseInt(users[a].profile_used_time) + parseInt(update_data['usage_session_time']);
+
+                                    //-- save upload
+                                    //handle uploads / download gigaword / 64bit number / + 4GB 
+                                    var profile_used_upload = parseInt(users[a].profile_used_upload) + (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']));
+
+                                    //-- save download
+                                    //handle uploads / download gigaword / 64bit number / + 4GB
+                                    var profile_used_download = parseInt(users[a].profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
+
+                                    //-- save total data usage
+                                    var profile_used_data = parseInt(users[a].profile_used_data) + profile_used_upload + profile_used_download;
 
 
 
@@ -1876,7 +1863,7 @@ socket.on('message', (msg, reply_info) => {
                                     //save new profile attribute to db
                                     db_data.db('wifi_radius_db').collection('users').update(
                                         {
-                                        '_id' : user_db_account_id,
+                                        'name' : update_data['account_username'],
                                             'account_logged_in' : true
                                         },{
 
@@ -1914,10 +1901,10 @@ socket.on('message', (msg, reply_info) => {
 
                     }
                     
-                }
+                
 
             }
-        }
+        
 
     }
 
