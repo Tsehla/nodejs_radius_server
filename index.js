@@ -2406,7 +2406,7 @@ app.get('/saved_profiles', function(req, res){
 app.get('/user_accounts', function(req, res){
 
     
-    new promise(function(resolve, reject){//do
+    new Promise(function(resolve, reject){//do
 
         var stored_users_accounts = [];//strores prepared user accounts
             
@@ -2423,44 +2423,60 @@ app.get('/user_accounts', function(req, res){
 
 
             db_data.db('wifi_radius_db').collection('users').find()
-            .each(function(error, data){
+            .toArray(function(error, users_list){
 
                 if(error){
                     res.jsonp('error');
                     console.log('Error, cant find users on db');
                     return;
                 }
-                if(data){//if not nul
-                    stored_users_accounts.push({ //extract and store accounts details
-                        db_account_id : data._id.toString(),
-                        account_username : data.name,
-                        account_type : data.type_of_account,
-                        account_depleted : data.account_depleted,
-                        account_active : data.active,
-                        account_batch_group_name : data.batch_group_name,
-                        account_creation_date : data.creation_date,
-                        account_profile : data.profile_attribute_group,
-                    });
-                }
 
+                users_list.forEach(function(data, index){
+                    
+
+                    if(data){//if not nul
+                        stored_users_accounts.push({ //extract and store accounts details
+                            db_account_id : data._id.toString(),
+                            account_username : data.name,
+                            account_type : data.type_of_account,
+                            account_depleted : data.account_depleted,
+                            account_active : data.active,
+                            account_batch_group_name : data.batch_group_name,
+                            account_creation_date : data.creation_date,
+                            account_profile : data.profile_attribute_group,
+                        });
+                    }
+                    
+                    if(index == users_list.length - 1){//if all users are processed by forEach
+                       
+                      
+                        resolve(stored_users_accounts);//give users array
+
+                    }
+
+                })
+ 
+                db_data.close; //close db
 
             });
 
-            resolve(stored_users_accounts);//give users array
+            
         
-            db_data.close; //close db
+           
 
         });
 
 
     }).then(function(stored_users_accounts){//then
+        //console.log('sucess : ', stored_users_accounts)
 
         //give accounts details as response
         res.jsonp(stored_users_accounts);
 
     }).catch(function(data){//if error
 
-        res.jsonp('error'); 
+        console.log('err : ', data)
+        res.jsonp('error'); //give error response
 
     })
    
