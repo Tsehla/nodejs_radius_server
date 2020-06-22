@@ -2407,8 +2407,6 @@ app.get('/user_accounts', function(req, res){
 
     
     new Promise(function(resolve, reject){//do
-
-        var stored_users_accounts = [];//strores prepared user accounts
             
         //connect to db
         mongo_db.connect(db_url, function(err, db_data){
@@ -2423,7 +2421,7 @@ app.get('/user_accounts', function(req, res){
 
 
             db_data.db('wifi_radius_db').collection('users').find()
-            .toArray(function(error, users_list){
+            .toArray(function(error,data){
 
                 if(error){
                     res.jsonp('error');
@@ -2431,48 +2429,51 @@ app.get('/user_accounts', function(req, res){
                     return;
                 }
 
-                users_list.forEach(function(data, index){
-                    
+                if(data.length == 0){ //if array empty
+                    resolve([]);//give empty users array as response 
+                }
 
-                    if(data){//if not nul
-                        stored_users_accounts.push({ //extract and store accounts details
-                            db_account_id : data._id.toString(),
-                            account_username : data.name,
-                            account_type : data.type_of_account,
-                            account_depleted : data.account_depleted,
-                            account_active : data.active,
-                            account_batch_group_name : data.batch_group_name,
-                            account_creation_date : data.creation_date,
-                            account_profile : data.profile_attribute_group,
-                        });
-                    }
-                    
-                    if(index == users_list.length - 1){//if all users are processed by forEach
-                       
-                      
-                        resolve(stored_users_accounts);//give users array
-                        db_data.close; //close db
-
-                    }
-
-                })
- 
+                if(data.length > 0){ //if array not empty
+                    resolve(data);//give users array as response
+                }
                 
-
+                db_data.close; //close db connection
             });
 
             
-        
-           
 
         });
 
 
-    }).then(function(stored_users_accounts){//then
-        //console.log('sucess : ', stored_users_accounts)
+    }).then(function(users_list){//then
+        var stored_users_accounts = [];//stored prepared user account to send to front
+       
+        users_list.forEach(function(data, index){
+                    
 
-        //give accounts details as response
-        res.jsonp(stored_users_accounts);
+            if(data){//if not null
+
+                stored_users_accounts.push({ //extract and store accounts details
+                    db_account_id : data._id.toString(),
+                    account_username : data.name,
+                    account_type : data.type_of_account,
+                    account_depleted : data.account_depleted,
+                    account_active : data.active,
+                    account_batch_group_name : data.batch_group_name,
+                    account_creation_date : data.creation_date,
+                    account_profile : data.profile_attribute_group,
+                });
+            }
+            
+            if(index == users_list.length - 1){//if all users are processed by forEach
+
+                //give accounts details as response
+                res.jsonp(stored_users_accounts); 
+
+            }
+
+        })
+
 
     }).catch(function(data){//if error
 
