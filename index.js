@@ -2405,50 +2405,65 @@ app.get('/saved_profiles', function(req, res){
 //----------------------------------
 app.get('/user_accounts', function(req, res){
 
-    var stored_users_accounts = [];//strores prepared user accounts
+    
+    new promise(function(resolve, reject){//do
 
-    //connect to db
-    mongo_db.connect(db_url, function(err, db_data){ 
+        var stored_users_accounts = [];//strores prepared user accounts
+            
+        //connect to db
+        mongo_db.connect(db_url, function(err, db_data){
 
-        if(err){
+            if(err){
 
-            console.log('db connection error : ', err);
+                console.log('db connection error : ', err);
 
-            reply_code = 'Access-Reject';//give reject response reply to router
-            return;
-        }
-
-
-        db_data.db('wifi_radius_db').collection('users').find()
-        .each(function(error, data){
-
-            if(error){
-                res.jsonp('error');
-                console.log('Error, cant find users on db');
+                reject('error'); //give error
                 return;
             }
-            if(data){//if not nul
-                stored_users_accounts.push({ //extract and store accounts details
-                    db_account_id : data._id.toString(),
-                    account_username : data.name,
-                    account_type : data.type_of_account,
-                    account_depleted : data.account_depleted,
-                    account_active : data.active,
-                    account_batch_group_name : data.batch_group_name,
-                    account_creation_date : data.creation_date,
-                    account_profile : data.profile_attribute_group,
-                });
-            }
 
+
+            db_data.db('wifi_radius_db').collection('users').find()
+            .each(function(error, data){
+
+                if(error){
+                    res.jsonp('error');
+                    console.log('Error, cant find users on db');
+                    return;
+                }
+                if(data){//if not nul
+                    stored_users_accounts.push({ //extract and store accounts details
+                        db_account_id : data._id.toString(),
+                        account_username : data.name,
+                        account_type : data.type_of_account,
+                        account_depleted : data.account_depleted,
+                        account_active : data.active,
+                        account_batch_group_name : data.batch_group_name,
+                        account_creation_date : data.creation_date,
+                        account_profile : data.profile_attribute_group,
+                    });
+                }
+
+
+            });
+
+            resolve(stored_users_accounts);//give users array
+        
+            db_data.close; //close db
 
         });
+
+
+    }).then(function(stored_users_accounts){//then
 
         //give accounts details as response
         res.jsonp(stored_users_accounts);
 
-        db_data.close; //close db
+    }).catch(function(data){//if error
 
-    });
+        res.jsonp('error'); 
+
+    })
+   
 
 
     
