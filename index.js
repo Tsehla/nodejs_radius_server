@@ -1834,18 +1834,18 @@ socket.on('message', (msg, reply_info) => {
                                     // ------- update profile usage data ------
                                     
                                     //-- save time
-                                    var profile_used_time = parseInt(users[a].profile_used_time) + parseInt(update_data['usage_session_time']);
+                                    var profile_used_time = parseInt(results.profile_used_time) + parseInt(update_data['usage_session_time']);
 
                                     //-- save upload
                                     //handle uploads / download gigaword / 64bit number / + 4GB 
-                                    var profile_used_upload = parseInt(users[a].profile_used_upload) + (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']));
+                                    var profile_used_upload = parseInt(results.profile_used_upload) + (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']));
 
                                     //-- save download
                                     //handle uploads / download gigaword / 64bit number / + 4GB
-                                    var profile_used_download = parseInt(users[a].profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
+                                    var profile_used_download = parseInt(results.profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
 
                                     //-- save total data usage
-                                    var profile_used_data = parseInt(users[a].profile_used_data) + profile_used_upload + profile_used_download;
+                                    var profile_used_data = parseInt(results.profile_used_data) + profile_used_upload + profile_used_download;
 
 
 
@@ -1863,7 +1863,7 @@ socket.on('message', (msg, reply_info) => {
                                     //save new profile attribute to db
                                     db_data.db('wifi_radius_db').collection('users').update(
                                         {
-                                        'name' : update_data['account_username'],
+                                        '_id' : user_db_account_id,
                                             'account_logged_in' : true
                                         },{
 
