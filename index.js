@@ -1793,14 +1793,9 @@ socket.on('message', (msg, reply_info) => {
                 //find account matching user name //if account is logged in
                 if(users[a].name == update_data['account_username']){
 
-                    //console.log(users[a]);
+               
 
-                    console.log('-------------------------------------------------------------');
-                    console.log('acc name : ', users[a].name);
-                    console.log('upload bytes : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])))
-                    console.log('download bytes : ', (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])));
-                    console.log('total usage : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])))
-                    console.log('session time : ',parseInt(update_data['usage_session_time']))
+                    
 
                     //if update reason [ start ], (account accounting start notification )
                     if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){
@@ -1854,6 +1849,25 @@ socket.on('message', (msg, reply_info) => {
                 
                                if(results){//if user account found
                             
+
+                                console.log('-------------------------------------------------------------');
+                                console.log('acc name : ', results.name);
+                                console.log('upload bytes : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])))
+                                console.log('download bytes : ', (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])));
+                                console.log('total usage : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use'])))
+                                console.log('session time : ',parseInt(update_data['usage_session_time']))
+
+
+
+
+
+
+
+
+
+
+
+
                                     //  ---- save result on db  ---
 
                                     //set database user account id
