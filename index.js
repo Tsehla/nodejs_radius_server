@@ -1135,7 +1135,7 @@ socket.on('message', (msg, reply_info) => {
 
             // ++++++++ set/save account changes to profile ++++++
 
-            if( reply_code == 'Access-Reject'){//if accont login is accepted
+            if( reply_code != 'Access-Reject'){//if accont login is accepted
 
             
                 //set in memory user logged in to true
