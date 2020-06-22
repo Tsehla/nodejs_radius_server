@@ -2423,6 +2423,7 @@ app.get('/user_accounts', function(req, res){
         .each(function(error, data){
 
             if(error){
+                res.jsonp('error');
                 console.log('Error, cant find users on db');
                 return;
             }
@@ -2442,13 +2443,15 @@ app.get('/user_accounts', function(req, res){
 
         });
 
+        //give accounts details as response
+        res.jsonp(stored_users_accounts);
+
         db_data.close; //close db
 
     });
 
 
-    //give accounts details as response
-    res.jsonp(stored_users_accounts);
+    
 
 });
 
