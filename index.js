@@ -1820,9 +1820,10 @@ socket.on('message', (msg, reply_info) => {
                                if(!results){//if result == null or undefined or falsey
                                     console.log('Error logged out user not found on db ');
                                };
-                
-                               if(results){//if user account found
 
+
+                
+                               if(results && results.account_logged_in == true){//if user account found and is logged in
                                     console.log('-------------------------------------------------------------');
                                     console.log('acc name : ', results.name);
                                     console.log('upload bytes : ', (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use'])))
