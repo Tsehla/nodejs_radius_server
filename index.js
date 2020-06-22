@@ -2451,12 +2451,13 @@ app.get('/user_accounts', function(req, res){
                        
                       
                         resolve(stored_users_accounts);//give users array
+                        db_data.close; //close db
 
                     }
 
                 })
  
-                db_data.close; //close db
+                
 
             });
 
