@@ -1041,7 +1041,7 @@ socket.on('message', (msg, reply_info) => {
                                                         var remaining_data = (to_bytes/1048576) - (parseInt(authenticated_user.profile_used_data)/1048576); 
 
                                                         //convert to bytes
-                                                        remaining_data =  Maths.round(remaining_data *  1048576);
+                                                        remaining_data =  Math.round(remaining_data *  1048576);
 
 
                                                         //if remaining is creater than + 3GB in bytes, turn to words to gigs
@@ -2452,7 +2452,6 @@ app.get('/user_accounts', function(req, res){
                     
 
             if(data){//if not null
-                console.log(data.name)
                 stored_users_accounts.push({ //extract and store accounts details
                     db_account_id : data._id.toString(),
                     account_username : data.name,
