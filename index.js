@@ -2452,7 +2452,7 @@ app.get('/user_accounts', function(req, res){
                     
 
             if(data){//if not null
-
+                console.log(data.name)
                 stored_users_accounts.push({ //extract and store accounts details
                     db_account_id : data._id.toString(),
                     account_username : data.name,
