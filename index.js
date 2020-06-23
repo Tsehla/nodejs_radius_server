@@ -305,11 +305,35 @@ mongo_db.connect(db_url, function(err, db_data){
         if(data.length == 0){ //if empty
 
             //profiles group / allow grouping of attributes 
-            var default_login_in_account_limit_profile_groups = [ '4.9 gig total data',[ '4.9Gb Max data' ] ];
+            var default_login_in_account_limit_profile_groups = [
+
+                {
+                    data : [ '4.9 gig total data',[ '4.9Gb Max data' ] ]
+                },
+                {
+                    data : [ "200Mb max data", [ "200mb" ] ]
+                },
+                {
+                    data : [ "100Mb max data", [ "100mb" ] ] 
+                },
+                {
+                    data : [ "500Mb max data", [ "500mb" ] ]
+                },
+                {
+                    data : [ "3Gb Total data", [ "3Gb max data" ] ]
+                },
+                {
+                    data : [ "300mb total data", [ "300mb max data" ] ]
+                },
+                {
+                    data : [ "unlimited", [ "no limit" ] ]
+                },
+
+            ]
 
 
             //add default login_in_account_limit_profile_groups
-            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').insertOne({data : default_login_in_account_limit_profile_groups}, function(err){
+            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').insertMany(default_login_in_account_limit_profile_groups, function(err){
 
                 if(err){
                     console.log('db error adding " login_in_account_limit_profile_groups " : ',err);
@@ -350,16 +374,39 @@ mongo_db.connect(db_url, function(err, db_data){
         if(data.length == 0){ //if empty
 
         //profiles group / allow grouping of attributes 
-        var default_login_in_account_limit_profile_attributes = ['4.9Gb Max data',
-                [
-                    ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
-                    //['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]] 
-                ]
+        var default_login_in_account_limit_profile_attributes = [
+        
+               {
+                   data: ['4.9Gb Max data',
+                        [
+                            ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
+                            //['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]] 
+                        ]
+                    ]
+                },
+                {
+                    data : [ "200mb", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "220000000" ] ] ] ] ]
+                },
+                {
+                    data : [ "100mb", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "120000000" ] ] ] ] ]
+                },
+                {
+                    data : [ "500mb", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "520000000" ] ] ] ] ]
+                },
+                {
+                    data : [ "3Gb max data", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "3221225472" ] ] ] ] ]
+                },
+                {
+                    data : [ "300mb max data", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "320000000" ] ] ] ] ]
+                },
+                {
+                    data : [ "no limit", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "" ] ] ] ] ]
+                }
+                
+
             ];
-
-
             //add default login_in_account_limit_profile_attributes
-            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').insertOne({data : default_login_in_account_limit_profile_attributes}, function(err){
+            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').insertMany(default_login_in_account_limit_profile_attributes, function(err){
 
                 if(err){
                     console.log('db error adding " login_in_account_limit_profile_attributes " : ',err);
@@ -981,52 +1028,58 @@ socket.on('message', (msg, reply_info) => {
                                             }
                                             */
 
-                                            //check if data is in gigabtes
-                                            if(typeof to_bytes == 'string' && to_bytes.search('gb') > -1 || to_bytes.search('gib') > -1 || to_bytes.search('gigabyte') > -1 ){
+                                            //if to_bytes is a string
+                                            if(typeof to_bytes == 'string'){
 
-                                                // covert GB to bytes
+                                                //check if data is in gigabtes
+                                                if( to_bytes.search('gb') > -1 || to_bytes.search('gib') > -1 || to_bytes.search('gigabyte') > -1 ){
 
-                                                //--base 10
-                                                //to_bytes = parseInt(to_bytes) * 1000000000;
+                                                    // covert GB to bytes
 
-                                                //--base 2 / binary
-                                                to_bytes = parseInt(to_bytes) * 1073741824;
-                                                    
+                                                    //--base 10
+                                                    //to_bytes = parseInt(to_bytes) * 1000000000;
 
+                                                    //--base 2 / binary
+                                                    to_bytes = parseInt(to_bytes) * 1073741824;
+                                                        
+
+
+                                                }
+                                                
+                                                //check if value is in megabyte
+                                                if(typeof to_bytes == 'string'&& to_bytes.search('mb') > -1  || to_bytes.search('mib') > -1  || to_bytes.search('megabyte') > -1 ){
+
+                                                    //covert MB to bytes
+
+                                                    //--base 10
+                                                    //to_bytes = parseInt(to_bytes) * 1000000;
+
+                                                    //--base 2 / binary
+                                                    to_bytes = parseInt(to_bytes) * 1048576;
+
+
+                                                }
+
+                                                //check if value is in kilobyte
+                                                if(typeof to_bytes == 'string'&& to_bytes.search('kb') > -1  || to_bytes.search('kib') > -1  || to_bytes.search('kilobyte') > -1 ){
+
+                                                    //covert KB to bytes
+
+                                                    //--base 10
+                                                    //to_bytes = parseInt(to_bytes) * 1000;
+
+                                                    //--base 2 / binary
+                                                    to_bytes = parseInt(to_bytes) *1024;
+
+                                                }
+
+
+
+                                                //if its a string that has no storage symbol .ie bytes/kb/mb/gb
+                                                //if data come in as a plain number (assume is in bytes ) and turn to type number
+                                                to_bytes = parseInt(to_bytes);
 
                                             }
-                                            
-                                            //check if value is in megabyte
-                                            if(typeof to_bytes == 'string'&& to_bytes.search('mb') > -1  || to_bytes.search('mib') > -1  || to_bytes.search('megabyte') > -1 ){
-
-                                                //covert MB to bytes
-
-                                                //--base 10
-                                                //to_bytes = parseInt(to_bytes) * 1000000;
-
-                                                //--base 2 / binary
-                                                to_bytes = parseInt(to_bytes) * 1048576;
-
-
-                                            }
-
-                                            //check if value is in kilobyte
-                                            if(typeof to_bytes == 'string'&& to_bytes.search('kb') > -1  || to_bytes.search('kib') > -1  || to_bytes.search('kilobyte') > -1 ){
-
-                                                //covert KB to bytes
-
-                                                //--base 10
-                                                //to_bytes = parseInt(to_bytes) * 1000;
-
-                                                //--base 2 / binary
-                                                to_bytes = parseInt(to_bytes) *1024;
-
-                                            }
-
-
-
-                                            //if data come in as a plain number (assume is in bytes ) and turn to type number
-                                            to_bytes = parseInt(to_bytes);
                                             
 
                                             //check if usage data if less available data //this will allow profile attributes data value changes that affect all accounts data limit changes without havng to update accounts 
