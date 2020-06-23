@@ -1025,7 +1025,7 @@ socket.on('message', (msg, reply_info) => {
 
 
 
-                                            //if data come in as a byte in string format turn to number
+                                            //if data come in as a plain number (assume is in bytes ) and turn to type number
                                             to_bytes = parseInt(to_bytes);
                                             
 
@@ -1046,7 +1046,7 @@ socket.on('message', (msg, reply_info) => {
 
                                                         //if remaining is creater than + 3GB in bytes, turn to words to gigs
                                                         //nodejs radius cant encode values creater than 32bit limit/3+gig
-                                                        if((remaining_data/1073741824) > (3294967295/1073741824)){ //if remain data in gigs, is greather 3gig
+                                                        if((remaining_data/1048576) > (3294967295/1024)){ //if incoming data in bytes converted to mb is creater than +3gigs converted to megabytes
 
                                                             // https://forum.mikrotik.com/viewtopic.php?t=9902
                                                             // remaining_data is over 3gigabyte, dictionary property
@@ -1839,25 +1839,44 @@ socket.on('message', (msg, reply_info) => {
 
                                     //-- get upload 
                                     //handle uploads / download gigaword / 64bit number / + 4GB 
-                                    var profile_used_upload = parseInt(results.profile_used_upload) + ( parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']) );
+                                    var profile_used_upload = parseInt(results.profile_used_upload) + ( parseInt(update_data['account_upload_use_gig_words']) > 0? (parseInt(update_data['account_upload_use_gig_words'])*1024): (parseInt(update_data['account_upload_use'])/1048576) );
 
                                     //-- get downloads 
                                     // ++handle uploads / download gigaword / 64bit number / + 4GB
-                                    var profile_used_download = parseInt(results.profile_used_download)+ ( parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']) );
+                                    var profile_used_download = parseInt(results.profile_used_download)+ ( parseInt(update_data['account_download_use_gig_words']) > 0? (parseInt(update_data['account_download_use_gig_words'])*1024): (parseInt(update_data['account_download_use'])/1048576) );
 
 
                                     //-- calculate session accumulative total usage
-                                    var profile_used_data = (parseInt(results.profile_used_data)/1048576);
-                                    profile_used_data = profile_used_data + (profile_used_upload/1048576); 
-                                    profile_used_data = profile_used_data + (profile_used_download/1048576);
-                                    
+                                    var profile_used_data = (parseInt(results.profile_used_data)/1048576) + ( parseInt(update_data['account_upload_use_gig_words']) > 0?(parseInt(update_data['account_upload_use_gig_words'])*1024):(parseInt(update_data['account_upload_use'])/1048576) )  + ( parseInt(update_data['account_download_use_gig_words']) > 0?(parseInt(update_data['account_download_use_gig_words'])*1024):(parseInt(update_data['account_download_use'])/1048576) );
+
                                     console.log('prev total data in bytes : ',results.profile_used_data);
                                     
+
+
+                                    //STILL TO HANDLE CONDITIONALLY OVER 3 GIG TO BYTE CONVERSION FOR BOTH OR ANY UPLOADS OR DOWNLOADS
+                                    //PLUS FOR ALL THREE ON TOTAL DATA USAGE
 
 
                                     //convert back :
                                     //time to seconds
                                     profile_used_time = profile_used_time * 60;
+                                    
+
+                                    //total uploads to bytes
+                                    profile_used_upload = profile_used_upload * 1048576;
+                                    //handle more than three gig upload data
+                                    if( parseInt(update_data['account_upload_use_gig_words']) > 0 ){
+                                        profile_used_upload = profile_used_upload / 1024;
+                                    }
+                                
+
+                                    //total downloads to bytes
+                                    profile_used_download = profile_used_download * 1048576;
+                                    //handle more than three gig download data
+                                    if(parseInt(update_data['account_download_use_gig_words']) ){
+                                        profile_used_download = profile_used_download / 1024;
+                                    }
+
 
                                     //total data usage to bytes
                                     profile_used_data = profile_used_data * 1048576;
@@ -1887,6 +1906,7 @@ socket.on('message', (msg, reply_info) => {
                                                 profile_used_data : profile_used_data,
                                                 profile_used_upload : profile_used_upload,
                                                 profile_used_download : profile_used_download,
+
                                                 account_logged_in : false,
                                             }
                                         },
