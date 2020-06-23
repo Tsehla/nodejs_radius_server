@@ -582,6 +582,8 @@ function get_user_accounts(){
 
             //create html elements for users and vouchers
             data.forEach(function(data){
+                console.log( '1 : ',(parseInt(data.account_upload_download_total_usage)/1073741824) )
+                console.log('2 :', (parseInt(data.account_upload_download_total_usage)))
 
                 if(data.account_type == 'normal'){//if data belong to normal user account
 
