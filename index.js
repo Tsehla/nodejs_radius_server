@@ -1847,7 +1847,10 @@ socket.on('message', (msg, reply_info) => {
 
 
                                     //-- calculate session accumulative total usage
-                                    var profile_used_data = (parseInt(results.profile_used_data)/1048576) + (profile_used_upload/1048576)  + (profile_used_download/1048576);
+                                    var profile_used_data = (parseInt(results.profile_used_data)/1048576);
+                                    profile_used_data = profile_used_data + (profile_used_upload/1048576); 
+                                    profile_used_data = profile_used_data + (profile_used_download/1048576);
+                                    
                                     console.log('prev total data in bytes : ',results.profile_used_data);
                                     
 
@@ -1881,9 +1884,9 @@ socket.on('message', (msg, reply_info) => {
 
                                             $set:{   
                                                 profile_used_time : profile_used_time,
+                                                profile_used_data : profile_used_data,
                                                 profile_used_upload : profile_used_upload,
                                                 profile_used_download : profile_used_download,
-                                                profile_used_data : profile_used_data,
                                                 account_logged_in : false,
                                             }
                                         },
