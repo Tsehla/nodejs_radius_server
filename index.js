@@ -1959,7 +1959,7 @@ socket.on('message', (msg, reply_info) => {
                                     profile_used_upload = profile_used_upload * 1048576;
                                     //handle more than three gig upload data
                                     if( parseInt(update_data['account_upload_use_gig_words']) > 0 ){
-                                        profile_used_upload = profile_used_upload / 1024;
+                                        profile_used_upload = profile_used_upload / 1073741824;
                                     }
                                 
 
@@ -1967,14 +1967,14 @@ socket.on('message', (msg, reply_info) => {
                                     profile_used_download = profile_used_download * 1048576;
                                     //handle more than three gig download data
                                     if(parseInt(update_data['account_download_use_gig_words']) ){
-                                        profile_used_download = profile_used_download / 1024;
+                                        profile_used_download = profile_used_download / 1073741824;
                                     }
 
 
                                     //total data usage to bytes
                                     profile_used_data = profile_used_data * 1048576;
 
-                                    console.log('current total data in bytes : ',profile_used_data);
+                                    //console.log('current total data in bytes : ',profile_used_data);
 
 
 
@@ -2590,7 +2590,7 @@ app.get('/user_accounts', function(req, res){
                     account_batch_group_name : data.batch_group_name,
                     account_creation_date : data.creation_date,
                     account_profile : data.profile_attribute_group,
-                    account_upload_download_total_usage : data.profile_used_download,
+                    account_upload_download_total_usage : data.profile_used_data,
                     account_time_total_usage : data.profile_used_time,
                 });
             }
