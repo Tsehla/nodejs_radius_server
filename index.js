@@ -1069,6 +1069,7 @@ socket.on('message', (msg, reply_info) => {
 
                                                 //give response reject
                                                 authentification_request_rejected == true;
+                                                console.log('Error, data used up for account username : ',authenticated_user,', connection rejected.')
 
                                                 //deny account authentification request
                                                 reply_code = 'Access-Reject';//give accept response
