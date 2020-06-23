@@ -602,6 +602,7 @@ function get_user_accounts(){
                     <tr onclick="alert('Username : ${data.account_username}, View, Edit/Delete menu coming later.')">
                         <th>${data.account_username}</th>
                         <th>${data.account_profile}</th>
+                        <th>${(Parseint(data.account_upload_download_total_usage).length <= 3 ? (Parseint(data.account_upload_download_total_usage).toFixed(2) + ' B'): Parseint(data.account_upload_download_total_usage).length <= 5 ? ((Parseint(data.account_upload_download_total_usage) * 1024 ).toFixed(2) + ' Kb'): Parseint(data.account_upload_download_total_usage).length <= 9 ?  (Parseint(data.account_upload_download_total_usage) * 1048576 ).toFixed(2) + ' Mb' : Parseint(data.account_upload_download_total_usage).length > 9 ? (Parseint(data.account_upload_download_total_usage) * 1073741824 ).toFixed(2) + ' Gb' : 'n/a' )}</th>
                         <th>${data.account_batch_group_name}</th>
                         <th>${week_day[data.account_creation_date.day_of_week] +' '+ data.account_creation_date.day_of_month +'/'+ data.account_creation_date.month +'/'+ data.account_creation_date.year }</th>
                         <th>${data.account_active}</th>
@@ -629,6 +630,8 @@ function get_user_accounts(){
                         <tr>
                             <th>User Name</th>
                             <th>Profile</th>
+                            <th>Download + upload</th>
+                            <!-- <th>Total time</th> --><!-- show on popup menu for account -->
                             <th>Group name</th>
                             <th>Creation date</th>
                             <th>Activated</th>
@@ -644,6 +647,8 @@ function get_user_accounts(){
                         <tr>
                             <th>User Name</th>
                             <th>Profile</th>
+                            <th>Download + upload</th>
+                            <!-- <th>Total time</th> --><!-- show on popup menu for account -->
                             <th>Group name</th>
                             <th>Creation date</th>
                             <th>Activated</th>

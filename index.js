@@ -1069,7 +1069,7 @@ socket.on('message', (msg, reply_info) => {
                                                     //to_bytes = parseInt(to_bytes) * 1000;
 
                                                     //--base 2 / binary
-                                                    to_bytes = parseInt(to_bytes) *1024;
+                                                    to_bytes = parseInt(to_bytes) * 1024;
 
                                                 }
 
@@ -1129,7 +1129,7 @@ socket.on('message', (msg, reply_info) => {
 
                                                 //set account depleted true on db if not yet updated
                                                 if(authenticated_user.account_depleted == false ){
-                                                    
+
                                                     var user_db_account_id = new ObjectId(authenticated_user._id);//set account id
 
                                                     //connect to db
@@ -2590,6 +2590,8 @@ app.get('/user_accounts', function(req, res){
                     account_batch_group_name : data.batch_group_name,
                     account_creation_date : data.creation_date,
                     account_profile : data.profile_attribute_group,
+                    account_upload_download_total_usage : data.profile_used_download,
+                    account_time_total_usage : data.profile_used_time,
                 });
             }
             
