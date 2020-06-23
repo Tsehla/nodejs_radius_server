@@ -982,7 +982,7 @@ socket.on('message', (msg, reply_info) => {
                                             */
 
                                             //check if data is in gigabtes
-                                            if( to_bytes.search('gb') > -1 || to_bytes.search('gib') > -1 || to_bytes.search('gigabyte') > -1 ){
+                                            if(typeof to_bytes == 'string' && to_bytes.search('gb') > -1 || to_bytes.search('gib') > -1 || to_bytes.search('gigabyte') > -1 ){
 
                                                 // covert GB to bytes
 
@@ -997,7 +997,7 @@ socket.on('message', (msg, reply_info) => {
                                             }
                                             
                                             //check if value is in megabyte
-                                            if(to_bytes.search('mb') > -1  || to_bytes.search('mib') > -1  || to_bytes.search('megabyte') > -1 ){
+                                            if(typeof to_bytes == 'string'&& to_bytes.search('mb') > -1  || to_bytes.search('mib') > -1  || to_bytes.search('megabyte') > -1 ){
 
                                                 //covert MB to bytes
 
@@ -1011,7 +1011,7 @@ socket.on('message', (msg, reply_info) => {
                                             }
 
                                             //check if value is in kilobyte
-                                            if(to_bytes.search('kb') > -1  || to_bytes.search('kib') > -1  || to_bytes.search('kilobyte') > -1 ){
+                                            if(typeof to_bytes == 'string'&& to_bytes.search('kb') > -1  || to_bytes.search('kib') > -1  || to_bytes.search('kilobyte') > -1 ){
 
                                                 //covert KB to bytes
 
