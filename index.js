@@ -1117,7 +1117,7 @@ socket.on('message', (msg, reply_info) => {
 
                                             }
 
-                                            //if usage is higher than available limit
+                                            //if usage is higher than available limit when trying to login
                                             if(authenticated_user.profile_used_data >= to_bytes ){
 
                                                 //give response reject
@@ -1127,6 +1127,45 @@ socket.on('message', (msg, reply_info) => {
                                                 //deny account authentification request
                                                 reply_code = 'Access-Reject';//give accept response
 
+                                                //set account depleted true on db if not yet updated
+                                                if(authenticated_user.account_depleted == false ){
+                                                    
+                                                    var user_db_account_id = new ObjectId(authenticated_user._id);//set account id
+
+                                                    //connect to db
+                                                    mongo_db.connect(db_url, function(err, db_data){
+
+                                                        if(err){
+
+                                                            console.log('db connection error : ', err);
+                                                            return;
+                                                        }
+                                                        
+                                                        db_data.db('wifi_radius_db').collection('users').update(
+                                                            {
+                                                                '_id' : user_db_account_id
+                                                            },{
+
+                                                                $set:{   
+                                                                    account_depleted : true
+                                                                }
+                                                            },
+                                                        function(err){
+
+
+                                                            if(err){
+                                                                console.log('error updating "account depleted" to true, on user authentication attempt and saving to db: ',err);
+                                                                    
+
+                                                                return;
+                                                            }
+
+
+                                                            db_data.close; //close db
+                                                        });
+
+                                                    });  
+                                                }
                                             }
 
                                         }
