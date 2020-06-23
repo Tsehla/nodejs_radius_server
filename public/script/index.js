@@ -649,7 +649,7 @@ function get_user_accounts(){
                         <tr>
                             <th>User Name</th>
                             <th>Profile</th>
-                            <th>Download + upload</th>
+                            <th>Download + Upload <br>total usage</th>
                             <!-- <th>Total time</th> --><!-- show on popup menu for account -->
                             <th>Group name</th>
                             <th>Creation date</th>
