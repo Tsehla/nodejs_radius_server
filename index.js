@@ -1834,25 +1834,40 @@ socket.on('message', (msg, reply_info) => {
 
                                     // ------- update profile usage data ------
                                     
-                                    //-- save time
-                                    var profile_used_time = parseInt(results.profile_used_time) + parseInt(update_data['usage_session_time']);
+                                    //-- calculate time in minutes
+                                    var profile_used_time = (parseInt(results.profile_used_time)/60) + (parseInt(update_data['usage_session_time'])/60);
 
-                                    //-- save upload
+                                    //-- calculate upload in megabytes
                                     //handle uploads / download gigaword / 64bit number / + 4GB 
-                                    var profile_used_upload = parseInt(results.profile_used_upload) + (parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):parseInt(update_data['account_upload_use']));
+                                    var profile_used_upload = (parseInt(results.profile_used_upload)/1048576) + ( parseInt(update_data['account_upload_use_gig_words']) > 0?parseInt(update_data['account_upload_use_gig_words']):(parseInt(update_data['account_upload_use'])/1048576) );
 
-                                    //-- save download
-                                    //handle uploads / download gigaword / 64bit number / + 4GB
-                                    var profile_used_download = parseInt(results.profile_used_download) + (parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):parseInt(update_data['account_download_use']));
-
-                                    //-- save total data usage
-                                    var profile_used_data = parseInt(results.profile_used_data) + profile_used_upload + profile_used_download;
+                                    //-- calculate downloads in megabytes
+                                    // ++handle uploads / download gigaword / 64bit number / + 4GB
+                                    var profile_used_download = (parseInt(results.profile_used_download)/1048576) + ( parseInt(update_data['account_download_use_gig_words']) > 0?parseInt(update_data['account_download_use_gig_words']):(parseInt(update_data['account_download_use'])/1048576) );
 
 
+                                    //-- calculate session accumulative total usage
+                                    var profile_used_data = (parseInt(results.profile_used_data)/1048576) + profile_used_upload + profile_used_download;
+
+
+                                    //convert back :
+                                    //time to seconds
+                                    profile_used_time = profile_used_time * 60;
+
+                                    //uploads to bytes
+                                    profile_used_download = profile_used_download * 1048576;
+
+                                    //downloads to bytes
+                                    profile_used_upload = profile_used_upload * 1048576;
+
+                                    //total data usage to bytes
+                                    profile_used_data = profile_used_data * 1048576;
 
 
 
 
+
+                                    
 
 
 
