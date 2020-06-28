@@ -176,7 +176,7 @@ function get_device_vendor_file_data(caller_id=0){
 
             // save attribute type value, by order options are added to div select element
             //console.log(attribute.attribute_type)
-            device_vendor_library_attribute_input_box_type[attribute.attribute_name] = [ attribute.attribute_type, data.vendor_library_name ];
+            device_vendor_library_attribute_input_box_type[attribute.attribute_name] = [ attribute.attribute_type, data.vendor_library_name, {'attribute_name': attribute.attribute_name} ];
             
         })
 
@@ -204,6 +204,27 @@ function show_device_vendor_library_attribute_input_box(caller_id){
     //create text or number input box
     var device_vendor_attribute_div = `
         <input type="${(device_vendor_library_attribute_input_box_type[document.getElementById(caller_id).value][0] == 'string')?'text':'number'}" placeholder="enter Authenticating attribute value" id='${caller_id.trim().charAt(0)}_device_vendor_attribute_value' class='form-control data_main_choice_button_profile_device_vendor_attribute_value' data-library-attribite='${device_vendor_library_attribute_input_box_type[document.getElementById(caller_id).value][1] }'>`; 
+
+    // ++ override vendor attributes for specific value expected ++
+
+    //allow [usage reset type ] to be in month/week/day/year/etc
+    if( device_vendor_library_attribute_input_box_type[document.getElementById(caller_id).value][2].attribute_name == 'Usage-reset-type'){
+        
+        device_vendor_attribute_div = `
+            <select id='${caller_id.trim().charAt(0)}_device_vendor_attribute_value' class='form-control data_main_choice_button_profile_device_vendor_attribute_select w3-margin-top w3-margin-bottom'>
+                <option default >Choose when to reset</option>
+                <option>Minute\/s</option>
+                <option>Hourly</option>
+                <option>Daily</option>
+                <option>Weekly</option>
+                <option>Monthly</option>
+                <option>Yearly</option >
+            </select>
+        `;
+
+   }
+
+ 
 
     //add input box to user front
     add_by_innerhtml(`${caller_id.trim().charAt(0)}_device_vendor_attribute_value_container`, device_vendor_attribute_div);
