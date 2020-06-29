@@ -308,25 +308,32 @@ mongo_db.connect(db_url, function(err, db_data){
             var default_login_in_account_limit_profile_groups = [
 
                 {
-                    data : [ '4.9 gig total data',[ '4.9Gb Max data' ] ]
+                    data : [ '4.9 gig total data',[ '4.9Gb Max data' ] ],
+                    profile_group_attributes_properties : {time_or_data_limit : 'data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "200Mb max data", [ "200mb" ] ]
+                    data : [ "200Mb max data", [ "200mb" ] ],
+                    profile_group_attributes_properties : {time_or_data_limit : 'data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "100Mb max data", [ "100mb" ] ] 
+                    data : [ "100Mb max data", [ "100mb" ] ],
+                    profile_group_attributes_properties : {time_or_data_limit : 'data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "500Mb max data", [ "500mb" ] ]
+                    data : [ "500Mb max data", [ "500mb" ] ],
+                    profile_group_attributes_properties : {time_or_data_limit : 'data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "3Gb Total data", [ "3Gb max data" ] ]
+                    data : [ "3Gb Total data", [ "3Gb max data" ] ],
+                    profile_group_attributes_properties : {time_or_data_limit : 'data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "300mb total data", [ "300mb max data" ] ]
+                    data : [ "300mb total data", [ "300mb max data" ] ],
+                    profile_group_attributes_properties : {time_or_data_limit : 'data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "unlimited", [ "no limit" ] ]
+                    data : [ "unlimited", [ "no limit" ] ],
+                    rofile_group_attributes_properties : {time_or_data_limit : null, when_to_reset : '0'}
                 },
 
             ]
@@ -382,25 +389,32 @@ mongo_db.connect(db_url, function(err, db_data){
                             ['Vendor-Specific','wifi-radius', [['Max-data-total-limit',4294967295 ]]],
                             //['Vendor-Specific','Mikrotik', [['Mikrotik-Rate-Limit','1M/1M']]] 
                         ]
-                    ]
+                    ],
+                    type_of_profile_limit : {time_or_data_limit : 'data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "200mb", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "220000000" ] ] ] ] ]
+                    data : [ "200mb", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "220000000" ] ] ] ] ],
+                    type_of_profile_limit : {time_or_data_limit :' data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "100mb", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "120000000" ] ] ] ] ]
+                    data : [ "100mb", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "120000000" ] ] ] ] ],
+                    type_of_profile_limit : {time_or_data_limit : 'data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "500mb", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "520000000" ] ] ] ] ]
+                    data : [ "500mb", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "520000000" ] ] ] ] ],
+                    type_of_profile_limit : {time_or_data_limit :' data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "3Gb max data", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "3221225472" ] ] ] ] ]
+                    data : [ "3Gb max data", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "3221225472" ] ] ] ] ],
+                    type_of_profile_limit : {time_or_data_limit : 'data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "300mb max data", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "320000000" ] ] ] ] ]
+                    data : [ "300mb max data", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "320000000" ] ] ] ] ],
+                    type_of_profile_limit : {time_or_data_limit : 'data_limited', when_to_reset : 'once off use'}
                 },
                 {
-                    data : [ "no limit", [ [ "Vendor-Specific", "wifi-radius", [ [ "Max-data-total-limit", "" ] ] ] ] ]
+                    data : [ "no limit", [ [ "Vendor-Specific", "wifi-radius", [ [ "Usage-reset-type-value", "0" ] ] ] ] ],
+                    rofile_group_attributes_properties : {time_or_data_limit : null, when_to_reset : '0'}
                 }
                 
 
@@ -2371,6 +2385,13 @@ app.get('/new_profiles_data', function(req, res){
         return;
     }
 
+    //new profile data
+    var profile_attributes_data_new = {data : req.query.new_profiles };
+
+    if(req.query.new_profile_extra_data ){//if profile attribute extra data specified
+
+        profile_attributes_data_new.profile_extra_data = req.query.new_profile_extra_data;//attach extra data
+    }
 
     // ---- save new profiles -----
     mongo_db.connect(db_url, function(err, db_data){
@@ -2382,7 +2403,7 @@ app.get('/new_profiles_data', function(req, res){
         }
     
         //save new profile attribute to db
-        db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').insertOne({data : req.query.new_profiles}, function(err){
+        db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').insertOne(profile_attributes_data_new, function(err){
 
             if(err){
                 console.log('db error adding " login_in_account_limit_profile_attributes " : ',err);
@@ -2461,6 +2482,7 @@ app.get('/profile_group_save', function(req, res){
         }
     });
 
+
     //check if duplicate was found
     if(is_duplicate_found == true){
         res.jsonp('error, profile group name already saved');//send error response message
@@ -2468,6 +2490,13 @@ app.get('/profile_group_save', function(req, res){
 
     //no error
     else{
+
+        var profile_group_to_save_data = {data : req.query.new_profile_group_data};//profile data object array
+
+        if(req.query.profile_group_attributes_properties){//if extra data provided
+
+            profile_group_to_save_data.profile_group_attributes_properties = req.query.profile_group_attributes_properties;//add extra data to profile group
+        }
 
         // save profile group
         
@@ -2479,7 +2508,7 @@ app.get('/profile_group_save', function(req, res){
             }
         
             //save new profile attribute to db
-            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').insertOne({data : req.query.new_profile_group_data}, function(err){
+            db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').insertOne(profile_group_to_save_data, function(err){
     
                 if(err){
                     console.log('db error adding " login_in_account_limit_profile_groups " : ',err);

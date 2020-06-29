@@ -211,17 +211,16 @@ function show_device_vendor_library_attribute_input_box(caller_id){
     if( device_vendor_library_attribute_input_box_type[document.getElementById(caller_id).value][2].attribute_name == 'Usage-reset-type'){
         
         device_vendor_attribute_div = `
-            <select id='${caller_id.trim().charAt(0)}_device_vendor_attribute_value' class='form-control data_main_choice_button_profile_device_vendor_attribute_select w3-margin-top w3-margin-bottom'>
-                <option default >Choose when to reset</option>
-                <option>Minute\/s</option>
-                <option>Hourly</option>
-                <option>Daily</option>
-                <option>Weekly</option>
-                <option>Monthly</option>
-                <option>Yearly</option >
+            <select id='${caller_id.trim().charAt(0)}_device_vendor_attribute_value' class='form-control data_main_choice_button_profile_device_vendor_attribute_select w3-margin-top w3-margin-bottom' data-library-attribite='${device_vendor_library_attribute_input_box_type[document.getElementById(caller_id).value][1] }'>
+                <option default value = 'Choose when to reset' >Choose when to reset</option>
+                <option value = 'minutes' >Minutes</option>
+                <option value = 'hourly' >Hourly</option>
+                <option value = 'daily' >Daily</option>
+                <option value = 'weekly' >Weekly</option>
+                <option value = 'monthly' >Monthly</option>
+                <option value = 'yearly' >Yearly</option >
             </select>
         `;
-
    }
 
  
@@ -263,6 +262,9 @@ function attributes_profile_save(){
     var new_authentification_profiles = [];//stores new profiles from attributes
 
     var err_attribute_missing = false;//keep track of error/ prevent processing
+    var profile_attribute_limit_specified = false;//keep track of profile attributes limited usage
+
+    var type_of_profile_limit = {time_or_data_limit : null, when_to_reset : 'once off use'}; //keep track of if profile is time/data limited and when to reset usage
 
     for(var a=1; a <= profile_attributes_added_tracking; a++){
 
@@ -272,18 +274,117 @@ function attributes_profile_save(){
         var div_library_attribute_value = document.getElementById( a + '_device_vendor_attribute_value') //get entered attribute value
 
         //check if all attribute have been selected
-        if(div_library_name == 'Select Authenticating device vendor' || div_library_attribute_name == 'select Athentification attribute' ){
+        if(div_library_name == 'Select Authenticating device vendor' || div_library_attribute_name == 'select Athentification attribute' || div_library_attribute_value.value == 'Choose when to reset'){
 
-            alert("Please fill all attributes.");
+            err_attribute_missing = true;//set error found to true
+            alert("Please fill all attributes.");//give alert
 
-            err_attribute_missing = true;
-            break;
+            break;//end loop
+        }
+
+
+        //check if profile is time or data limited, and when to reset  type_of_profile_limit 
+
+        if(div_library_attribute_value.getAttribute('data-library-attribite') == 'wifi-radius'){//if wifi radius default internal library
+
+            if(div_library_attribute_name == 'Max-time-limit'){//if time limit
+
+                type_of_profile_limit.time_or_data_limit = 'time_limited';//set time limited
+
+                //check if limit value provided, is a number in seconds greater than or equal 1 minute
+                if(isNaN(div_library_attribute_value.value) == true || parseInt(div_library_attribute_value.value) < 60 || div_library_attribute_value.value.length == 0){
+
+                    err_attribute_missing = true;//set error found to true
+                    alert('Please provide time limit bigger than one minutes, specified in seconds .eg 61\nRemove limit, to have unlimited time usage');//give alert
+
+                    break;//end loop
+                    
+                }
+
+                profile_attribute_limit_specified = true;//profile limiting attributes used
+            }
+
+            if(div_library_attribute_name == 'Max-upload-limit'){ //if data limit
+
+                type_of_profile_limit.time_or_data_limit = 'data_limited';//set data limited
+                
+                //check if limit value provided, is a number in bytes greater than or equal 1mb
+                if(isNaN(div_library_attribute_value.value) == true || parseInt(div_library_attribute_value.value) < 1048576 || div_library_attribute_value.value.length == 0){
+
+                    err_attribute_missing = true;//set error found to true
+                    alert('Please provide data limit not less than one megabytes, specified in (base 2) bytes .eg 1048576\nRemove limit, to have unlimited data usage');//give alert
+                    
+                    break;//end loop
+                }
+
+                profile_attribute_limit_specified = true;//profile limiting attributes used
+            }
+
+            if(div_library_attribute_name == 'Max-download-limit '){ //if data limit
+
+                type_of_profile_limit.time_or_data_limit = 'data_limited';//set data limited
+                
+                //check if limit value provided, is a number in bytes greater than or equal 1mb
+                if(isNaN(div_library_attribute_value.value) == true || parseInt(div_library_attribute_value.value) < 1048576 || div_library_attribute_value.value.length == 0){
+
+                    err_attribute_missing = true;//set error found to true
+                    alert('Please provide data limit not less than one megabytes, specified in (base 2) bytes .eg 1048576\nRemove limit, to have unlimited data usage');//give alert
+                    
+                    break;//end loop
+                }
+
+                profile_attribute_limit_specified = true;//profile limiting attributes used
+            }
+
+            if(div_library_attribute_name == 'Max-data-total-limit'){ //if data limit
+
+                type_of_profile_limit.time_or_data_limit = 'data_limited';//set data limited
+
+                //check if limit value provided, is a number in bytes greater than or equal 1mb
+                if(isNaN(div_library_attribute_value.value) == true || parseInt(div_library_attribute_value.value) < 1048576 || div_library_attribute_value.value.length == 0){
+
+                    err_attribute_missing = true;//set error found to true
+                    alert('Please provide data limit not less than one megabytes, specified in (base 2) bytes .eg 1048576\nRemove limit, to have unlimited data usage');//give alert
+
+                    break;//end loop
+                    
+                }
+
+                profile_attribute_limit_specified = true;//profile limiting attributes used
+            }
+
+            if(div_library_attribute_name == 'Usage-reset-type'){//if reset specified
+
+                type_of_profile_limit.when_to_reset = div_library_attribute_value.value;//set reset interval
+                profile_attribute_limit_specified = true;//profile limiting attributes used
+
+            }
+
+            if(div_library_attribute_name == 'Usage-reset-type-value'){//if reset specified
+
+                type_of_profile_limit.when_to_reset = div_library_attribute_value.value;//set reset interval
+
+                //check if limit value provided and a number
+                if(isNaN(div_library_attribute_value.value) == true || div_library_attribute_value.value.length == 0){
+
+                    err_attribute_missing = true;//set error found to true
+                    alert('Please provide reset interval, specified as a number. \nSet 0 to have system ignore reset request.');//give alert
+
+                    break;//end loop
+                    
+                }
+
+                profile_attribute_limit_specified = true;//profile limiting attributes used
+            }
+
+
         }
 
         //console.log(a, div_library_name, div_library_attribute_name, div_library_attribute_value.value, div_library_attribute_value.getAttribute('data-library-attribite') );
 
         //create profile as array
         new_authentification_profiles.push( ['Vendor-Specific', div_library_attribute_value.getAttribute('data-library-attribite'),[ [div_library_attribute_name, div_library_attribute_value.value] ]] );
+
         
     }
 
@@ -305,8 +406,16 @@ function attributes_profile_save(){
     // send profile to server
     var url= window.location.origin + '/new_profiles_data';
 
+    //new profile attributes data
+    var produced_profle_attributes =  { new_profiles : [ new_profile_name ,new_authentification_profiles] };
+
+    if(profile_attribute_limit_specified){//if profile limite attributes specified
+
+        produced_profle_attributes.new_profile_extra_data = type_of_profile_limit; //attach limit to new profile data
+    }
+
       
-    $.get(url, { new_profiles : [ new_profile_name ,new_authentification_profiles] }, function(data, result){
+    $.get(url,produced_profle_attributes, function(data, result){
 
         if(result != 'success'){//if error
 
@@ -495,6 +604,9 @@ function profile_group_create(){
 
 
 
+    //document.getElementById(create_new_profile_group_tracking + '_profile_groupt_attribute_select').setAttribute('data-library-attribite',JSON.Stringify(data.profile_extra_data));
+
+
     profile_group_select_options = profile_group_select_options + '</select>';
 
     // add option box
@@ -510,6 +622,9 @@ function profiles_group_save(){
 
     var get_profifile_group_name = document.getElementById('profile_group_name_input').value;
     var profile_group_attributes = []; //stores selected attributes names
+
+    var profile_attributes_extra_data = {time_or_data_limit : null, when_to_reset : 'once off use'};//saves profile attributes extra data// data-library-attribite
+    var profile_attributes_extra_data_specified = false;//track if extra data was specified by any profile attributes retrieved
 
     //get profile attributes 
     var error_found = false;//keep track of error
@@ -529,6 +644,38 @@ function profiles_group_save(){
             break;
         }
 
+        //check if profile attributes extra data specified
+            
+            for(var b = 0; b <= attributes_profiles.length -1; b++){//loop through db retrieved profile attributes
+                //console.log(attributes_profiles[b])
+
+                if(attributes_profiles[b]){//if not null
+
+                    if(attributes_profiles[b].data[0] == profile_attribute_select){//if profile attributed stored db name match user selected ptofile attribute name
+
+                        if(attributes_profiles[b].profile_extra_data ){//if extra data specified for profile
+
+                            if(attributes_profiles[b].profile_extra_data.time_or_data_limit ){//time or data limit specified
+
+                                profile_attributes_extra_data.time_or_data_limit = attributes_profiles[b].profile_extra_data.time_or_data_limit;//save db retrieved limit
+                                
+                                profile_attributes_extra_data_specified = true;//set profile attribute extra data specified true
+                                break; //end loop
+                            }
+                            if(attributes_profiles[b].profile_extra_data.when_to_reset != 'once off use'){//if usage reset specified
+
+                                profile_attributes_extra_data.when_to_reset = attributes_profiles[b].profile_extra_data.when_to_reset;//save db retrieved limit
+
+                                profile_attributes_extra_data_specified = true;//set profile attribute extra data specified true
+                                break;//end loop
+
+                            }
+                        }
+                    }
+                }
+            }
+
+
         //keep found profile attributes names
         profile_group_attributes.push(profile_attribute_select);
         
@@ -543,8 +690,18 @@ function profiles_group_save(){
     
     //console.log(profile_group_attributes);
 
+    //new profile group data
+    var profile_group_data = {'new_profile_group_data' : [ get_profifile_group_name, profile_group_attributes ]};
+
+    if(profile_attributes_extra_data_specified){//if rofile attributes contains extra data
+
+        profile_group_data.profile_group_attributes_properties = profile_attributes_extra_data;//attach extra data to profile group data
+    }
+
+    console.log(profile_group_data)
+
     //save profile group to server
-    $.get('/profile_group_save',{'new_profile_group_data' : [ get_profifile_group_name, profile_group_attributes ]}, function(data, response){
+    $.get('/profile_group_save',profile_group_data, function(data, response){
 
         //console.log(data, response);
 
