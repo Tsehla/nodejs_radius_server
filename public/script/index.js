@@ -698,8 +698,6 @@ function profiles_group_save(){
         profile_group_data.profile_group_attributes_properties = profile_attributes_extra_data;//attach extra data to profile group data
     }
 
-    console.log(profile_group_data)
-
     //save profile group to server
     $.get('/profile_group_save',profile_group_data, function(data, response){
 
