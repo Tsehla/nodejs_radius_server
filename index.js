@@ -2091,12 +2091,25 @@ if(radius_in_message.code == 'Status-Server'){// return user account data
 
 // ----- front page serving -----
 
+//--------------------------------------
+//------------ Cors policy -------------
+//--------------------------------------
+// app.all(function(req, res, next) {
+//     res.header("Access-Control-Allow-Origin", "*");
+//     res.header("Access-Control-Allow-Headers", "X-Requested-With");
+//     next()
+//   });
+
 //---------------------------------------
 //---- log requests of tcp incoming ----
 //---------------------------------------
 app.use(function(req, res,next){
     console.log(req.protocol + '://' + req.get('host') + req.originalUrl);//shor url of request
     
+    //---------- cors ----------//cross server communication allow policy
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+
     next()
 });
 
