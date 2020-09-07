@@ -14,7 +14,7 @@ var mongo_db = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectId
 
 //mongo db link
-var db_url = process.env.MongoDB || 'mongodb://127.0.0.1/';
+var db_url = process.env.MongoDB_URL || 'mongodb://127.0.0.1/';
 
 // ======= picks udp request from router
 var dgram = require('dgram');
