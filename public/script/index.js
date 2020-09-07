@@ -1082,7 +1082,7 @@ function user_create_save(type_of_user){
 
  
     //sent data to server and create account
-    $.get('/create_user', {'user_id' : vouchercode_username_password, 'data_profile' : data_profile_group, 'total_account' : batch_total, 'account_group_name' : batch_name, 'voucher_username_suffix': vouchercode_username_password_suffix, account_type : type_of_user }, function(data, success){
+    $.get('/create_user', {'user_id' : vouchercode_username_password, 'data_profile' : data_profile_group, 'total_account' : batch_total, 'account_group_name' : batch_name, 'voucher_username_suffix': vouchercode_username_password_suffix, account_type : type_of_user , external_api_request : false }, function(data, success){
 
         //console.log(success, data);
         if(success == 'success'){// if response retrieved from server 

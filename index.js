@@ -3276,6 +3276,16 @@ app.get('/create_user', function(req, res){// create new users
         
                     // });
 
+
+                    //if account is from api request : //return username and password
+
+                    if(req.query.external_api_request == 'true'){//if call contains [ external_api_request=true ] in get request i.e external site not from whithin wifi radius
+                       
+                        //return complete user details as reply
+                        res.jsonp(new_user_list);
+                        return;
+                    }
+
                     res.jsonp('account created.');
             
                 })
