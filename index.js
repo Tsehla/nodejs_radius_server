@@ -3357,4 +3357,4 @@ app.listen(process.env.PPORT_TCP || process.env.PORT || 3000, function(){
     console.log(`===========================================\nListening for TCP request at port : ${process.env.PPORT_TCP ||process.env.PORT || 3000}\n===========================================`);
 }); //listen for tcp requests
 
-socket.bind(process.env.PPORT_UDP || 8082);//bind port for udp requests
+socket.bind(process.env.PPORT_UDP || process.env.PORT || 8082);//bind port for udp requests
