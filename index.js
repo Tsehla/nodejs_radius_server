@@ -3352,9 +3352,9 @@ app.get('/create_user', function(req, res){// create new users
 
 // -- ports --
 
-app.set('port', process.env.PPORT_TCP || process.env.PORT ||3000); // set port for TCP with Express
-app.listen(process.env.PPORT_TCP || process.env.PORT || 3000, function(){
-    console.log(`===========================================\nListening for TCP request at port : ${process.env.PPORT_TCP ||process.env.PORT || 3000}\n===========================================`);
+app.set('port', process.env.PORT || process.env.PPORT_TCP || 3000); // set port for TCP with Express
+app.listen(process.env.PORT || process.env.PPORT_TCP || 3000, function(){
+    console.log(`===========================================\nListening for TCP request at port : ${process.env.PORT || process.env.PPORT_TCP || 3000}\n===========================================`);
 }); //listen for tcp requests
 
-socket.bind(process.env.PPORT_UDP || process.env.PORT || 8082);//bind port for udp requests
+socket.bind(process.env.PORT || process.env.PPORT_UDP || 8082);//bind port for udp requests
