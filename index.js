@@ -941,7 +941,7 @@ socket.on('message', (msg, reply_info) => {
                 
                 
 
-                    if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups[a].data[0] == authenticated_user.profile_attribute_group ){ //if name match found
+                    if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups[a] && login_in_account_limit_profile_groups[a].data[0] == authenticated_user.profile_attribute_group ){ //if name match found
 
                         authentification_profile_group_data = login_in_account_limit_profile_groups[a].data;//save profile group data
 
