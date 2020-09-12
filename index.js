@@ -185,7 +185,7 @@ mongo_db.connect(db_url, function(err, db_data){
 
     db_data.db('wifi_radius_db').collection('users').find().toArray(function(err, data){
       
-        if(data.length == 0){ //if empty
+        if(data && data.length == 0){ //if empty
 
             let default_users = {
                 
@@ -302,7 +302,7 @@ mongo_db.connect(db_url, function(err, db_data){
     //check if profile group collection is empty
     db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_groups').find().toArray(function(err, data){
       
-        if(data.length == 0){ //if empty
+        if(data && data.length == 0){ //if empty
 
             //profiles group / allow grouping of attributes 
             var default_login_in_account_limit_profile_groups = [
@@ -378,7 +378,7 @@ mongo_db.connect(db_url, function(err, db_data){
     //check if profile attributes collection is empty
     db_data.db('wifi_radius_db').collection('login_in_account_limit_profile_attributes').find().toArray(function(err, data){
       
-        if(data.length == 0){ //if empty
+        if(data && data.length == 0){ //if empty
 
         //profiles group / allow grouping of attributes 
         var default_login_in_account_limit_profile_attributes = [
@@ -476,7 +476,7 @@ mongo_db.connect(db_url, function(err, db_data){
     //check if time limit collection is empty
     db_data.db('wifi_radius_db').collection('time_limit_define').find().toArray(function(err, data){
       
-        if(data.length == 0){ //if empty
+        if(data && data.length == 0){ //if empty
 
             var default_time_limit_define =  [ 'Mikrotik','Mikrotik-Total-Limit'];
           
@@ -521,7 +521,7 @@ mongo_db.connect(db_url, function(err, db_data){
     //check if total upload data limits collection is empty
     db_data.db('wifi_radius_db').collection('upload_limit_define').find().toArray(function(err, data){
       
-        if(data.length == 0){ //if empty
+        if(data && data.length == 0){ //if empty
 
             var default_upload_limit_define = [ 'Mikrotik','Mikrotik-Total-Limit'];
             
@@ -562,7 +562,7 @@ mongo_db.connect(db_url, function(err, db_data){
     //check if upload speed limit collection if empty
     db_data.db('wifi_radius_db').collection('upload_speed_limit_define').find().toArray(function(err, data){
       
-        if(data.length == 0){ //if empty
+        if(data && data.length == 0){ //if empty
 
             
             var default_upload_speed_limit_define = [ 'Mikrotik','Mikrotik-Xmit-Limit'];
@@ -606,7 +606,7 @@ mongo_db.connect(db_url, function(err, db_data){
     //check if download speed limit collection if empty
     db_data.db('wifi_radius_db').collection('download_speed_limit_define').find().toArray(function(err, data){
       
-        if(data.length == 0){ //if empty
+        if(data && data.length == 0){ //if empty
 
             var default_download_speed_limit_define = [ 'Mikrotik','Mikrotik-Recv-Limit'];
                 //Mikrotik-Xmit-Limit-Gigawords 
@@ -650,7 +650,7 @@ mongo_db.connect(db_url, function(err, db_data){
     //check if total uploaded + downloaded data limit collection if empty
     db_data.db('wifi_radius_db').collection('total_download_upload_limit_define').find().toArray(function(err, data){
       
-        if(data.length == 0){ //if empty
+        if(data && data.length == 0){ //if empty
 
             var default_total_download_upload_limit_define = [ 'Mikrotik','Mikrotik-Total-Limit'];
             
@@ -695,7 +695,7 @@ mongo_db.connect(db_url, function(err, db_data){
     //check if radius requesting device (nas) collection if empty
     db_data.db('wifi_radius_db').collection('nas_identifier').find().toArray(function(err, data){
       
-        if(data.length == 0){ //if empty
+        if(data && data.length == 0){ //if empty
 
             var default_nas_identifier = 
                 {
