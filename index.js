@@ -975,7 +975,7 @@ socket.on('message', (msg, reply_info) => {
                             
 
     
-                            if(login_in_account_limit_profile_attributes && login_in_account_limit_profile_attributes[a].data[0] == data){//if name match found
+                            if(login_in_account_limit_profile_attributes && login_in_account_limit_profile_attributes[a].data[0].trim() == data.trim()){//if name match found
 
                                 //loop through grouped attributes and extract attribute contained
                                 login_in_account_limit_profile_attributes[a].data[1].forEach(function(data){
