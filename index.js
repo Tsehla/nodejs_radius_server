@@ -3339,6 +3339,47 @@ app.get('/create_user', function(req, res){// create new users
 
 });
 
+//handle delete for now: to expand later
+app.get('/remove_voucher_or_user', function(req, res){
+
+    //console.log(req.query.user_id);
+
+        var account_id_to_delete = new ObjectId(req.query.user_id);//set id of account to delete
+
+
+        mongo_db.connect(db_url, function(err, db_data){
+
+        if(err){
+            console.log('user delete db connection error : ', err);
+            res.jsonp('error');
+            return;
+        }
+
+        //request db to delete user or voucher account by id
+        db_data.db('wifi_radius_db').collection('users').deleteOne({"_id": account_id_to_delete}, function(err){
+
+            if(err){
+                console.log('db error deleting account id : "' + req.query.user_id + '" ' ,err);
+
+                //give error response
+                res.jsonp('error');
+
+                return;
+            }
+
+            //give success response
+            //console.log('db success deleting account id : "' + req.query.user_id + '" ');
+
+            res.jsonp('succes');
+
+        });
+
+         //close db connection
+        db_data.close;
+          
+    });
+
+});
 
 //handle unknown tcp request// send message to hackers
 app.get('*',function(req, res){

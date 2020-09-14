@@ -750,7 +750,7 @@ function get_user_accounts(){
         //if serer reply
         if(response == 'success'){
 
-            //console.log(data);
+            console.log(data);
 
             var week_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sur'];//week days array
             var voucher_element = '';//contain vouchers formatted data
@@ -759,10 +759,11 @@ function get_user_accounts(){
             //create html elements for users and vouchers
             data.forEach(function(data){
 
+                
                 if(data.account_type == 'normal'){//if data belong to normal user account
 
                     users_elements  = users_elements  + `
-                        <tr onclick="alert('Username : ${data.account_username}, View, Edit/Delete menu coming later.')">
+                        <tr onclick="user_or_voucher_delete('${data.account_username}','${data.db_account_id}')">
                             <th>${data.account_username}</th>
                             <th>${data.account_profile}</th>
                             <th>${((parseInt(data.account_upload_download_total_usage)/1073741824) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1073741824).toFixed() + ' Gb':(parseInt(data.account_upload_download_total_usage)/1048576) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1048576).toFixed(2) + ' Mb':(parseInt(data.account_upload_download_total_usage)/1024) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1024).toFixed(2) + ' Kb': Math.round(parseInt(data.account_upload_download_total_usage)) )}</th>
@@ -777,7 +778,7 @@ function get_user_accounts(){
                
                 if(data.account_type == 'voucher'){//if data belong to voucher account
                     voucher_element = voucher_element + `
-                    <tr onclick="alert('Username : ${data.account_username}, View, Edit/Delete menu coming later.')">
+                    <tr onclick="user_or_voucher_delete('${data.account_username}','${data.db_account_id}')">
                         <th>${data.account_username}</th>
                         <th>${data.account_profile}</th>
                         <th>${((parseInt(data.account_upload_download_total_usage)/1073741824) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1073741824).toFixed() + ' Gb':(parseInt(data.account_upload_download_total_usage)/1048576) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1048576).toFixed(2) + ' Mb':(parseInt(data.account_upload_download_total_usage)/1024) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1024).toFixed(2) + ' Kb': Math.round(parseInt(data.account_upload_download_total_usage)) )}</th>
@@ -855,6 +856,7 @@ function get_user_accounts(){
 
 
 }
+
 //auto run on system load
 get_user_accounts();//get user accounts
 
@@ -969,6 +971,57 @@ function user_create_menu(usertype){
 
 
         return;    
+    }
+
+}
+
+//--------- user or voucher delete -----------
+function user_or_voucher_delete(user_name, user_id){
+
+   var delete_account = confirm('You are about to delete Voucher or user : '+ user_name + '.\nContinue?');
+
+    if(delete_account){
+
+        $.get('/remove_voucher_or_user', {'user_name':user_name, 'user_id': user_id }, function(status, response){//connect to server
+
+
+            if(status == 'succes'){//if response is recieved
+
+                //if response is error
+                if(response == 'error'){
+
+                    //give alert error
+                    alert('Error, recieved when attempting to delete account : '+ user_name +'\nFrom server, please try again later or contact administrator.');
+                    return;
+                }
+
+
+                //if response is sucess
+                if(response == 'success'){
+
+                    //give success response
+                    alert('Account : '+ user_name +', deleted.');
+
+                    //reload accont view
+                    get_user_accounts();
+
+                    return;
+                }
+
+
+            }
+
+            //else if error
+            else{
+
+                alert('Error, when attempting to contact server and delete account : '+ user_name +'\nPlease try again later or contact administrator.');
+            }
+
+
+
+        })
+
+
     }
 
 }
