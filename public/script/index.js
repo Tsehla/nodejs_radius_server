@@ -750,7 +750,7 @@ function get_user_accounts(){
         //if serer reply
         if(response == 'success'){
 
-            console.log(data);
+            //console.log(data);
 
             var week_day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sur'];//week days array
             var voucher_element = '';//contain vouchers formatted data
