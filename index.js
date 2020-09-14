@@ -861,7 +861,7 @@ socket.on('message', (msg, reply_info) => {
 
         //if password match // give accepted response
 
-        var  reply_code; //will contain reply code
+        var  reply_code; //will contain reply code // defaut set to reject
         var reply_contents = {}; //will contain reply data to be encoded
         var attribute_container = []; //contains atribute data of reply data
 
@@ -898,6 +898,9 @@ socket.on('message', (msg, reply_info) => {
                     console.log('Error finding users account, for router authentification');
 
                     reply_code = 'Access-Reject';//give reject response reply to router
+
+                     //send reply to device/router
+                     reply_encond_and_send();
                 }
 
                if(!results){//if result == null or undefined or falsey
@@ -905,6 +908,9 @@ socket.on('message', (msg, reply_info) => {
                     console.log('Error user account not found, for router authentification');
 
                     reply_code = 'Access-Reject';//give reject response reply to router
+
+                    //send reply to device/router
+                    reply_encond_and_send();
                };
 
                if(results){//if user account found
@@ -926,7 +932,7 @@ socket.on('message', (msg, reply_info) => {
 
           
         //user account properties check
-        function user_account_limits_set(){ 
+        function user_account_limits_set(){
 
 
             //--------------------- Authenticated user account limits
@@ -939,7 +945,7 @@ socket.on('message', (msg, reply_info) => {
 
                 for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
 
-                    if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups[a] && login_in_account_limit_profile_groups[a].data[0].toString().replace(/[\+\-\*]/gi,' ') == authenticated_user.profile_attribute_group ){ //if name match found
+                    if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups[a] && login_in_account_limit_profile_groups[a].data[0].toString().replace(/[\+\-\*]/gi,' ') == authenticated_user.profile_attribute_group.toString().replace(/[\+\-\*]/gi,' ') ){ //if name match found
 
                         authentification_profile_group_data = login_in_account_limit_profile_groups[a].data;//save profile group data
 
@@ -1285,9 +1291,14 @@ socket.on('message', (msg, reply_info) => {
             
             }
 
-            
+            //send reply to device/router
+            reply_encond_and_send();
+
+        }
         
-            // ---------------------- radius authentification attributes
+        // ---------------------- radius authentification attributes
+
+        function reply_encond_and_send(){
             
             //check attributes, en add to be encoded if they have values // you may need to add more for other routers //tested on mikrotik
         
@@ -1521,7 +1532,7 @@ socket.on('message', (msg, reply_info) => {
 
   // --------------- accounting data requesting authentification request  ---------------
 
-  if (radius_in_message.code == 'Accounting-Request') {
+if (radius_in_message.code == 'Accounting-Request') {
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Start' ){ // start accounting data for user
 
