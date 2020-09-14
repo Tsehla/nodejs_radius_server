@@ -4,3 +4,7 @@
 
 //implement
 https://wiki.mikrotik.com/wiki/Manual:RADIUS_Client/reference_dictionary
+
+
+//bugs
+-> issue when all vouchers or users are deleted, [ for now, restart the server ]
