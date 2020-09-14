@@ -3340,6 +3340,13 @@ app.get('/create_user', function(req, res){// create new users
 });
 
 
+//handle unknown tcp request// send message to hackers
+app.get('*',function(req, res){
+
+    res.jsonp('Stop messing with my system, do something usefull for everyone and fck you not, you not that interesting.. 凸 hahaha, couldnt help it anyway, O bane le letsatsi le monate.. not that i care..');
+});
+
+
 
 
 
