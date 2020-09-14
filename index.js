@@ -938,10 +938,8 @@ socket.on('message', (msg, reply_info) => {
                 //var users_account_array_index = undefined; //temp save position of account in 'users' array
 
                 for(var a = 0; a <= login_in_account_limit_profile_groups.length; a++){//loop throught available profiles
-                
-                
 
-                    if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups[a] && login_in_account_limit_profile_groups[a].data[0] == authenticated_user.profile_attribute_group ){ //if name match found
+                    if( login_in_account_limit_profile_groups && login_in_account_limit_profile_groups[a] && login_in_account_limit_profile_groups[a].data[0].toString().replace(/[\+\-\*]/gi,' ') == authenticated_user.profile_attribute_group ){ //if name match found
 
                         authentification_profile_group_data = login_in_account_limit_profile_groups[a].data;//save profile group data
 
@@ -970,12 +968,12 @@ socket.on('message', (msg, reply_info) => {
                         //loop through profile attributes en find name matching attributes specified in [ profile group]
                         for(var a = 0; a <= login_in_account_limit_profile_attributes.length -1; a++ ){
                             
-                            // console.log(login_in_account_limit_profile_attributes[a]);
-                            // console.log(login_in_account_limit_profile_attributes[a][0]);
+                            //  console.log(login_in_account_limit_profile_attributes[a]);
+                            //  console.log(login_in_account_limit_profile_attributes[a][0]);
                             
 
-    
-                            if(login_in_account_limit_profile_attributes && login_in_account_limit_profile_attributes[a].data[0].trim() == data.trim()){//if name match found
+                            if(login_in_account_limit_profile_attributes && login_in_account_limit_profile_attributes[a].data[0] == data){//if name match found
+
 
                                 //loop through grouped attributes and extract attribute contained
                                 login_in_account_limit_profile_attributes[a].data[1].forEach(function(data){
