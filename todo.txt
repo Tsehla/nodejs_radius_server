@@ -1,5 +1,5 @@
 -> get interim update working
--> make interim update reply with available data, to keep track of shared account usage
+-> make interim update reply with available data, to keep track of shared account/[ sigle account multiple devices login ] usage ****
 
 
 //implement
