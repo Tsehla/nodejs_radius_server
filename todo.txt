@@ -1,5 +1,6 @@
 -> get interim update working
 -> make interim update reply with available data, to keep track of shared account/[ sigle account multiple devices login ] usage ****
+-> allow password to be viewable for users with username and password that different && keep password for users added manually always hidden but able to change only
 
 
 //implement
@@ -11,3 +12,4 @@ https://wiki.mikrotik.com/wiki/Manual:RADIUS_Client/reference_dictionary
 -> remaining data is incorrectly calculated for profiles with gigabytes data allocation
 -> reject voucher request api with null or undefined voucher profile data [ currently system gives unlimited data if profile not defined ]
 -> have voucher creation api request timestamp on console
+
