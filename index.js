@@ -3409,9 +3409,9 @@ app.get('*',function(req, res){
 
 // -- ports --
 
-app.set('port', process.env.PORT_TCP || 3000); // set port for TCP with Express
-app.listen(process.env.PORT_TCP || 3000, function(){
-    console.log(`===========================================\nListening for TCP request at port : ${process.env.PORT_TCP || 3000}\n===========================================`);
+app.set('port', process.env.PORT || process.env.PORT_TCP); // set port for TCP with Express
+app.listen(process.env.PORT || process.env.PORT_TCP, function(){
+    console.log(`===========================================\nListening for TCP request at port : ${process.env.PORT || process.env.PORT_TCP}\n===========================================`);
 }); //listen for tcp requests
 
-socket.bind(process.env.PORT_UDP || 8082);//bind port for udp requests
+socket.bind(process.env.PORT || process.env.PORT_UDP);//bind port for udp requests
