@@ -1700,7 +1700,7 @@ if (radius_in_message.code == 'Accounting-Request') {
 
         
 
-        //console.log('Accounting data update for user, requested : ', radius_in_message);
+        console.log('Accounting data update for user, requested : ', radius_in_message);
 
         /*  accounting usage update for active user session from mikrotik  [ console.log(radius_in_message) ]
         {
@@ -1737,6 +1737,15 @@ if (radius_in_message.code == 'Accounting-Request') {
 
 
         /* ......  DO WHAT YOU WANT HERE ....... */
+        //calculate remain data and send as reply to router # this is helpful to track data usage and update the requesting router with new data or time limit usefull for when many devices uses single account allocated data at once in diffrent hotspots 
+
+
+
+
+
+
+
+
 
 
        // ----------- return response
@@ -1911,8 +1920,16 @@ if (radius_in_message.code == 'Accounting-Request') {
 
                     }
 
-                                        
-                    if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){//when account stop, save account usage s
+                    //when user account is still logged in and session data is sent
+                    if(radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update' ){
+
+                        //save afore calculated data into db
+
+                    }
+
+
+                    //when account stop, save account usage s                    
+                    if(radius_in_message.attributes['Acct-Status-Type'] == 'Stop' ){
 
 
 
