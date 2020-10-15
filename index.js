@@ -236,6 +236,7 @@ mongo_db.connect(db_url, function(err, db_data){
                             profile_used_time : 0,
                             profile_used_upload : 0,
                             profile_used_download : 0,
+                            profile_used_total_time :0,
                         }
                     }
                 ],
@@ -248,7 +249,26 @@ mongo_db.connect(db_url, function(err, db_data){
                 profile_used_upload : 0,
           
                 profile_used_download : 0,
-          
+
+                //account session usage per mac //used to calculate data usage when mutpiple devices uses single user account, and update the router on what data is left for the account, this is not similar to those that track reset according to {time/date [ multi_share_mac ]}, this is compolsuray and have effect on disposable/single use accounts [multi_share : false ]
+                account_logged_in_session_usage : [
+                    {
+                        'device_mac_id' : '',
+                        'router_identifier_name' : '',
+                        'router_account_session_id' : '',
+                        'device_router_ip' : '',
+
+                        usage : {
+                            profile_used_data : 0,
+                            profile_used_time : 0,
+                            profile_used_upload : 0,
+                            profile_used_download : 0,
+                            profile_used_total_time :0,
+                        }
+
+                    }
+                ],
+
                 authentications_request_logs : [//keep logs of account authentificaton activity
                     { 
                         'username' : '',
@@ -815,6 +835,13 @@ socket.on('message', (msg, reply_info) => {
 
   // radius in message types
 
+
+  //authentication variables
+  var  reply_code = 'Access-Reject'; //will contain reply code // defaut set to reject
+  var reply_contents = {}; //will contain reply data to be encoded
+  var attribute_container = []; //contains atribute data of reply data
+  var authenticated_user; //keep track of authenticated user data
+
   //  --------------- access requesting authentification request  ---------------
     if (radius_in_message.code == 'Access-Request'){
 
@@ -861,11 +888,6 @@ socket.on('message', (msg, reply_info) => {
 
         //if password match // give accepted response
 
-        var  reply_code; //will contain reply code // defaut set to reject
-        var reply_contents = {}; //will contain reply data to be encoded
-        var attribute_container = []; //contains atribute data of reply data
-
-
         // ----- check if authenticating device is allowed to use system
             /**
              * 
@@ -876,7 +898,7 @@ socket.on('message', (msg, reply_info) => {
              */
 
 
-        var authenticated_user; //keep track of authenticated user data
+   
 
 
         //find user account from db
@@ -886,7 +908,7 @@ socket.on('message', (msg, reply_info) => {
 
                 console.log('db connection error : ', err);
 
-                reply_code = 'Access-Reject';//give reject response reply to router
+                //reply_code = 'Access-Reject';//give reject response reply to router
                 return;
             }
 
@@ -930,9 +952,11 @@ socket.on('message', (msg, reply_info) => {
         
         });
 
+    }
+
           
-        //user account properties check
-        function user_account_limits_set(){
+    //user account properties check
+    function user_account_limits_set(){
 
 
             //--------------------- Authenticated user account limits
@@ -1246,7 +1270,7 @@ socket.on('message', (msg, reply_info) => {
 
             // ++++++++ set/save account changes to profile ++++++
 
-            if( reply_code != 'Access-Reject'){//if accont login is accepted
+            if( reply_code != 'Access-Reject' && radius_in_message.code == 'Access-Request'){//if accont login is accepted
 
             
                 //set in memory user logged in to true
@@ -1292,13 +1316,23 @@ socket.on('message', (msg, reply_info) => {
             }
 
             //send reply to device/router
-            reply_encond_and_send();
+            //for account authentication request call
+            if(radius_in_message.code == 'Access-Request'){
+                reply_encond_and_send();
+            }
+            
 
-        }
+
+            //for interim update call
+            if(radius_in_message.attributes['Acct-Status-Type'] == 'Interim-Update'){
+                interim_reply_to_router();
+            }
+
+    }
         
-        // ---------------------- radius authentification attributes
+    // ---------------------- radius authentification attributes
 
-        function reply_encond_and_send(){
+    function reply_encond_and_send(){
             
             //check attributes, en add to be encoded if they have values // you may need to add more for other routers //tested on mikrotik
         
@@ -1521,13 +1555,13 @@ socket.on('message', (msg, reply_info) => {
 
             });
 
-            
+            return;
        
-        }
-
-        return;
-   
     }
+
+        
+   
+    
 
 
   // --------------- accounting data requesting authentification request  ---------------
@@ -1737,15 +1771,404 @@ if (radius_in_message.code == 'Accounting-Request') {
 
 
         /* ......  DO WHAT YOU WANT HERE ....... */
-        //calculate remain data and send as reply to router # this is helpful to track data usage and update the requesting router with new data or time limit usefull for when many devices uses single account allocated data at once in diffrent hotspots 
+        //calculate remain data and send as reply to router # this is helpful to track data usage and update the requesting router with new data or time limit usefull for when many devices uses single account allocated data at once in diffrent hotspots
+
+
+            //connect to mongo db
+            mongo_db.connect(db_url, function(err, db_data){
+
+                if(err){
+
+                    console.log('db connection error : ', err);
+                    interim_reply_to_router(); //call function
+                    return;
+                }
+            
+
+
+                //find user from db
+                db_data.db('wifi_radius_db').collection('users').findOne({name : radius_in_message.attributes['account_username']}, function(error, results){
+
+                    if(error){//user search error
+                        console.log('Error finding Interim update users account, on db ');
+                        interim_reply_to_router(); //call function
+                    }
+    
+                   if(!results){//if result == null or undefined or falsey
+                        console.log('Error Interim update user not found on db ');
+                        interim_reply_to_router(); //call function
+                   };
+
+
+                   if(results && results.account_logged_in == true){//if user account found and is logged in
+
+                    //set variables required for re-calculating user usages
+                    authenticated_user = results; //keep track of authenticated user data
+                    reply_code = 'Access-Reject';//give reject response reply to router
+
+                    // ------- update profile usage data ------
+
+                        //session data set variables to [ 0 ] zero, as default
+                        var device_interim_session_profile_used_total_data = 0; //cumulative session data
+                        var device_interim_session_profile_used_time = 0,
+                        device_interim_session_profile_used_upload = 0,
+                        device_interim_session_profile_used_download = 0;
+                        var device_interim_session_profile_used_total_time = 0; //cumulative session time
+
+                        //stored final data after subtrating current session data from previously stored for device mac on database [ TO BE USED TO UPDATE ACCOUNT USAGE DATA ON DB ]
+                        var profile_used_time = 0;
+                        var profile_used_upload = 0;
+                        var profile_used_download = 0;
+                        var profile_used_data = 0;
+                        var profile_used_total_time = 0;
+
+                        
+                        //give incoming data better variables  [ TO BE SAVED TO {MAC DEVICE} SESSION LOGS ON DB ]
+                        var account_upload_use = radius_in_message.attributes['Acct-Output-Octets']; 
+                        var account_download_use =  radius_in_message.attributes['Acct-Input-Octets'];
+                        var account_upload_use_gig_words = radius_in_message.attributes['Acct-Output-Gigawords'];
+                        var account_download_use_gig_words = radius_in_message.attributes['Acct-Input-Gigawords'];
+                        var usage_session_time = radius_in_message.attributes['Acct-Session-Time'];
+
+
+                        
+
+                        //keep of available data in db
+                        var account_logged_in_session_usage_is_available = false;//if entry exist
+                        var account_logged_in_session_usage_is_match_found = false; //if current account has a match entry created for it already
+
+                        //check if [ account_logged_in_session_usage ] exists in a the useraccount : this was added later some accounts of which are already in database before adding this interim update function dont have [ account_logged_in_session_usage ]
+                        if(results && results.account_logged_in_session_usage ){//if [ account_logged_in_session_usage ] entry exist //update  device session usages with data on db
+
+                            //set entry exist to true
+                            account_logged_in_session_usage_is_available = true;
+
+                            //run foreach to find match
+                            results.account_logged_in_session_usage.forEach(function(data){//loop and find match
+
+
+                                //check for device mac log that has matching
+                                if(data && radius_in_message.attributes && data.device_mac_id == radius_in_message.attributes['Calling-Station-Id'] && data.router_identifier_name == radius_in_message.attributes['NAS-Identifier'] && data.router_account_session_id == radius_in_message.attributes['Acct-Session-Id'] && data.device_router_ip == radius_in_message.attributes['Framed-IP-Address'] ){//if match
+
+
+                                    //set match as found
+                                    account_logged_in_session_usage_is_match_found = true;
+
+                                    //update data
+                                    device_interim_session_profile_used_total_data = data.usage.profile_used_data;//keep track of upload + download //for device mac current session//not main account
+                                    device_interim_session_profile_used_time = data.usage.profile_used_time;
+                                    device_interim_session_profile_used_upload = data.usage.profile_used_upload;
+                                    device_interim_session_profile_used_download = data.usage.profile_used_download;
+                                    device_interim_session_profile_used_total_time = data.usage.profile_used_total_time;
+
+
+                                }
+
+
+
+                            });
+       
+
+                            //calculate used data or time
+                             //-- calculate time in minutes
+                            profile_used_time = (
+                                (parseInt(usage_session_time)/60) > (parseInt(device_interim_session_profile_used_time)/60)?(parseInt(usage_session_time)/60) - (parseInt(device_interim_session_profile_used_time)/60):(parseInt(usage_session_time)/60)
+                            
+                            ); //only subtract stored from incoming only if incoming is creater than stored cause this will mean that stored = {stored + newly used in same uninterrupted session} i.e user has not yet logged off, for any other do not subtract.., 
+
+                            //-- get upload 
+                            //#### if incoming in [ gigaword ] is greater than zero and incoming in [ gigawords ]converted to bytes is bigger than session stored upload in bytes, then [ gigawords ] converted to megabytes subtract session stored upload converted to megabytes ELSE if incoming upload data usasge in bytes is bigger than stored session upload data in bytes then incoming upload used data convreted to megabytes subtract stored data converted to megabytes ELSE return incoming upload data convreted to megabytes 
+                            profile_used_upload = (
+
+                                parseInt(account_upload_use_gig_words) > 0 && (parseInt(account_upload_use_gig_words)*1073741824) > parseInt(device_interim_session_profile_used_upload)?(parseInt(account_upload_use_gig_words)*1024) - (parseInt(device_interim_session_profile_used_upload)/1048576):parseInt(account_upload_use) > parseInt(device_interim_session_profile_used_upload)?(parseInt(account_upload_use)/1048576) - (parseInt(device_interim_session_profile_used_upload)/1048576):(parseInt(account_upload_use)/1048576)                                
+
+                            ); //haha its a mess, just differentiate from whats coming in to whats retrived from db 
 
 
 
 
+                            //-- get downloads 
+                            //#### if incoming in [ gigaword ] is greater than zero and incoming in [ gigawords ]converted to bytes is bigger than session stored download in bytes, then [ gigawords ] converted to megabytes subtract session stored download converted to megabytes ELSE if incoming download data usasge in bytes is bigger than stored session download data in bytes then incoming udownload used data convreted to megabytes subtract download stored data converted to megabytes ELSE return incoming download data convreted to megabytes 
+                            profile_used_download = ( 
+                                
+                                parseInt(account_download_use_gig_words) > 0 && (parseInt(account_download_use_gig_words)*1073741824) > parseInt(device_interim_session_profile_used_download)?(parseInt(account_download_use_gig_words)*1024) - (parseInt(device_interim_session_profile_used_download)/1048576):parseInt(account_download_use) > parseInt(device_interim_session_profile_used_download)?(parseInt(account_download_use)/1048576) - (parseInt(device_interim_session_profile_used_download)/1048576):(parseInt(account_download_use)/1048576)  
+
+                            ); //haha its a mess, just differentiate from whats coming in to whats retrived from db
+
+
+                            //-- calculate session accumulative total upload and download usage usage
+                            device_interim_session_profile_used_total_data =(device_interim_session_profile_used_total_data/1048576) + profile_used_upload + profile_used_download;
+                            //turn to back bytes
+                            device_interim_session_profile_used_total_data = (device_interim_session_profile_used_total_data * 1048576);
+
+                            //-- calculate session accumulative total time for this mac device usage
+                            profile_used_total_time = (parseInt(usage_session_time)/60) + (parseInt(device_interim_session_profile_used_total_time)/60);
+                            
+
+
+                            //save data to db and send
+                            session_data_calculation()
+                        }
+                        
+                        if(!results && !results.account_logged_in_session_usage ){//if [ account_logged_in_session_usage ] entry not exist 
+                            
+                            //save data to db and send
+                            session_data_calculation(); //lol this is wat happens when you closed ur options to a corner [ you create this if statement ] in this situation
+                        }
+                        
+                   
+
+                        //do final culculations and save data to db
+                        function session_data_calculation(){
 
 
 
 
+                            if(account_logged_in_session_usage_is_match_found){ //if session stored data was found
+
+
+                                // ++++++++++++++++++++++++++++++++++ store session incoming data to db
+
+                               //var new_session_profile_used_data, and convert [ gigawords ] to bytes
+                               var new_session_profile_used_time = radius_in_message.attributes['Acct-Session-Time'];
+                               var new_session_profile_used_upload = (parseInt(radius_in_message.attributes['Acct-Output-Gigawords']) > 0?(parseInt(radius_in_message.attributes['Acct-Output-Gigawords'])*1073741824) : radius_in_message.attributes['Acct-Output-Octets']);
+                               var new_session_profile_used_download = (parseInt(radius_in_message.attributes['Acct-Input-Gigawords']) > 0?(parseInt(radius_in_message.attributes['Acct-Input-Gigawords'])*1073741824): radius_in_message.attributes['Acct-Input-Octets']);
+                               //var new_session_profile_used_total_time :0,
+
+
+                                //turn update data to bytes
+
+                                //++++ time ++++++
+                                profile_used_time = (parseInt(results.profile_used_time)/60) + profile_used_time; //for whole/main account
+
+                                //turn time to seconds
+                                profile_used_time = profile_used_time * 60;
+
+
+                                //++++ upload ++++++
+                                //add current upload to db stored upload
+                                profile_used_upload = profile_used_upload + (parseInt(results.profile_used_upload)/1048576);
+
+                                //++turn upload to bytes
+                                profile_used_upload = profile_used_upload * 1048576;
+                                /*
+                                    //if upload data came in gigawords variable
+                                
+                                    //if(parseInt(account_upload_use_gig_words) > parseInt(account_upload_use) && parseInt(account_upload_use_gig_words) > parseInt(device_interim_session_profile_used_upload)){
+                                    if(parseInt(account_upload_use_gig_words) > 0 ){
+
+                                        profile_used_upload = profile_used_upload / ;
+                                    }
+                                */
+
+                                //+++++ download +++++
+                                //add current upload to db stored upload
+                                profile_used_download = profile_used_download + (parseInt(results.profile_used_download)/1048576);
+
+                                //++turn download to bytes
+                                profile_used_download = profile_used_download * 1048576;
+
+                                /*
+                                    //if download data came in gigawords varible
+
+                                    //if(parseInt(account_download_use_gig_words) > parseInt(account_download_use) && parseInt(account_download_use_gig_words) > parseInt(device_interim_session_profile_used_download) ){
+                                    if(parseInt(account_download_use_gig_words) > 0 ){
+
+                                        profile_used_download = profile_used_download / ;
+                                    }
+                                */
+
+                                //+++++ total data/time +++++++
+                                profile_used_data = profile_used_data + (parseInt(results.profile_used_data)/1048576);//whole account total data update
+
+                                //turn to bytes
+                                profile_used_data = (profile_used_data * 1048576);
+
+                                profile_used_total_time = profile_used_total_time * 60;//for current session time cumulative
+
+                            }
+
+                            //  ---- save result on db  ---
+
+
+                            //set database user account id
+                            var user_db_account_id = new ObjectId(results._id);
+
+                            //set db search filter
+                            var db_search_filter = {
+                                '_id' : user_db_account_id,
+                                "account_logged_in_session_usage.device_mac_id" : radius_in_message.attributes['Calling-Station-Id'],
+                                "account_logged_in_session_usage.router_identifier_name" : radius_in_message.attributes['NAS-Identifier'],
+                                "account_logged_in_session_usage.router_account_session_id" : radius_in_message.attributes['Acct-Session-Id'],
+                                "account_logged_in_session_usage.device_router_ip" : radius_in_message.attributes['Framed-IP-Address'],
+                            }
+
+                            //set data to be entered to db as edit
+                            var db_search_edit = {
+
+                                $set:{   
+
+                                    "account_logged_in_session_usage.$.usage.profile_used_data" : device_interim_session_profile_used_total_data,
+                                    "account_logged_in_session_usage.$.usage.profile_used_time" : new_session_profile_used_time,
+                                    "account_logged_in_session_usage.$.usage.profile_used_upload" : new_session_profile_used_upload,
+                                    "account_logged_in_session_usage.$.usage.profile_used_download" : new_session_profile_used_download,
+                                    "account_logged_in_session_usage.$.usage.profile_used_total_time" : profile_used_total_time,
+
+                                    profile_used_data : profile_used_data, 
+  
+                                    profile_used_time : profile_used_time,
+                              
+                                    profile_used_upload : profile_used_upload,
+                              
+                                    profile_used_download :  profile_used_download,
+                                        
+                                }
+                            }
+                               
+                            
+                             
+                            //if account was not fount or account has not session log entry
+                            if(account_logged_in_session_usage_is_available == false || account_logged_in_session_usage_is_match_found == false){//change to insert mode not find and edit
+
+                                db_search_filter = {
+                                    '_id' : user_db_account_id,
+                                };
+
+
+                                //change form edit to add +++++++
+
+                                //create/define whole session log entry to the db if its not available
+                                if(account_logged_in_session_usage_is_available == false){
+
+                                    db_search_edit = {
+
+                                        $set:{   
+
+                                            account_logged_in_session_usage : [
+                                                {
+                                                    'device_mac_id' : radius_in_message.attributes['Calling-Station-Id'],
+                                                    'router_identifier_name' : radius_in_message.attributes['NAS-Identifier'],
+                                                    'router_account_session_id' : radius_in_message.attributes['Acct-Session-Id'],
+                                                    'device_router_ip' : radius_in_message.attributes['Framed-IP-Address'],
+                            
+                                                    usage : {
+                                                        profile_used_data : device_interim_session_profile_used_total_data,
+                                                        profile_used_time : new_session_profile_used_time,
+                                                        profile_used_upload : new_session_profile_used_upload,
+                                                        profile_used_download : new_session_profile_used_download,
+                                                        profile_used_total_time :profile_used_total_time,
+                                                    }
+                            
+                                                }
+                                            ],
+
+                                            profile_used_data : profile_used_data, 
+        
+                                            profile_used_time : profile_used_time,
+                                    
+                                            profile_used_upload : profile_used_upload,
+                                    
+                                            profile_used_download :  profile_used_download,
+                                                
+                                        }
+                                    }
+                                }
+
+
+
+
+                                //create logs for this device session if it was not found
+                                if(account_logged_in_session_usage_is_match_found == false){
+
+                                    db_search_edit = {
+
+                                        $set:{
+
+                                            profile_used_data : profile_used_data, 
+        
+                                            profile_used_time : profile_used_time,
+                                    
+                                            profile_used_upload : profile_used_upload,
+                                    
+                                            profile_used_download :  profile_used_download,
+                                                
+                                        },
+                                        $push: {
+                                                    
+                                                account_logged_in_session_usage :  {
+                                                    'device_mac_id' : radius_in_message.attributes['Calling-Station-Id'],
+                                                    'router_identifier_name' : radius_in_message.attributes['NAS-Identifier'],
+                                                    'router_account_session_id' : radius_in_message.attributes['Acct-Session-Id'],
+                                                    'device_router_ip' : radius_in_message.attributes['Framed-IP-Address'],
+                            
+                                                    usage : {
+                                                        profile_used_data : device_interim_session_profile_used_total_data,
+                                                        profile_used_time : new_session_profile_used_time,
+                                                        profile_used_upload : new_session_profile_used_upload,
+                                                        profile_used_download : new_session_profile_used_download,
+                                                        profile_used_total_time :profile_used_total_time,
+                                                    }
+                            
+                                                }
+
+                                        }
+                                    }
+
+                                } 
+                                
+                            }
+
+
+
+
+                                    
+                            //save new profile attribute to db
+                            db_data.db('wifi_radius_db').collection('users').updateOne(
+                                db_search_filter,db_search_edit,
+                                    function(err){
+
+                                        if(err){
+                                            console.log('error updating user account and saving to db: ',err);
+
+                                    }
+
+                                //call login function to recalculate new available data for the account
+                                user_account_limits_set();
+                            })
+                        
+
+
+
+                        }
+                       
+                    }
+
+                });
+
+
+               //close db connection
+               db_data.close;
+
+
+
+            });
+
+        return;
+    }
+
+
+
+
+    //give interim reply
+    function interim_reply_to_router(){
+
+
+
+        //HANDLE THOSE WITH ACCESS REJECT : GIVE ZERO DATA OR TIME BACK
+
+        // work with data from here   
+        // var attribute_container = []; //contains atribute data of reply data
+        // var authenticated_user; //keep track of authenticated user data
 
 
        // ----------- return response
@@ -1784,7 +2207,6 @@ if (radius_in_message.code == 'Accounting-Request') {
 
         });
 
-        return;
     }
 
     if(radius_in_message.attributes['Acct-Status-Type'] == 'Accounting-On' ){ // set accounting on for user
@@ -1972,11 +2394,11 @@ if (radius_in_message.code == 'Accounting-Request') {
 
                                     //-- get upload 
                                     //handle uploads / download gigaword / 64bit number / + 4GB 
-                                    var profile_used_upload = parseInt(results.profile_used_upload) + ( parseInt(update_data['account_upload_use_gig_words']) > 0? (parseInt(update_data['account_upload_use_gig_words'])*1024): (parseInt(update_data['account_upload_use'])/1048576) );
+                                    var profile_used_upload = (parseInt(results.profile_used_upload)/1048576) + ( parseInt(update_data['account_upload_use_gig_words']) > 0? (parseInt(update_data['account_upload_use_gig_words'])*1024): (parseInt(update_data['account_upload_use'])/1048576) );
 
                                     //-- get downloads 
                                     // ++handle uploads / download gigaword / 64bit number / + 4GB
-                                    var profile_used_download = parseInt(results.profile_used_download)+ ( parseInt(update_data['account_download_use_gig_words']) > 0? (parseInt(update_data['account_download_use_gig_words'])*1024): (parseInt(update_data['account_download_use'])/1048576) );
+                                    var profile_used_download = (parseInt(results.profile_used_download)/1048576) + ( parseInt(update_data['account_download_use_gig_words']) > 0? (parseInt(update_data['account_download_use_gig_words'])*1024): (parseInt(update_data['account_download_use'])/1048576) );
 
 
                                     //-- calculate session accumulative total usage
@@ -1989,6 +2411,40 @@ if (radius_in_message.code == 'Accounting-Request') {
                                     //STILL TO HANDLE CONDITIONALLY OVER 3 GIG TO BYTE CONVERSION FOR BOTH OR ANY UPLOADS OR DOWNLOADS
                                     //PLUS FOR ALL THREE ON TOTAL DATA USAGE
 
+                                    /*
+                                        October 15/2020
+
+                                        No wonder i got ill after working on this radius, this convertion are grazy even i dont remember the why of when i was doing convertions : now its three to  4 months or more since i created this part of function, en im implementing [ interim update part ], en this conversions got me questioning the me then who was implementing this.
+
+                                        unfortunately there is no much data regarding 'gigawords' or obvius data i can work with hence i questions how the me then managed to come with it.
+
+                                        anayway based on what i can pickup now, it seems i treated [ gigaword ] to contain usage data already in gigs,
+                                        [ 1024 ] convert the gigs to megabytes
+                                        [ 1073741824 ] convert the gigs to bytes
+
+                                        I have not beein paying attention to gigs usage convertion mostly cause where i use this app i dont have to pay attention to gigs, but megabyte calculations have been on point
+
+                                        ------
+                                        from what i can tell the is no need to convert the gigs from [ gigawads ] directly to bytes as i have converted them directly to megabytes so from there it should be Megabytes to bytes
+                                        
+                                        i wll disable below functions
+                                        if( parseInt(update_data['account_upload_use_gig_words']) > 0 ){
+                                            profile_used_upload = profile_used_upload / 1073741824;
+                                            
+                                        }
+
+                                        and 
+                                        //handle more than three gig download data
+                                        if(parseInt(update_data['account_download_use_gig_words']) ){
+                                            profile_used_download = profile_used_download / 1073741824;
+                                        }
+
+                                        //will revisit them if there is a need to
+
+
+
+                                    */
+
 
                                     //convert back :
                                     //time to seconds
@@ -1997,18 +2453,22 @@ if (radius_in_message.code == 'Accounting-Request') {
 
                                     //total uploads to bytes
                                     profile_used_upload = profile_used_upload * 1048576;
+                                    /*
                                     //handle more than three gig upload data
                                     if( parseInt(update_data['account_upload_use_gig_words']) > 0 ){
                                         profile_used_upload = profile_used_upload / 1073741824;
                                     }
+                                    */
                                 
 
                                     //total downloads to bytes
                                     profile_used_download = profile_used_download * 1048576;
+                                    /*
                                     //handle more than three gig download data
                                     if(parseInt(update_data['account_download_use_gig_words']) ){
                                         profile_used_download = profile_used_download / 1073741824;
                                     }
+                                    */
 
 
                                     //total data usage to bytes
@@ -3233,6 +3693,7 @@ app.get('/create_user', function(req, res){// create new users
                             profile_used_time : 0,
                             profile_used_upload : 0,
                             profile_used_download : 0,
+                            profile_used_total_time :0,
                         }
                     }
                 ],
@@ -3245,6 +3706,25 @@ app.get('/create_user', function(req, res){// create new users
                 profile_used_upload : 0,
 
                 profile_used_download : 0,
+                
+                //account session usage per mac //used to calculate data usage when mutpiple devices uses single user account, and update the router on what data is left for the account, this is not similar to those that track reset according to {time/date [ multi_share_mac ]}, this is compolsuray and have effect on disposable/single use accounts [multi_share : false ]
+                account_logged_in_session_usage : [
+                    {
+                        'device_mac_id' : '',
+                        'router_identifier_name' : '',
+                        'router_account_session_id' : '',
+                        'device_router_ip' : '',
+
+                        usage : {
+                            profile_used_data : 0,
+                            profile_used_time : 0,
+                            profile_used_upload : 0,
+                            profile_used_download : 0,
+                            profile_used_total_time :0,
+                        }
+
+                    }
+                ],
         
             
             });
