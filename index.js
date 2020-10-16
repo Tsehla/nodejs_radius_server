@@ -2056,7 +2056,7 @@ socket.on('message', (msg, reply_info) => {
                                     */
 
                                     //+++++ total data/time +++++++
-                                    profile_used_data = profile_used_data + (parseInt(results.profile_used_data)/1048576);//whole account total data update
+                                    profile_used_data = (parseInt(profile_used_data)/1048576) + (parseInt(results.profile_used_data)/1048576);//whole account total data update
 
                                     //turn to bytes
                                     profile_used_data = (profile_used_data * 1048576);
