@@ -2019,7 +2019,7 @@ socket.on('message', (msg, reply_info) => {
                                     profile_used_time = (parseInt(results.profile_used_time)/60) + profile_used_time; //for whole/main account
 
                                     //turn time to seconds
-                                    profile_used_time = profile_used_time * 60;
+                                    profile_used_time = Math.round(profile_used_time * 60);
 
 
                                     //++++ upload ++++++
@@ -2056,12 +2056,12 @@ socket.on('message', (msg, reply_info) => {
                                     */
 
                                     //+++++ total data/time +++++++
-                                    profile_used_data = (parseInt(profile_used_data)/1048576) + (parseInt(results.profile_used_data)/1048576);//whole account total data update
-
+                                    profile_used_data = (parseInt(profile_used_data)/1048576) + (parseInt(device_interim_session_profile_used_total_data)/1048576);//whole account total data update
+profile_used_data
                                     //turn to bytes
-                                    profile_used_data = (profile_used_data * 1048576);
+                                    profile_used_data = Math.round(profile_used_data * 1048576);
 
-                                    profile_used_total_time = profile_used_total_time * 60;//for current session time cumulative
+                                    profile_used_total_time = Math.round(profile_used_total_time * 60);//for current session time cumulative
 
                                 }
 
