@@ -2030,6 +2030,10 @@ socket.on('message', (msg, reply_info) => {
 
 
                                     //++++ upload ++++++
+
+                                    //add upload to account total usage data
+                                    profile_used_data = (parseInt(profile_used_data)/1048576) + profile_used_upload;
+
                                     //add current upload to db stored upload
                                     profile_used_upload = profile_used_upload + (parseInt(results.profile_used_upload)/1048576);
 
@@ -2046,6 +2050,9 @@ socket.on('message', (msg, reply_info) => {
                                     */
 
                                     //+++++ download +++++
+                                    //add upload to account total usage data
+                                    profile_used_data = (parseInt(profile_used_data)/1048576) + profile_used_download;
+
                                     //add current upload to db stored upload
                                     profile_used_download = profile_used_download + (parseInt(results.profile_used_download)/1048576);
 
@@ -2063,10 +2070,9 @@ socket.on('message', (msg, reply_info) => {
                                     */
 
                                     //+++++ total data/time +++++++
-                                    profile_used_data = (parseInt(profile_used_data)/1048576) + (parseInt(device_interim_session_profile_used_total_data)/1048576);//whole account total data update
-
+             
                                     //turn to bytes
-                                    profile_used_data = Math.round(profile_used_data * 1048576);
+                                    profile_used_data = Math.round(profile_used_data * 1048576);//whole account total data update
 
                                     profile_used_total_time = Math.round(profile_used_total_time * 60);//for current session time cumulative
 
