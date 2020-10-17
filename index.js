@@ -1884,10 +1884,10 @@ socket.on('message', (msg, reply_info) => {
                             var device_interim_session_profile_used_total_time = 0; //cumulative session time
 
                             //stored final data after adding current session data to previously stored data for user profile on database [ TO BE USED TO UPDATE MAIN ACCOUNT USAGE DATA ON DB ]
-                            var profile_used_time = (parseInt(results.profile_used_time));
-                            var profile_used_upload = (parseInt(results.profile_used_upload));
-                            var profile_used_download = (parseInt(results.profile_used_download);
-                            var profile_used_data = (parseInt(results.profile_used_data));
+                            var profile_used_time = parseInt(results.profile_used_time);
+                            var profile_used_upload = parseInt(results.profile_used_upload);
+                            var profile_used_download = parseInt(results.profile_used_download);
+                            var profile_used_data = parseInt(results.profile_used_data);
 
                             var profile_used_total_time = 0;//for final mac session total time
 
