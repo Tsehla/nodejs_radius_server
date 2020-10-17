@@ -1970,6 +1970,13 @@ socket.on('message', (msg, reply_info) => {
 
                                 ); //haha its a mess, just differentiate from whats coming in to whats retrived from db
 
+                                console.log("--------------------------");
+                                console.log('stored session upload in MB : ',(parseInt(device_interim_session_profile_used_upload)/1048576),' stored session upload in MB : ',(parseInt(device_interim_session_profile_used_download)/1048576))
+                                console.log("-----");
+                                console.log("direct upload octed in mb : ",(parseInt(account_upload_use)/1048576) ," direct download octed in mb :",(parseInt(account_download_use)/1048576) )
+                                console.log("-----");
+                                console.log('incoming subtarct stored download in Mb : ',profile_used_download, " incoming subtarct stored upload in MB : ", profile_used_upload);
+                                console.log("--------------------------");
 
                                 //-- calculate session accumulative total upload and download usage usage
                                 device_interim_session_profile_used_total_data =(device_interim_session_profile_used_total_data/1048576) + profile_used_upload + profile_used_download;
@@ -2057,7 +2064,7 @@ socket.on('message', (msg, reply_info) => {
 
                                     //+++++ total data/time +++++++
                                     profile_used_data = (parseInt(profile_used_data)/1048576) + (parseInt(device_interim_session_profile_used_total_data)/1048576);//whole account total data update
-profile_used_data
+
                                     //turn to bytes
                                     profile_used_data = Math.round(profile_used_data * 1048576);
 
@@ -2065,7 +2072,7 @@ profile_used_data
 
                                 }
 
-                                //  ---- save result on db  ---
+                                // ---- save result on db  ---
 
 
                                 //set database user account id
