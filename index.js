@@ -1700,7 +1700,7 @@ if (radius_in_message.code == 'Accounting-Request') {
 
         
 
-        console.log('Accounting data update for user, requested : ', radius_in_message);
+        //console.log('Accounting data update for user, requested : ', radius_in_message);
 
         /*  accounting usage update for active user session from mikrotik  [ console.log(radius_in_message) ]
         {
