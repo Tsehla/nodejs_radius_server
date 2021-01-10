@@ -767,6 +767,7 @@ function get_user_accounts(){
                             <th>${data.account_username}</th>
                             <th>${data.account_profile}</th>
                             <th>${((parseInt(data.account_upload_download_total_usage)/1073741824) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1073741824).toFixed() + ' Gb':(parseInt(data.account_upload_download_total_usage)/1048576) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1048576).toFixed(2) + ' Mb':(parseInt(data.account_upload_download_total_usage)/1024) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1024).toFixed(2) + ' Kb': Math.round(parseInt(data.account_upload_download_total_usage)) )}</th>
+                            <th>${data.account_reset}</th>
                             <th>${data.account_batch_group_name}</th>
                             <th>${week_day[data.account_creation_date.day_of_week] +' '+ data.account_creation_date.day_of_month +'/'+ data.account_creation_date.month +'/'+ data.account_creation_date.year }</th>
                             <th>${data.account_active}</th>
@@ -782,6 +783,7 @@ function get_user_accounts(){
                         <th>${data.account_username}</th>
                         <th>${data.account_profile}</th>
                         <th>${((parseInt(data.account_upload_download_total_usage)/1073741824) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1073741824).toFixed() + ' Gb':(parseInt(data.account_upload_download_total_usage)/1048576) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1048576).toFixed(2) + ' Mb':(parseInt(data.account_upload_download_total_usage)/1024) >= 1 ? (parseInt(data.account_upload_download_total_usage)/1024).toFixed(2) + ' Kb': Math.round(parseInt(data.account_upload_download_total_usage)) )}</th>
+                        <th>${data.account_reset}</th>
                         <th>${data.account_batch_group_name}</th>
                         <th>${week_day[data.account_creation_date.day_of_week] +' '+ data.account_creation_date.day_of_month +'/'+ data.account_creation_date.month +'/'+ data.account_creation_date.year }</th>
                         <th>${data.account_active}</th>
@@ -810,6 +812,7 @@ function get_user_accounts(){
                             <th>User Name</th>
                             <th>Profile</th>
                             <th>Download + Upload <br>total usage</th>
+                            <th>Account reset</th>
                             <!-- <th>Total time</th> --><!-- show on popup menu for account -->
                             <th>Group name</th>
                             <th>Creation date</th>
@@ -827,6 +830,7 @@ function get_user_accounts(){
                             <th>User Name</th>
                             <th>Profile</th>
                             <th>Download + Upload <br>total usage</th>
+                            <th>Account reset</th>
                             <!-- <th>Total time</th> --><!-- show on popup menu for account -->
                             <th>Group name</th>
                             <th>Creation date</th>
@@ -894,6 +898,35 @@ function user_create_menu(usertype){
         normal_user_create_div_element = normal_user_create_div_element + `
             </select>
 
+            
+            <i id='data_main_choice_button_users_normal_user_reset_setup_plus' style='margin:20px auto 10px auto;font-size:13px;font-weight:bold;color:blue' class='la la-plus' onclick='this.style.display="none";document.getElementById("data_main_choice_button_users_normal_user_reset_setup_minus").style.display="block";document.getElementById("data_main_choice_button_users_normal_user_usage_reset_container").style.display="block"'> <a href='#' > Set usage RESET </a></i>
+            <i id='data_main_choice_button_users_normal_user_reset_setup_minus'  style='margin:20px auto 10px auto;font-size:13px;font-weight:bold;color:blue;display:none' class='la la-minus'> <a href='#' >Set usage RESET </a></i>
+
+            <div id='data_main_choice_button_users_normal_user_usage_reset_container' style="display:none">
+
+                <span >1) <input type='checkbox' class='btn' style='margin-top:-5px' id='data_main_choice_button_users_normal_user_allow_account_reset_checkbox'> Allow account reset.</span>
+               
+
+                <span class='w3-block' > 2) Enter reset "interval value" and select "reset type". </span>
+
+                <span class='w3-block'>
+
+                <input type='number' value='0' class='form-control' style='width:80px;display:inline-block' id='data_main_choice_button_users_normal_user_account_reset_interval_value'>
+
+                    <select class='form-control' style='width:auto;min-width:50px;display:inline-block' id='data_main_choice_button_users_normal_user_account_reset_interval_type'>
+                        <option default value='select'>Select</option>
+                        <option value='minute'>Minutes</option>
+                        <!--  <option value='hour'>Hourly</option> -->
+                        <option value='day'>Days</option>
+                        <!--  <option value='week'>Weekly</option> -->
+                        <!--  <option value='month'>Monthly</option> -->            
+                    </select>
+                </span>
+               
+                <span >3) <input type='checkbox' class='btn' style='margin-top:-5px' id='data_main_choice_button_users_normal_user_allow_account_reset_mutiple_users_checkbox' checked= true> Allow multiple users.</span>
+
+            </div>
+
             <div id='' class= 'w3-panel w3-bottomBar w3-center'>
                 Batch option
             </div>
@@ -948,6 +981,33 @@ function user_create_menu(usertype){
         // add batch account creation option plus cancel/save buttons
         voucher_user_create_div_element = voucher_user_create_div_element + `
             </select>
+
+            <i id='data_main_choice_button_users_voucher_create_reset_setup_plus' style='margin:20px auto 10px auto;font-size:13px;font-weight:bold;color:blue' class='la la-plus' onclick='this.style.display="none";document.getElementById("data_main_choice_button_users_voucher_create_reset_setup_minus").style.display="block";document.getElementById("data_main_choice_button_users_voucher_create_usage_reset_container").style.display="block"'> <a href='#' > Set usage RESET </a></i>
+            <i id='data_main_choice_button_users_voucher_create_reset_setup_minus'  style='margin:20px auto 10px auto;font-size:13px;font-weight:bold;color:blue;display:none' class='la la-minus'> <a href='#' >Set usage RESET </a></i>
+
+            <div id='data_main_choice_button_users_voucher_create_usage_reset_container' style="display:none">
+
+                <span >1) <input type='checkbox' class='btn' style='margin-top:-5px' id='data_main_choice_button_users_voucher_create_allow_account_reset_checkbox'> Allow account reset.</span>
+
+                <span class='w3-block' > 2) Enter reset "interval value" and select "reset type". </span>
+
+                <span class='w3-block'>
+
+                <input type='number' value='0' class='form-control' style='width:80px;display:inline-block' id='data_main_choice_button_users_voucher_create_account_reset_interval_value'>
+
+                    <select class='form-control' style='width:auto;min-width:50px;display:inline-block' id='data_main_choice_button_users_voucher_create_account_reset_interval_type'>
+                        <option default value='select'>Select</option>
+                        <option value='minute'>Minutes</option>
+                        <!--  <option value='hour'>Hourly</option> -->
+                        <option value='day'>Days</option>
+                        <!--  <option value='week'>Weekly</option> -->
+                        <!--  <option value='month'>Monthly</option> -->
+                    </select>
+                </span>
+
+                <span >3) <input type='checkbox' class='btn' style='margin-top:-5px' id='data_main_choice_button_users_voucher_create_mutiple_users_checkbox' checked= true> Allow multiple users.</span>
+
+            </div>
 
             <div id='' class= 'w3-panel w3-bottomBar w3-center'>
                 Batch option
@@ -1034,6 +1094,12 @@ function user_create_save(type_of_user){
     var batch_total = 0; //stores batch total
     var batch_name = '';//stores name of batch
     var vouchercode_username_password_suffix = ''; //stores suffix
+
+    //reset data container
+    var reset_reset_allow = false;//reset checkbox checked data
+    var reset_reset_value = 0;//reset interval value
+    var reset_reset_type = 'minute';//reset interval type//minutes/hour/day/week/monthly
+    var reset_reset_mutiple_users = true;//allow voucher with reset to login multiple users and track their data usage individually as if they own the profile
    
 
     if(type_of_user == 'normal'){ 
@@ -1046,6 +1112,16 @@ function user_create_save(type_of_user){
         var get_normal_batch_name = document.getElementById('data_main_choice_button_users_normal_user_batch_name').value;
         var get_normal_suffix = document.getElementById('data_main_choice_button_users_normal_user_username_suffix').value;
 
+        //get nornal account reset data
+        var get_normal_account_reset_allow = document.getElementById('data_main_choice_button_users_normal_user_allow_account_reset_checkbox').checked;
+        var get_normal_account_reset_value = document.getElementById('data_main_choice_button_users_normal_user_account_reset_interval_value').value;
+        var get_normal_account_reset_type = document.getElementById('data_main_choice_button_users_normal_user_account_reset_interval_type').value;
+
+        var get_normal_account_muttiple_user_allow = document.getElementById('data_main_choice_button_users_normal_user_allow_account_reset_mutiple_users_checkbox').checked;
+      
+        
+
+
         //check if basic account creation elements are filled
         if(get_normal_username.length < 3 || get_normal_password.length < 3 || get_normal_data_group == 'Select data profile'){ //if username and password is chars are less than 3 and no data profile selcted
 
@@ -1055,6 +1131,18 @@ function user_create_save(type_of_user){
                 alert('Option 1\nPlease fill in username, password and select data profile.\n\nOption 2\nSelect data profile and type total number \nof account to produce under [batch].');//give error
                 return;//end function
             }
+        }
+
+        //check for optional account [ reset ] data
+      
+        if(get_normal_account_reset_allow){//if allow reset is [ checked ]//and required values are not all filled
+
+            if(Number(get_normal_account_reset_value) <= 0 || get_normal_account_reset_type == 'select'){// if not filled
+
+                return alert("Please fill in all [ Account Reset ] data, or uncheck [ allow account reset ] checkbox.");//give error
+            }
+            
+
         }
 
         //attach username and pasword
@@ -1081,7 +1169,10 @@ function user_create_save(type_of_user){
         batch_total = get_normal_batch_total;
         batch_name = get_normal_batch_name ;
         vouchercode_username_password_suffix = get_normal_suffix;
-
+        reset_reset_allow = get_normal_account_reset_allow;
+        reset_reset_value = get_normal_account_reset_value;
+        reset_reset_type = get_normal_account_reset_type;
+        reset_reset_mutiple_users = get_normal_account_muttiple_user_allow;
 
     }
 
@@ -1094,6 +1185,14 @@ function user_create_save(type_of_user){
         var get_voucher_batch_name = document.getElementById('data_main_choice_button_users_voucher_create_batch_name').value;
         var get_voucher_suffix = document.getElementById('data_main_choice_button_users_voucher_create_batch_suffix').value;
 
+        //get voucher account reset data
+        var get_voucher_account_reset_allow = document.getElementById('data_main_choice_button_users_voucher_create_allow_account_reset_checkbox').checked;
+        var get_voucher_account_reset_value = document.getElementById('data_main_choice_button_users_voucher_create_account_reset_interval_value').value;
+        var get_voucher_account_reset_type = document.getElementById('data_main_choice_button_users_voucher_create_account_reset_interval_type').value;
+
+        var get_voucher_account_mutiple_user_allow = document.getElementById('data_main_choice_button_users_voucher_create_mutiple_users_checkbox').checked;
+ 
+
         //check if basic account creation elements are filled
         if(get_voucher_voucher_code.length < 3 || get_voucher_profile_group == 'Select data profile'){ //if username and password is chars are less than 3 and no data profile selcted
 
@@ -1103,6 +1202,16 @@ function user_create_save(type_of_user){
                 alert('Option 1\nPlease fill in voucher code and select data profile.\n\nOption 2\nSelect data profile and type total number \nof voucher to produce under [batch].');//give error
                 return;//end function
             }
+        }
+
+        //check for optional account [ reset ] data
+        if(get_voucher_account_reset_allow ){//if allow reset is [ checked ]//and required values are not all filled
+
+            if(Number(get_voucher_account_reset_value) <= 0 || get_voucher_account_reset_type == 'select'){//if not filled
+
+                return alert("Please fill in all [ Account Reset ] data, or uncheck [ allow account reset ] checkbox.");//give error
+            }
+
         }
 
         //attach voucher code
@@ -1129,13 +1238,17 @@ function user_create_save(type_of_user){
         batch_total = get_voucher_batch_total;
         batch_name = get_voucher_batch_name ;
         vouchercode_username_password_suffix = get_voucher_suffix;
+        reset_reset_allow = get_voucher_account_reset_allow;
+        reset_reset_value = get_voucher_account_reset_value;
+        reset_reset_type = get_voucher_account_reset_type;
+        reset_reset_mutiple_users = get_voucher_account_mutiple_user_allow;
 
 
     }
 
  
     //sent data to server and create account
-    $.get('/create_user', {'user_id' : vouchercode_username_password, 'data_profile' : data_profile_group, 'total_account' : batch_total, 'account_group_name' : batch_name, 'voucher_username_suffix': vouchercode_username_password_suffix, account_type : type_of_user , external_api_request : false }, function(data, success){
+    $.get('/create_user', {'user_id' : vouchercode_username_password, 'data_profile' : data_profile_group, 'total_account' : batch_total, 'account_group_name' : batch_name, 'voucher_username_suffix': vouchercode_username_password_suffix, account_type : type_of_user , external_api_request : false, 'reset_allow':reset_reset_allow, 'reset_value':reset_reset_value, 'reset_type':reset_reset_type, 'reset_mutiple_users' : reset_reset_mutiple_users  }, function(data, success){
 
         //console.log(success, data);
         if(success == 'success'){// if response retrieved from server 

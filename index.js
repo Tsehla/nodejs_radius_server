@@ -229,7 +229,7 @@ mongo_db.connect(db_url, function(err, db_data){
                         reset : false,
                         //reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month ': '', 'year' : '' },
                         //reset_time : { 'hour' : '', 'minute': '', 'second' : '' }
-                        account_logged_in : false,//track if account is in use
+                        account_logged_in : false,//track if account is in use//  [ 2021/01/10 ] no need for this as mac address is made unique most of time 
           
                         usage : {
                             profile_used_data : 0,
@@ -2655,6 +2655,7 @@ app.get('/user_accounts', function(req, res){
                     account_type : data.type_of_account,
                     account_depleted : data.account_depleted,
                     account_active : data.active,
+                    account_reset : data.reset,
                     account_batch_group_name : data.batch_group_name,
                     account_creation_date : data.creation_date,
                     account_profile : data.profile_attribute_group,
@@ -2749,6 +2750,9 @@ app.get('/create_user', function(req, res){// create new users
     var total_accounts = req.query.total_account;
     var batch_group_name = req.query.account_group_name;
     var voucher_username_suffix = req.query.voucher_username_suffix;
+
+    //account reset data
+    var reset_reset_allow = req.query.reset_allow, reset_reset_value = req.query.reset_value, reset_reset_type = req.query.reset_type, reset_reset_mutiple_users = req.query.reset_mutiple_users;
 
     //get voucher codes and usernames  passowrd + passwords
     var username_voucher_code = '';
@@ -3184,6 +3188,8 @@ app.get('/create_user', function(req, res){// create new users
 
         function user_create_fn (username, password){
 
+            console.log('reset data >>> ', reset_reset_allow, reset_reset_value, reset_reset_type,reset_reset_mutiple_users  );
+
             //time stamp
             var date = new Date();
 
@@ -3200,9 +3206,9 @@ app.get('/create_user', function(req, res){// create new users
                 last_contact_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, //used to keep track of reset
                 last_contact_time : { 'hour' : '', 'minute': '', 'second' : '' }, //used to keep track of reset
                 account_depleted : false, //is voucher reached use limits // may remove this //each login voucher should re-calulate limits
-                reset : false, // is account reset-able
-                reset_date : { 'day_of_week' : '', 'day_of_month' : '', 'month': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
-                reset_time : { 'hour' : '', 'minute': '', 'second' : '' },
+                reset : reset_reset_allow, // is account reset-able
+                reset_date : { 'day_of_week' : '', 'day_of_month' : (reset_reset_type =='day'?reset_reset_value:''), 'month': '', 'year' : '' }, // used to reset account limits//day = weekday mon-sun; month = monthDay 1-30/31/28; 
+                reset_time : { 'hour' : '', 'minute': (reset_reset_type =='minute'?reset_reset_value:''), 'second' : '' },
                 active : false, //is voucher active
                 account_logged_in : false,//track if account is in use
                 creation_date : { 'day_of_week' : date.getDay(), 'day_of_month' : date.getDay(), 'month': date.getMonth(), 'year' : date.getFullYear() }, //date account created
@@ -3217,7 +3223,7 @@ app.get('/create_user', function(req, res){// create new users
         
                 nas_identifier_id : '', // tracks name of device used to contact radius server
 
-                multi_share : false, //allow single profile to attributes to be used by diffrent divice, and specific device usage tracking
+                multi_share : reset_reset_mutiple_users, //allow single profile to attributes to be used by diffrent divice, and specific device usage tracking
 
                 multi_share_mac : [ //keep track of devices [mac] sharing profile
                     {
