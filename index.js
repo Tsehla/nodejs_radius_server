@@ -3405,14 +3405,54 @@ app.get('/remove_voucher_or_user', function(req, res){
 });
 
 //handle unknown tcp request// send message to hackers
+// app.get('*',function(req, res){
+
+//     res.jsonp('Stop messing with my system, do something usefull for everyone and fck you not, you not that interesting.. 凸 hahaha, couldnt help it anyway, O bane le letsatsi le monate.. not that i care..');
+// });
+
+
+
+
+//path module
+var path = require ('path');
+
 app.get('*',function(req, res){
+    // res.sendFile(path.resolve('static/err.html'));
+    // res.jsonp('Error, Please load homepage');
 
-    res.jsonp('Stop messing with my system, do something usefull for everyone and fck you not, you not that interesting.. 凸 hahaha, couldnt help it anyway, O bane le letsatsi le monate.. not that i care..');
+    // console.log('---',req.query);
+
+    //lol it could be better but fine for quick solution i require now, so i can continue watching anime [stellar transfomations], this is only meant to keep those who dont know what they are doing away for now...
+
+    if(process.env.System_Admin_password && !req.query.password || req.query.password != process.env.System_Admin_password.trim() ){
+        res.send(`
+        
+            <html>
+                <body>
+
+                    <h1>System Access</h1>
+
+                    <p> Password Required</p>
+
+                <script>
+                 var system_access = prompt('Please Enter Password to gain access');
+
+                 if(system_access.trim()){
+                    window.open('${req.protocol + '://' + req.get('host')}?password='+system_access.trim(), '_self' );
+                 }
+                </script>
+            </html>
+
+        
+        `);
+
+        return;
+    }
+
+    res.sendFile(path.resolve('html/index.html'));
+  
+   
 });
-
-
-
-
 
 
 
