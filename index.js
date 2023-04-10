@@ -3424,7 +3424,7 @@ app.get('*',function(req, res){
 
     //lol it could be better but fine for quick solution i require now, so i can continue watching anime [stellar transfomations], this is only meant to keep those who dont know what they are doing away for now...
 
-    if(process.env.System_Admin_password && !req.query.password || req.query.password != process.env.System_Admin_password.trim() ){
+    if(process.env.System_Admin_password && !req.query.id || req.query.id!= process.env.System_Admin_password.trim() ){
         res.send(`
         
             <html>
@@ -3438,7 +3438,7 @@ app.get('*',function(req, res){
                  var system_access = prompt('Please Enter Password to gain access');
 
                  if(system_access.trim()){
-                    window.open('${req.protocol + '://' + req.get('host')}?password='+system_access.trim(), '_self' );
+                    window.open('${req.protocol + '://' + req.get('host')}?id='+system_access.trim(), '_self' );
                  }
                 </script>
             </html>
